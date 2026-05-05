@@ -79,7 +79,8 @@ namespace KapwaKuha.ViewModels
                 try
                 {
                     IsBusy = true;
-                    await KapwaDataService.UpdateDonorProfile(_donorId, Username, PicturePath);
+                    // FIX: pass Address as 4th argument
+                    await KapwaDataService.UpdateDonorProfile(_donorId, Username, PicturePath, Address);
                     UserSession.Username = Username;
                     MessageBox.Show("✅ Profile updated!", "Saved",
                         MessageBoxButton.OK, MessageBoxImage.Information);

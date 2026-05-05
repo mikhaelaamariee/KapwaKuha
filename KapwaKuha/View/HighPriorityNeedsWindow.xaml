@@ -55,15 +55,36 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
+                    <!-- REPLACE the info Border in Grid.Row="0" with: -->
                     <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,12">
                         <Border.Effect>
                             <DropShadowEffect Color="#C0304A" BlurRadius="12" ShadowDepth="0" Opacity="0.08"/>
                         </Border.Effect>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Organizations and beneficiaries post urgent needs here. Donate an item that matches their request to help fulfill it."
-                                       FontSize="12" Foreground="#5E7A8A" TextWrapping="Wrap"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                   Text="Organizations and beneficiaries post urgent needs here. Donate an item that matches their request to help fulfill it."
+                   FontSize="12" Foreground="#5E7A8A" TextWrapping="Wrap"
+                   VerticalAlignment="Center"/>
+
+                            <!-- Urgency filter — sorted by severity: High > Medium > Low -->
+                            <Border Grid.Column="1" CornerRadius="8" BorderBrush="#90E0EF"
+                BorderThickness="1.5" Background="#F0F8FF" Margin="16,0,0,0">
+                                <ComboBox SelectedValue="{Binding FilterUrgency}"
+          SelectedValuePath="Tag"
+          Width="160" Height="34" Background="Transparent"
+          BorderThickness="0" FontSize="12" Padding="10,0">
+                                    <ComboBoxItem Tag="All"    Content="All"/>
+                                    <ComboBoxItem Tag="High"   Content="🔴 High (Urgent)"/>
+                                    <ComboBoxItem Tag="Medium" Content="🟡 Medium"/>
+                                    <ComboBoxItem Tag="Low"    Content="🟢 Low"/>
+                                </ComboBox>
+                            </Border>
+                        </Grid>
                     </Border>
 
                     <ItemsControl Grid.Row="2" ItemsSource="{Binding NeedsPosts}">

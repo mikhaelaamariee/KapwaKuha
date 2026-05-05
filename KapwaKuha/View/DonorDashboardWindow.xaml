@@ -37,7 +37,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Width="Auto" Style="{StaticResource AnimatedSidebarStyle}" MinWidth="220"
+            <Border Grid.Column="0" Width="0" Style="{StaticResource AnimatedSidebarStyle}"
                     BorderThickness="0,0,1.5,0">
 
                 <Border.BorderBrush>
@@ -194,21 +194,58 @@
                                    Foreground="#03045E" FontSize="16" FontWeight="Bold"
                                    VerticalAlignment="Center" Margin="14,0,0,0"/>
 
+                        <!-- Replace the Ellipse + account Border in the top bar Grid.Column="2": -->
                         <Border Grid.Column="2" CornerRadius="20" Padding="4,4,12,4" VerticalAlignment="Center"
-                                Background="#E6FFFFFF" BorderBrush="#B390E0EF" BorderThickness="1"
-                                Cursor="Hand">
+        Background="#E6FFFFFF" BorderBrush="#B390E0EF" BorderThickness="1" Cursor="Hand">
                             <Border.InputBindings>
                                 <MouseBinding MouseAction="LeftClick" Command="{Binding MyAccountCommand}"/>
                             </Border.InputBindings>
                             <StackPanel Orientation="Horizontal">
-                                <Ellipse Width="28" Height="28" Margin="0,0,10,0">
-                                    <Ellipse.Fill>
-                                        <ImageBrush ImageSource="{Binding PicturePath}" Stretch="UniformToFill"/>
-                                    </Ellipse.Fill>
-                                </Ellipse>
-                                <TextBlock Text="{Binding UserLabel}" FontSize="12"
-                                           Foreground="#03045E" FontWeight="Bold" VerticalAlignment="Center"/>
+
+                                <!-- Circular profile picture — top-right of both dashboards -->
+                                <Border Width="36" Height="36" CornerRadius="18" ClipToBounds="True" Cursor="Hand" Margin="0,0,8,0">
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" Command="{Binding MyAccountCommand}"/>
+                                    </Border.InputBindings>
+                                    <Grid>
+                                        <Border Background="#EBF7FB" CornerRadius="18"/>
+
+                                        <TextBlock Text="👤" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasPicture}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <Image Source="{Binding ProfilePicturePath}" Stretch="UniformToFill">
+
+                                            <Image.Clip>
+                                                <EllipseGeometry RadiusX="18" RadiusY="18" Center="18,18" />
+                                            </Image.Clip>
+
+                                            <Image.Style>
+                                                <Style TargetType="Image">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasPicture}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+                                    </Grid>
+                                </Border>
+
+                                <TextBlock Text="{Binding UserLabel}" FontSize="12" Foreground="#03045E" FontWeight="Bold" VerticalAlignment="Center"/>
                                 <TextBlock Text=" ▼" FontSize="9" Foreground="#5E7A8A" VerticalAlignment="Center" Margin="6,2,0,0"/>
+
                             </StackPanel>
                         </Border>
                     </Grid>

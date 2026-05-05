@@ -44,15 +44,16 @@ namespace KapwaKuha.Models
         // Badge colors per doc Section 9.3
         public string UrgencyColor => Urgency switch
         {
-            "High" => "#FFF0F0",
-            "Medium" => "#FFF8E6",
-            _ => "#F0F8FF"
+            "High" => "#FFF0F0",   // light red background
+            "Medium" => "#FFF8E6",   // light yellow background
+            _ => "#E8F5E9"    // light GREEN background for Low (was #F0F8FF blue)
         };
+
         public string UrgencyTextColor => Urgency switch
         {
-            "High" => "#C0304A",
-            "Medium" => "#B8860B",
-            _ => "#185FA5"
+            "High" => "#C0304A",   // red text
+            "Medium" => "#B8860B",   // amber text
+            _ => "#2E7D52"    // GREEN text for Low (was #185FA5 blue)
         };
     }
 }

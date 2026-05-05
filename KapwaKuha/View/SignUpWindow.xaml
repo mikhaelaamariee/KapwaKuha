@@ -5,7 +5,6 @@
         Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize" FontFamily="Segoe UI">
-    <!-- NO Window.Resources -->
     <Grid>
         <Rectangle>
             <Rectangle.Fill>
@@ -42,7 +41,6 @@
                     Style="{StaticResource GlassCard}">
 
                 <StackPanel>
-                    <!-- Back link -->
                     <Button Command="{Binding BackCommand}"
                             Style="{StaticResource LinkBtn}"
                             Content="← Back to Login"
@@ -54,14 +52,65 @@
                                FontSize="12" Foreground="#5E7A8A"
                                HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
-                    <!-- Error banner -->
                     <Border Background="#4DFFF0F5" CornerRadius="8" Padding="12,8" Margin="0,0,0,14"
                             Visibility="{Binding ErrorVisible, Converter={StaticResource BoolToVis}}">
                         <TextBlock Text="{Binding ErrorMessage}" Foreground="#C0304A"
                                    FontSize="12" TextWrapping="Wrap"/>
                     </Border>
 
-                    <!-- First / Last Name -->
+                    <StackPanel HorizontalAlignment="Center" Margin="0,0,0,20">
+                        <TextBlock Text="Profile Picture (optional)" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="#03045E" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+
+                        <Grid Width="72" Height="72" HorizontalAlignment="Center" Cursor="Hand" ToolTip="Click to upload photo">
+                            <Grid.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" Command="{Binding BrowsePictureCommand}"/>
+                            </Grid.InputBindings>
+
+                            <Border Width="72" Height="72" CornerRadius="36" ClipToBounds="True" 
+        Background="#EBF7FB" BorderBrush="#B390E0EF" BorderThickness="1.5">
+                                <Grid>
+                                    <TextBlock Text="👤" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,6,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasPicture}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <Image Source="{Binding ProfilePicturePath}" Stretch="UniformToFill">
+                                        <Image.Clip>
+                                            <EllipseGeometry RadiusX="34.5" RadiusY="34.5" Center="34.5,34.5" />
+                                        </Image.Clip>
+
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasPicture}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                </Grid>
+                            </Border>
+
+                            <Border Width="28" Height="28" CornerRadius="14" Background="White" 
+            BorderBrush="#0077B6" BorderThickness="1.5"
+            HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+            Margin="0,0,-4,-4">
+                                <TextBlock Text="📷" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,1"/>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+
                     <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -88,7 +137,6 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- Username (Donor only) -->
                     <StackPanel Margin="0,0,0,12"
                                 Visibility="{Binding IsDonor, Converter={StaticResource BoolToVis}}">
                         <TextBlock Text="Username" FontSize="11" FontWeight="SemiBold"
@@ -100,7 +148,6 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- Sex + Org (Beneficiary only) -->
                     <Grid Margin="0,0,0,12"
                           Visibility="{Binding IsBeneficiary, Converter={StaticResource BoolToVis}}">
                         <Grid.ColumnDefinitions>
@@ -111,34 +158,33 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Sex" FontSize="11" FontWeight="SemiBold"
                                        Foreground="#03045E" Margin="0,0,0,5"/>
-                         
-                                <ComboBox SelectedValue="{Binding Sex}" Height="34"
+
+                            <ComboBox SelectedValue="{Binding Sex}" Height="34"
                                           Background="Transparent" BorderThickness="0"
                                           Foreground="#03045E" FontSize="12" Padding="10,0">
-                                    <ComboBoxItem Content="Male"   IsSelected="True"/>
-                                    <ComboBoxItem Content="Female"/>
-                                </ComboBox>
-                            
+                                <ComboBoxItem Content="Male"   IsSelected="True"/>
+                                <ComboBoxItem Content="Female"/>
+                            </ComboBox>
+
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Organization" FontSize="11" FontWeight="SemiBold"
                                        Foreground="#03045E" Margin="0,0,0,5"/>
-                           
-                                <ComboBox
+
+                            <ComboBox
                                   ItemsSource="{Binding Organizations}"
                                   Height="34" Background="Transparent" BorderThickness="0"
                                   Foreground="#03045E" FontSize="12" Padding="10,0">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Item2}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
- 
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Item2}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
                         </StackPanel>
                     </Grid>
 
-                    <!-- Contact -->
                     <TextBlock Text="Contact Number" FontSize="11" FontWeight="SemiBold"
                                Foreground="#03045E" Margin="0,0,0,5"/>
                     <Border Style="{StaticResource GlassInputBorder}">
@@ -147,7 +193,6 @@
                                  Foreground="#03045E" FontSize="12" VerticalContentAlignment="Center"/>
                     </Border>
 
-                    <!-- Password + Confirm -->
                     <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -174,7 +219,6 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- Security Question -->
                     <TextBlock Text="Security Question" FontSize="11" FontWeight="SemiBold"
                                Foreground="#03045E" Margin="0,0,0,5"/>
                     <Border Style="{StaticResource GlassInputBorder}">
@@ -187,7 +231,6 @@
                         </ComboBox>
                     </Border>
 
-                    <!-- Security Answer -->
                     <TextBlock Text="Security Answer" FontSize="11" FontWeight="SemiBold"
                                Foreground="#03045E" Margin="0,0,0,5"/>
                     <Border Style="{StaticResource GlassInputBorder}" Margin="0,0,0,24">
@@ -196,7 +239,6 @@
                                  Foreground="#03045E" FontSize="12" VerticalContentAlignment="Center"/>
                     </Border>
 
-                    <!-- Register button — now uses GradientButton from App.xaml -->
                     <Button x:Name="RegisterBtn"
                             Style="{StaticResource GradientButton}"
                             Click="RegisterBtn_Click">

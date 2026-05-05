@@ -7,7 +7,8 @@ namespace KapwaKuha.View
 {
     public partial class ClaimItemWindow : Window
     {
-        public ClaimItemWindow(string beneficiaryId, ItemModel item)
+        public ClaimItemWindow(string beneficiaryId, ItemModel item,
+                               Action? onClaimSuccess = null)
         {
             InitializeComponent();
             DataContext = new ClaimItemViewModel(beneficiaryId, item);

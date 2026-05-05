@@ -82,16 +82,20 @@ namespace KapwaKuha.ViewModels
             set { _errorVisible = value; OnPropertyChanged(); }
         }
 
+        private readonly Action? _onClaimSuccess;
+
         public ICommand BackCommand { get; }
         public ICommand ConfirmClaimCommand { get; }
         public ICommand SetPickupCommand { get; }
         public ICommand SetDeliveryCommand { get; }
         public ICommand SetDonationDriveCommand { get; }
 
-        public ClaimItemViewModel(string beneficiaryId, ItemModel item)
+        public ClaimItemViewModel(string beneficiaryId, ItemModel item,
+                           Action? onClaimSuccess = null)
         {
             _beneficiaryId = beneficiaryId;
             Item = item;
+            _onClaimSuccess = onClaimSuccess;
 
             BackCommand = new RelayCommand(_ =>
                 NavigationService.Navigate(new View.BrowseItemsWindow(_beneficiaryId)));
@@ -164,6 +168,11 @@ namespace KapwaKuha.ViewModels
 
                     MessageBox.Show($"✅ Claimed! Your Claim ID: {claimId}",
                         "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // Call the chat callback so buttons disappear only after successful claim
+                    _onClaimSuccess?.Invoke();
+
+                    NavigationService.Navigate(new View.BeneficiaryDashboardWindow(_beneficiaryId));
 
                     // Auto-confirm back to donor in chat
                     try

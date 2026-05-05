@@ -34,6 +34,53 @@ namespace KapwaKuha.ViewModels
         // Edit only allowed when item is still Available
         public bool CanEditSelected => SelectedItem?.Item_Status == "Available";
 
+        // Add these properties to ActiveListingsViewModel:
+
+        private string _editName = string.Empty;
+        public string EditName
+        {
+            get => _editName;
+            set { _editName = value; OnPropertyChanged(); }
+        }
+
+        private string _editDescription = string.Empty;
+        public string EditDescription
+        {
+            get => _editDescription;
+            set { _editDescription = value; OnPropertyChanged(); }
+        }
+
+        private string _editCondition = "Good";
+        public string EditCondition
+        {
+            get => _editCondition;
+            set { _editCondition = value; OnPropertyChanged(); }
+        }
+
+        private string _editImagePath = string.Empty;
+        public string EditImagePath
+        {
+            get => _editImagePath;
+            set { _editImagePath = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasEditImage)); }
+        }
+
+        public bool HasEditImage =>
+            !string.IsNullOrEmpty(_editImagePath) && System.IO.File.Exists(_editImagePath);
+
+        private bool _isEditPanelOpen;
+        public bool IsEditPanelOpen
+        {
+            get => _isEditPanelOpen;
+            set { _isEditPanelOpen = value; OnPropertyChanged(); }
+        }
+
+        public ICommand OpenEditPanelCommand { get; }
+        public ICommand BrowseEditImageCommand { get; }
+        public ICommand SaveEditCommand { get; }
+        public ICommand CancelEditCommand { get; }
+
+        public string[] Conditions { get; } = { "New", "Good", "Fair", "Poor" };
+
         public ICommand BackCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand DeleteItemCommand { get; }
@@ -73,7 +120,8 @@ namespace KapwaKuha.ViewModels
                 finally { IsBusy = false; }
             });
 
-            EditPostCommand = new AsyncRelayCommand(async _ =>
+            // Replace the EditPostCommand = new AsyncRelayCommand(...) with:
+            EditPostCommand = new RelayCommand(_ =>
             {
                 if (SelectedItem == null) return;
                 if (SelectedItem.Item_Status != "Available")
@@ -82,47 +130,46 @@ namespace KapwaKuha.ViewModels
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+                // Pre-fill edit form
+                EditName = SelectedItem.Item_Name;
+                EditDescription = SelectedItem.Item_Description;
+                EditCondition = SelectedItem.Item_Condition;
+                EditImagePath = SelectedItem.Item_ImagePath;
+                IsEditPanelOpen = true;
+            });
 
-                // Open edit dialog inline using simple input dialogs
-                string newName = Microsoft.VisualBasic.Interaction.InputBox(
-                    "Edit item name:", "Edit Post", SelectedItem.Item_Name);
-                if (string.IsNullOrWhiteSpace(newName)) return;
+            OpenEditPanelCommand = EditPostCommand;  // alias
 
-                string newDesc = Microsoft.VisualBasic.Interaction.InputBox(
-                    "Edit description:", "Edit Post", SelectedItem.Item_Description);
-
-                string newCond = Microsoft.VisualBasic.Interaction.InputBox(
-                    "Edit condition (New/Good/Fair/Poor):", "Edit Post", SelectedItem.Item_Condition);
-                if (newCond != "New" && newCond != "Good" && newCond != "Fair" && newCond != "Poor")
-                    newCond = SelectedItem.Item_Condition;
-
-                // Optionally browse for new image
-                string newImage = SelectedItem.Item_ImagePath;
-                var imgResult = MessageBox.Show("Do you want to change the photo?",
-                    "Change Photo", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (imgResult == MessageBoxResult.Yes)
+            BrowseEditImageCommand = new RelayCommand(_ =>
+            {
+                var dlg = new Microsoft.Win32.OpenFileDialog
                 {
-                    var dlg = new Microsoft.Win32.OpenFileDialog
-                    {
-                        Filter = "Image files (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp",
-                        Title = "Select New Item Image"
-                    };
-                    if (dlg.ShowDialog() == true) newImage = dlg.FileName;
+                    Filter = "Image files (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp",
+                    Title = "Select New Item Image"
+                };
+                if (dlg.ShowDialog() == true) EditImagePath = dlg.FileName;
+            });
+
+            CancelEditCommand = new RelayCommand(_ => IsEditPanelOpen = false);
+
+            SaveEditCommand = new AsyncRelayCommand(async _ =>
+            {
+                if (SelectedItem == null) return;
+                if (string.IsNullOrWhiteSpace(EditName))
+                {
+                    MessageBox.Show("Item name cannot be empty.", "Validation",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
-
-                var confirm = MessageBox.Show(
-                    $"Save changes to \"{newName}\"?", "Confirm Edit",
-                    MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (confirm != MessageBoxResult.Yes) return;
-
                 try
                 {
                     IsBusy = true;
-                    SelectedItem.Item_Name = newName;
-                    SelectedItem.Item_Description = newDesc;
-                    SelectedItem.Item_Condition = newCond;
-                    SelectedItem.Item_ImagePath = newImage;
+                    SelectedItem.Item_Name = EditName.Trim();
+                    SelectedItem.Item_Description = EditDescription.Trim();
+                    SelectedItem.Item_Condition = EditCondition;
+                    SelectedItem.Item_ImagePath = EditImagePath;
                     await KapwaDataService.UpdateItem(SelectedItem);
+                    IsEditPanelOpen = false;
                     MessageBox.Show("✅ Item updated successfully!", "Saved",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     await LoadItemsAsync();

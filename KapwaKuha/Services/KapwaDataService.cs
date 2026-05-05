@@ -546,18 +546,13 @@ namespace KapwaKuha.Services
                         Item_Description = r["Item_Description"].ToString() ?? "",
                         Category_Name = r["Category_Name"].ToString() ?? "",
                         Item_Condition = r["Item_Condition"].ToString() ?? "",
-
-                        // Note: You might want to add Donor_Name to TransactionRow if you haven't already, 
-                        // since Beneficiaries usually want to see who donated it!
-                        Donor_FullName = r["Donor_Name"].ToString() ?? "",
+                        Donor_FullName = r["Donor_Name"].ToString() ?? "",  
+                        Beneficiary_Name = r["Donor_Name"].ToString() ?? "",   
                         Organization_Name = r["Organization_Name"].ToString() ?? "",
-
-                        Claim_Date = r["Claim_Date"] != DBNull.Value ? Convert.ToDateTime(r["Claim_Date"]) : DateTime.MinValue,
+                        Claim_Date = Convert.ToDateTime(r["Claim_Date"]),
                         Claim_Status = r["Claim_Status"].ToString() ?? "",
                         Handoff_Type = r["Handoff_Type"].ToString() ?? "",
-
-                        // Safe check in case DaysToRelease comes back null
-                        DaysToRelease = r["DaysToRelease"] != DBNull.Value ? Convert.ToInt32(r["DaysToRelease"]) : 0
+                        DaysToRelease = Convert.ToInt32(r["DaysToRelease"])
                     });
                 }
             }
@@ -952,9 +947,42 @@ namespace KapwaKuha.Services
     return list;
 }
 
-/// <summary>Returns ALL active beneficiaries for donor chat search.</summary>
-public static Task<List<BeneficiaryModel>> GetAllBeneficiariesForChat()
-    => GetActiveBeneficiariesFull();
+        /// <summary>Returns ALL active beneficiaries for donor chat search.</summary>
+        public static async Task<List<BeneficiaryModel>> GetAllBeneficiariesForChat()
+        {
+            var list = new List<BeneficiaryModel>();
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+            SELECT b.Beneficiary_ID, b.Beneficiary_FullName,
+                   b.Beneficiary_Username,
+                   b.Beneficiary_Sex, b.Beneficiary_Contact, b.Beneficiaries_Status,
+                   b.Organization_ID, b.ProfilePicturePath,
+                   ISNULL(o.Organization_Name,'') AS Organization_Name
+            FROM Beneficiaries b
+            LEFT JOIN Organization o ON o.Organization_ID = b.Organization_ID
+            WHERE b.Beneficiaries_Status = 'Active'
+            ORDER BY b.Beneficiary_FullName", conn);
+                using var r = await cmd.ExecuteReaderAsync();
+                while (await r.ReadAsync())
+                    list.Add(new BeneficiaryModel
+                    {
+                        Beneficiary_ID = r["Beneficiary_ID"].ToString() ?? "",
+                        Beneficiary_FullName = r["Beneficiary_FullName"].ToString() ?? "",
+                        Beneficiary_Username = r["Beneficiary_Username"].ToString() ?? "",
+                        Beneficiary_Sex = r["Beneficiary_Sex"].ToString() ?? "",
+                        Beneficiary_Contact = r["Beneficiary_Contact"].ToString() ?? "",
+                        Beneficiaries_Status = r["Beneficiaries_Status"].ToString() ?? "Active",
+                        Organization_ID = r["Organization_ID"].ToString() ?? "",
+                        Organization_Name = r["Organization_Name"].ToString() ?? "",
+                        ProfilePicturePath = r["ProfilePicturePath"].ToString() ?? "" // KEY FIX
+                    });
+            }
+            catch (Exception ex) { MessageBox.Show("GetAllBeneficiariesForChat failed: " + ex.Message); }
+            return list;
+        }
 
         /// <summary>
         /// For beneficiary side: returns donors who have exchanged messages with this beneficiary.
@@ -1304,21 +1332,23 @@ ORDER BY cm.SentAt ASC";
         // PROFILE UPDATE
         // ══════════════════════════════════════════════════════════════════════
 
-        public static async Task UpdateDonorProfile(string donorId, string newUsername, string profilePic)
-{
-    try
-    {
-        using var conn = new SqlConnection(_conn);
-        await conn.OpenAsync();
-        using var cmd = new SqlCommand("sp_UpdateDonorProfile", conn);
-        cmd.CommandType = System.Data.CommandType.StoredProcedure;
-        cmd.Parameters.AddWithValue("@DonorId", donorId);
-        cmd.Parameters.AddWithValue("@NewUsername", newUsername);
-        cmd.Parameters.AddWithValue("@ProfilePic", profilePic);
-        await cmd.ExecuteNonQueryAsync();
-    }
-    catch (Exception ex) { MessageBox.Show("UpdateDonorProfile failed: " + ex.Message); }
-}
+        public static async Task UpdateDonorProfile(string donorId, string newUsername,
+                                              string profilePic, string address = "")
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("sp_UpdateDonorProfile", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@DonorId", donorId);
+                cmd.Parameters.AddWithValue("@NewUsername", newUsername);
+                cmd.Parameters.AddWithValue("@ProfilePic", profilePic);
+                cmd.Parameters.AddWithValue("@Address", address);   // NEW
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { MessageBox.Show("UpdateDonorProfile failed: " + ex.Message); }
+        }
 
         public static async Task<DonorModel?> GetDonorById(string donorId)
         {

@@ -27,6 +27,15 @@ namespace KapwaKuha.ViewModels
         private bool _errorVisible = false;
         private bool _isLoading = false;
 
+        private string _profilePicturePath = string.Empty;
+        public string ProfilePicturePath
+        {
+            get => _profilePicturePath;
+            set { _profilePicturePath = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasPicture)); }
+        }
+        public bool HasPicture =>
+            !string.IsNullOrEmpty(_profilePicturePath) && System.IO.File.Exists(_profilePicturePath);
+
         // Donor-specific
         private string _username = string.Empty;
 
@@ -105,6 +114,8 @@ namespace KapwaKuha.ViewModels
         public ICommand RegisterCommand { get; }
         public ICommand BackCommand { get; }
 
+        public ICommand BrowsePictureCommand { get; }
+
         public SignUpViewModel(string role)
         {
             _role = role;
@@ -156,7 +167,8 @@ namespace KapwaKuha.ViewModels
                             Donor_ID = id,
                             Donor_FullName = $"{FName} {LName}",
                             Donor_Username = Username,
-                            Donor_ContactNumber = Contact
+                            Donor_ContactNumber = Contact,
+                            ProfilePicturePath = ProfilePicturePath  // ADD THIS LINE
                         };
                         await KapwaDataService.RegisterDonor(donor, Password, SecurityQuestion, SecurityAnswer);
                         MessageBox.Show($"✅ Registered! Your Donor ID: {id}\nLogin with username: {Username}",
@@ -187,7 +199,8 @@ namespace KapwaKuha.ViewModels
                             Beneficiary_LName = LName,
                             Beneficiary_Sex = Sex,
                             Beneficiary_Contact = Contact,
-                            Organization_ID = SelectedOrgId
+                            Organization_ID = SelectedOrgId,
+                            ProfilePicturePath = ProfilePicturePath  // ADD THIS LINE
                         };
                         await KapwaDataService.RegisterBeneficiary(bene, Password, SecurityQuestion, SecurityAnswer);
                         MessageBox.Show($"✅ Registered! Your Beneficiary ID: {id}\nLogin with ID: {id}",
@@ -197,6 +210,16 @@ namespace KapwaKuha.ViewModels
                     catch { /* error shown by service */ }
                     finally { IsLoading = false; }
                 }
+            });
+
+            BrowsePictureCommand = new RelayCommand(_ =>
+            {
+                var dlg = new Microsoft.Win32.OpenFileDialog
+                {
+                    Filter = "Image files (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp",
+                    Title = "Select Profile Picture"
+                };
+                if (dlg.ShowDialog() == true) ProfilePicturePath = dlg.FileName;
             });
 
             if (_role == "Beneficiary")

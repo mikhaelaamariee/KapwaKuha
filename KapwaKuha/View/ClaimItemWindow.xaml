@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="KapwaKuha — Claim Item"
-         Height="720" Width="1280"
+        Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI">
 
@@ -19,16 +19,17 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <Image Source="https://i.imgur.com/y4MrK4c.jpeg" Opacity ="0.05" Width="1980" HorizontalAlignment="Center" VerticalAlignment="Center" Height="2808" RenderTransformOrigin="0.5,0.5" />
+        <Image Source="https://i.imgur.com/y4MrK4c.jpeg" Opacity="0.05"
+               Width="1980" Height="2808"
+               HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="56"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            
-            
 
+            <!-- Top bar -->
             <Border Grid.Row="0" Background="#0077B6">
                 <Grid Margin="20,0">
                     <Grid.ColumnDefinitions>
@@ -37,7 +38,8 @@
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="0" Command="{Binding BackCommand}"
                             Content="← Back" Background="Transparent" BorderThickness="0"
-                            Foreground="White" FontSize="13" Cursor="Hand" VerticalAlignment="Center"/>
+                            Foreground="White" FontSize="13" Cursor="Hand"
+                            VerticalAlignment="Center"/>
                     <StackPanel Grid.Column="1" Orientation="Horizontal"
                                 HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock Text="KAPWAKUHA  /  " FontSize="12" FontWeight="Black"
@@ -47,275 +49,443 @@
                     </StackPanel>
                 </Grid>
             </Border>
-            
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="28,18">
+                <Grid Margin="28,18">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="340"/>
+                    </Grid.ColumnDefinitions>
 
-                    <!-- Item summary card -->
-                    <Border Grid.Row="1" CornerRadius="16" Margin="20,14,20,20" BorderThickness="1.5" Height="108">
+                    <!-- LEFT: Form -->
+                    <StackPanel Grid.Column="0">
 
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#CCFFFFFF" Offset="0"/>
-                                <GradientStop Color="#66FFFFFF" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
+                        <!-- Item summary card -->
+                        <Border CornerRadius="16" Margin="0,0,0,16" BorderThickness="1.5" Padding="16">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#CCFFFFFF" Offset="0"/>
+                                    <GradientStop Color="#66FFFFFF" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.BorderBrush>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="White" Offset="0"/>
+                                    <GradientStop Color="#33FFFF" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#00B4D8" BlurRadius="18"
+                                                  ShadowDepth="0" Opacity="0.12"/>
+                            </Border.Effect>
 
-                        <Border.BorderBrush>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="White" Offset="0"/>
-                                <GradientStop Color="#33FFFF" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.BorderBrush>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="72"/>
+                                    <ColumnDefinition Width="14"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                        <Border.Effect>
-                            <DropShadowEffect Color="#00B4D8" BlurRadius="18" ShadowDepth="0" Opacity="0.12"/>
-                        </Border.Effect>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="70"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Width="70" Height="70" CornerRadius="10" 
-        Background="{Binding Item_ImagePath }" />
+                                <!-- Item image — rectangle box, same logic as Car Rentals -->
+                                <Border Grid.Column="0" Width="72" Height="72"
+                                        CornerRadius="10" ClipToBounds="True">
+                                    <Grid>
+                                        <Border Background="#EBF7FB"/>
+                                        <!-- Placeholder icon when no image -->
+                                        <TextBlock Text="📦" FontSize="30"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Item.HasItemImage}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <!-- Actual image -->
+                                        <Image Source="{Binding Item.Item_ImagePath}"
+                                               Stretch="UniformToFill">
+                                            <Image.Style>
+                                                <Style TargetType="Image">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Item.HasItemImage}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+                                    </Grid>
+                                </Border>
 
-                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Item.Item_Name}"
-                                           FontSize="16" FontWeight="Bold" Foreground="#03045E"/>
-                                <TextBlock Text="{Binding Item.Item_ID}" FontSize="11" Foreground="#5E7A8A"/>
-                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                                    <Border CornerRadius="6" Padding="8,3" Margin="0,0,6,0"
-                                            Background="#EBF7FB">
-                                        <TextBlock Text="{Binding Item.Category_Name}"
-                                                   FontSize="10" Foreground="#0077B6"/>
+                                <!-- Item info -->
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Item.Item_Name}"
+                                               FontSize="16" FontWeight="Bold"
+                                               Foreground="#03045E"/>
+                                    <TextBlock Text="{Binding Item.Item_ID}"
+                                               FontSize="11" Foreground="#5E7A8A"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                        <Border CornerRadius="6" Padding="8,3" Margin="0,0,6,0"
+                                                Background="#EBF7FB">
+                                            <TextBlock Text="{Binding Item.Category_Name}"
+                                                       FontSize="10" Foreground="#0077B6"/>
+                                        </Border>
+                                        <Border CornerRadius="6" Padding="8,3"
+                                                Background="{Binding Item.StatusBadgeBackground}">
+                                            <TextBlock Text="{Binding Item.Item_Condition}"
+                                                       FontSize="10"
+                                                       Foreground="{Binding Item.StatusBadgeColor}"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Item.StorageDaysDisplay}"
+                                               FontSize="11" Foreground="#5E7A8A" Margin="0,4,0,0"/>
+                                    <TextBlock Text="{Binding Item.Donor_Name, StringFormat='Donated by {0}'}"
+                                               FontSize="11" Foreground="#5E7A8A"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Handoff selection card -->
+                        <Border CornerRadius="16" Margin="0,0,0,16" BorderThickness="1.5" Padding="20">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#CCFFFFFF" Offset="0"/>
+                                    <GradientStop Color="#66FFFFFF" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.BorderBrush>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="White" Offset="0"/>
+                                    <GradientStop Color="#33FFFF" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#00B4D8" BlurRadius="18"
+                                                  ShadowDepth="0" Opacity="0.12"/>
+                            </Border.Effect>
+
+                            <StackPanel>
+                                <TextBlock Text="How will you receive this item?"
+                                           FontSize="14" FontWeight="Bold"
+                                           Foreground="#03045E" Margin="0,0,0,14"/>
+
+                                <!-- Handoff type buttons -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                    <!-- Pickup -->
+                                    <Border CornerRadius="10" Padding="16,11" Margin="0,0,10,0"
+                                            Cursor="Hand" Width="150">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#F0F8FB"/>
+                                                <Setter Property="BorderBrush" Value="#90E0EF"/>
+                                                <Setter Property="BorderThickness" Value="1.5"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsPickup}" Value="True">
+                                                        <Setter Property="Background" Value="#00B4D8"/>
+                                                        <Setter Property="BorderBrush" Value="#00B4D8"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Border.InputBindings>
+                                            <MouseBinding MouseAction="LeftClick"
+                                                          Command="{Binding SetPickupCommand}"/>
+                                        </Border.InputBindings>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="🏠" FontSize="22"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Pickup" FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="#0077B6"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsPickup}" Value="True">
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
                                     </Border>
-                                    <Border CornerRadius="6" Padding="8,3"
-                                            Background="{Binding Item.StatusBadgeBackground}">
-                                        <TextBlock Text="{Binding Item.Item_Condition}"
-                                                   FontSize="10"
-                                                   Foreground="{Binding Item.StatusBadgeColor}"/>
+
+                                    <!-- Delivery -->
+                                    <Border CornerRadius="10" Padding="16,11" Margin="0,0,10,0"
+                                            Cursor="Hand" Width="150">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#F0F8FB"/>
+                                                <Setter Property="BorderBrush" Value="#90E0EF"/>
+                                                <Setter Property="BorderThickness" Value="1.5"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDelivery}" Value="True">
+                                                        <Setter Property="Background" Value="#00B4D8"/>
+                                                        <Setter Property="BorderBrush" Value="#00B4D8"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Border.InputBindings>
+                                            <MouseBinding MouseAction="LeftClick"
+                                                          Command="{Binding SetDeliveryCommand}"/>
+                                        </Border.InputBindings>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="🚚" FontSize="22"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Delivery" FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="#0077B6"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsDelivery}" Value="True">
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Donation Drive -->
+                                    <Border CornerRadius="10" Padding="16,11"
+                                            Cursor="Hand" Width="150">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#F0F8FB"/>
+                                                <Setter Property="BorderBrush" Value="#90E0EF"/>
+                                                <Setter Property="BorderThickness" Value="1.5"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDonationDrive}" Value="True">
+                                                        <Setter Property="Background" Value="#00B4D8"/>
+                                                        <Setter Property="BorderBrush" Value="#00B4D8"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Border.InputBindings>
+                                            <MouseBinding MouseAction="LeftClick"
+                                                          Command="{Binding SetDonationDriveCommand}"/>
+                                        </Border.InputBindings>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="🎪" FontSize="22"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Drive Event" FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="#0077B6"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsDonationDrive}" Value="True">
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
                                     </Border>
                                 </StackPanel>
-                                <TextBlock Text="{Binding Item.StorageDaysDisplay}"
-                                           FontSize="11" Foreground="#5E7A8A" Margin="0,4,0,0"/>
-                                <TextBlock Text="{Binding Item.Donor_Name, StringFormat='Donated by {0}'}"
-                                           FontSize="11" Foreground="#5E7A8A"/>
+
+                                <!-- Location -->
+                                <TextBlock Text="Location / Address" FontSize="12"
+                                           FontWeight="SemiBold" Foreground="#03045E"
+                                           Margin="0,0,0,6"/>
+                                <Border CornerRadius="9" BorderBrush="#90E0EF" BorderThickness="1.5"
+                                        Padding="10,0" Background="#F0F8FB" Margin="0,0,0,12">
+                                    <TextBox Text="{Binding Location, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="36" Background="Transparent" BorderThickness="0"
+                                             Foreground="#03045E" FontSize="13"
+                                             VerticalContentAlignment="Center" MaxLength="200"/>
+                                </Border>
+
+                                <!-- Event Name (Drive only) -->
+                                <StackPanel Margin="0,0,0,12"
+                                            Visibility="{Binding IsDonationDrive, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="Event Name (optional)" FontSize="12"
+                                               FontWeight="SemiBold" Foreground="#03045E"
+                                               Margin="0,0,0,6"/>
+                                    <Border CornerRadius="9" BorderBrush="#90E0EF" BorderThickness="1.5"
+                                            Padding="10,0" Background="#F0F8FB">
+                                        <TextBox Text="{Binding EventName, UpdateSourceTrigger=PropertyChanged}"
+                                                 Height="36" Background="Transparent" BorderThickness="0"
+                                                 Foreground="#03045E" FontSize="13"
+                                                 VerticalContentAlignment="Center"/>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Error banner -->
+                                <Border Background="#FFF0F5" CornerRadius="8" Padding="10,7"
+                                        Margin="0,0,0,10"
+                                        Visibility="{Binding ErrorVisible, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#C0304A"
+                                               FontSize="11" TextWrapping="Wrap"/>
+                                </Border>
                             </StackPanel>
-                        </Grid>
-                    </Border>
+                        </Border>
 
-                    <!-- Handoff selection -->
-                    <Border Grid.Row="1" CornerRadius="16" Margin="20,14,20,20" BorderThickness="1.5" Height="378">
+                        <!-- Confirm button -->
+                        <Button Command="{Binding ConfirmClaimCommand}" Height="46"
+                                FontSize="14" FontWeight="Bold" Foreground="White"
+                                BorderThickness="0" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border CornerRadius="12"
+                                            Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="0.88"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Button.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#2DC653" Offset="0"/>
+                                    <GradientStop Color="#1A9940" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Button.Background>
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="✅  Confirm Claim"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                                <Setter Property="Text" Value="Processing..."/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+                    </StackPanel>
 
+                    <!-- RIGHT: Item large image preview panel -->
+                    <Border Grid.Column="2" CornerRadius="16" BorderThickness="1.5" Padding="20">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                 <GradientStop Color="#CCFFFFFF" Offset="0"/>
                                 <GradientStop Color="#66FFFFFF" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
-
                         <Border.BorderBrush>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                 <GradientStop Color="White" Offset="0"/>
                                 <GradientStop Color="#33FFFF" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.BorderBrush>
-
                         <Border.Effect>
-                            <DropShadowEffect Color="#00B4D8" BlurRadius="18" ShadowDepth="0" Opacity="0.12"/>
+                            <DropShadowEffect Color="#00B4D8" BlurRadius="18"
+                                              ShadowDepth="0" Opacity="0.12"/>
                         </Border.Effect>
+
                         <StackPanel>
-                            <TextBlock Text="How will you receive this item?"
-                                       FontSize="14" FontWeight="Bold" Foreground="#03045E"
-                                       Margin="0,0,0,14"/>
+                            <TextBlock Text="📦 Item Preview" FontSize="14" FontWeight="Bold"
+                                       Foreground="#03045E" Margin="0,0,0,14"/>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                <!-- Pickup -->
-                                <Border CornerRadius="10" Padding="16,11" Margin="0,0,10,0"
-                                        Cursor="Hand" Width="168">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="#F0F8FB"/>
-                                            <Setter Property="BorderBrush" Value="#90E0EF"/>
-                                            <Setter Property="BorderThickness" Value="1.5"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsPickup}" Value="True">
-                                                    <Setter Property="Background" Value="#00B4D8"/>
-                                                    <Setter Property="BorderBrush" Value="#00B4D8"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <Border.InputBindings>
-                                        <MouseBinding MouseAction="LeftClick"
-                                                      Command="{Binding SetPickupCommand}"/>
-                                    </Border.InputBindings>
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="🏠" FontSize="22" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="Pickup" FontSize="12" FontWeight="SemiBold"
+                            <!-- Large item image box -->
+                            <Border Height="240" CornerRadius="12" ClipToBounds="True"
+                                    Margin="0,0,0,14">
+                                <Grid>
+                                    <Border>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#EBF7FB" Offset="0"/>
+                                                <GradientStop Color="#CAF0F8" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
+                                    <!-- Placeholder box icon -->
+                                    <StackPanel HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="📦" FontSize="64"
                                                    HorizontalAlignment="Center">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="#0077B6"/>
+                                                    <Setter Property="Visibility" Value="Visible"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsPickup}" Value="True">
-                                                            <Setter Property="Foreground" Value="White"/>
+                                                        <DataTrigger Binding="{Binding Item.HasItemImage}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Text="No photo available" FontSize="12"
+                                                   Foreground="#78909C" HorizontalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Item.HasItemImage}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </TextBlock.Style>
                                         </TextBlock>
                                     </StackPanel>
-                                </Border>
-
-                                <!-- Delivery -->
-                                <Border CornerRadius="10" Padding="16,11" Margin="0,0,10,0"
-                                        Cursor="Hand" Width="168">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="#F0F8FB"/>
-                                            <Setter Property="BorderBrush" Value="#90E0EF"/>
-                                            <Setter Property="BorderThickness" Value="1.5"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsDelivery}" Value="True">
-                                                    <Setter Property="Background" Value="#00B4D8"/>
-                                                    <Setter Property="BorderBrush" Value="#00B4D8"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <Border.InputBindings>
-                                        <MouseBinding MouseAction="LeftClick"
-                                                      Command="{Binding SetDeliveryCommand}"/>
-                                    </Border.InputBindings>
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="🚚" FontSize="22" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="Delivery" FontSize="12" FontWeight="SemiBold"
-                                                   HorizontalAlignment="Center">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="#0077B6"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsDelivery}" Value="True">
-                                                            <Setter Property="Foreground" Value="White"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Donation Drive -->
-                                <Border CornerRadius="10" Padding="16,11"
-                                        Cursor="Hand" Width="168">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="#F0F8FB"/>
-                                            <Setter Property="BorderBrush" Value="#90E0EF"/>
-                                            <Setter Property="BorderThickness" Value="1.5"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsDonationDrive}" Value="True">
-                                                    <Setter Property="Background" Value="#00B4D8"/>
-                                                    <Setter Property="BorderBrush" Value="#00B4D8"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <Border.InputBindings>
-                                        <MouseBinding MouseAction="LeftClick"
-                                                      Command="{Binding SetDonationDriveCommand}"/>
-                                    </Border.InputBindings>
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="🎪" FontSize="22" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="Drive Event" FontSize="12" FontWeight="SemiBold"
-                                                   HorizontalAlignment="Center">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="#0077B6"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsDonationDrive}" Value="True">
-                                                            <Setter Property="Foreground" Value="White"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-
-                            <!-- Location -->
-                            <TextBlock Text="Location / Address" FontSize="12" FontWeight="SemiBold"
-                                       Foreground="#03045E" Margin="0,0,0,6"/>
-                            <Border CornerRadius="9" BorderBrush="#90E0EF" BorderThickness="1.5"
-                                    Padding="10,0" Background="#F0F8FB" Margin="0,0,0,12">
-                                <TextBox Text="{Binding Location, UpdateSourceTrigger=PropertyChanged}"
-                                         Height="34" Background="Transparent" BorderThickness="0"
-                                         Foreground="#03045E" FontSize="13" VerticalContentAlignment="Center"
-                                         MaxLength="200"/>
+                                    <!-- Actual image -->
+                                    <Image Source="{Binding Item.Item_ImagePath}"
+                                           Stretch="UniformToFill">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Item.HasItemImage}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                </Grid>
                             </Border>
 
-                            <!-- Event Name (Drive only) -->
-                            <StackPanel Margin="0,0,0,12"
-                                        Visibility="{Binding IsDonationDrive, Converter={StaticResource BoolToVis}}">
-                                <TextBlock Text="Event Name  (optional)" FontSize="12" FontWeight="SemiBold"
-                                           Foreground="#03045E" Margin="0,0,0,6"/>
-                                <Border CornerRadius="9" BorderBrush="#90E0EF" BorderThickness="1.5"
-                                        Padding="10,0" Background="#F0F8FB">
-                                    <TextBox Text="{Binding EventName, UpdateSourceTrigger=PropertyChanged}"
-                                             Height="34" Background="Transparent" BorderThickness="0"
-                                             Foreground="#03045E" FontSize="13" VerticalContentAlignment="Center"/>
-                                </Border>
-                            </StackPanel>
+                            <!-- Item description -->
+                            <TextBlock Text="{Binding Item.Item_Description}"
+                                       FontSize="12" Foreground="#5E7A8A"
+                                       TextWrapping="Wrap" LineHeight="18"
+                                       Margin="0,0,0,16"/>
 
-                            <!-- Error -->
-                            <Border Background="#FFF0F5" CornerRadius="8" Padding="10,7" Margin="0,0,0,10"
-                                    Visibility="{Binding ErrorVisible, Converter={StaticResource BoolToVis}}">
-                                <TextBlock Text="{Binding ErrorMessage}" Foreground="#C0304A"
-                                           FontSize="11" TextWrapping="Wrap"/>
+                            <!-- Info chips -->
+                            <Border Background="#F0F8FB" CornerRadius="10" Padding="14,12">
+                                <StackPanel>
+                                    <TextBlock FontSize="12" Foreground="#03045E" Margin="0,0,0,6">
+                                        <Run Text="📅 " FontSize="13"/>
+                                        <Run Text="{Binding Item.StorageDaysDisplay}"/>
+                                    </TextBlock>
+                                    <TextBlock FontSize="12" Foreground="#03045E" Margin="0,0,0,6">
+                                        <Run Text="🙋 " FontSize="13"/>
+                                        <Run Text="{Binding Item.Donor_Name}"/>
+                                    </TextBlock>
+                                    <TextBlock FontSize="12" Foreground="#03045E">
+                                        <Run Text="🏷️ " FontSize="13"/>
+                                        <Run Text="{Binding Item.Category_Name}"/>
+                                        <Run Text=" · "/>
+                                        <Run Text="{Binding Item.Item_Condition}"/>
+                                    </TextBlock>
+                                </StackPanel>
                             </Border>
                         </StackPanel>
                     </Border>
 
-                    <!-- Confirm button -->
-                    <Button Command="{Binding ConfirmClaimCommand}" Height="46"
-                            FontSize="14" FontWeight="Bold" Foreground="White"
-                            BorderThickness="0" Cursor="Hand">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border CornerRadius="12" Background="{TemplateBinding Background}">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="0.88"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                        <Button.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Color="#2DC653" Offset="0"/>
-                                <GradientStop Color="#1A9940" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Button.Background>
-                        <TextBlock>
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Text" Value="✅  Confirm Claim"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
-                                            <Setter Property="Text" Value="Processing..."/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Button>
-                </StackPanel>
+                </Grid>
             </ScrollViewer>
         </Grid>
     </Grid>

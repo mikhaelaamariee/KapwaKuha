@@ -78,6 +78,8 @@ namespace KapwaKuha.ViewModels
             WelcomeText = $"Welcome back, {UserSession.FullName}!";
             UserLabel = $"Donor: {UserSession.Username}";
 
+            _isSidebarOpen = true; 
+
             // Initialize Commands
             HamburgerCommand = new RelayCommand(_ => IsSidebarOpen = !IsSidebarOpen);
 

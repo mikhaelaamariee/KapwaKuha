@@ -276,6 +276,141 @@
                 </Border>
             </Grid>
 
+            <Border x:Name="EditPanel"
+                    Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Stretch"
+                    CornerRadius="16,16,0,0" Padding="24,20"
+                    BorderThickness="1,1,1,0" BorderBrush="#90E0EF"
+                    Visibility="{Binding IsEditPanelOpen, Converter={StaticResource BoolToVis}}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#F0F8FF" Offset="0"/>
+                        <GradientStop Color="#FFFFFF" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Border.Effect>
+                    <DropShadowEffect Color="#0077B6" BlurRadius="20" ShadowDepth="0" Opacity="0.15"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="260"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="✏️ Edit Post" FontSize="15" FontWeight="Bold"
+                                   Foreground="#03045E" Margin="0,0,0,14"/>
+
+                        <TextBlock Text="Item Name" FontSize="12" Foreground="#5E7A8A" Margin="0,0,0,4"/>
+                        <Border CornerRadius="8" BorderBrush="#90E0EF" BorderThickness="1"
+                                Padding="10,0" Background="White" Margin="0,0,0,10">
+                            <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="36" Background="Transparent" BorderThickness="0"
+                                     FontSize="13" Foreground="#03045E" VerticalContentAlignment="Center"/>
+                        </Border>
+
+                        <TextBlock Text="Description" FontSize="12" Foreground="#5E7A8A" Margin="0,0,0,4"/>
+                        <Border CornerRadius="8" BorderBrush="#90E0EF" BorderThickness="1"
+                                Padding="10,8" Background="White" Margin="0,0,0,10">
+                            <TextBox Text="{Binding EditDescription, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="56" Background="Transparent" BorderThickness="0"
+                                     FontSize="13" Foreground="#03045E" TextWrapping="Wrap"
+                                     AcceptsReturn="True"/>
+                        </Border>
+
+                        <TextBlock Text="Condition" FontSize="12" Foreground="#5E7A8A" Margin="0,0,0,4"/>
+                        <Border CornerRadius="8" BorderBrush="#90E0EF" BorderThickness="1"
+                                Background="White" Margin="0,0,0,14">
+                            <ComboBox ItemsSource="{Binding Conditions}"
+                                      SelectedItem="{Binding EditCondition}"
+                                      Height="36" Background="Transparent" BorderThickness="0"
+                                      FontSize="13" Padding="10,0"/>
+                        </Border>
+
+                        <TextBlock Text="Photo" FontSize="12" Foreground="#5E7A8A" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" CornerRadius="8" BorderBrush="#90E0EF"
+                                    BorderThickness="1" Padding="10,0" Background="White">
+                                <TextBox Text="{Binding EditImagePath}" Height="36"
+                                         Background="Transparent" BorderThickness="0"
+                                         FontSize="11" Foreground="#5E7A8A" IsReadOnly="True"
+                                         VerticalContentAlignment="Center"/>
+                            </Border>
+                            <Button Grid.Column="2" Command="{Binding BrowseEditImageCommand}"
+                                    Height="36" Padding="12,0" BorderThickness="0" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border CornerRadius="8" Background="#0077B6">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="0.85"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <TextBlock Text="📷 Browse" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                            </Button>
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                            <Button Command="{Binding SaveEditCommand}" Height="40" Padding="20,0"
+                                    Margin="0,0,10,0" FontSize="12" FontWeight="SemiBold"
+                                    Foreground="White" BorderThickness="0" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border CornerRadius="8" Background="{TemplateBinding Background}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="0.9"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#00B4D8" Offset="0"/>
+                                        <GradientStop Color="#0077B6" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <TextBlock Text="💾 Save Changes"/>
+                            </Button>
+                            <Button Command="{Binding CancelEditCommand}" Height="40" Padding="16,0"
+                                    FontSize="12" Foreground="#5E7A8A"
+                                    Background="Transparent" BorderBrush="#90E0EF" BorderThickness="1"
+                                    Cursor="Hand">
+                                <TextBlock Text="✕ Cancel"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Border Grid.Column="2" CornerRadius="12" ClipToBounds="True"
+                            Visibility="{Binding HasEditImage, Converter={StaticResource BoolToVis}}">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasEditImage}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Image Source="{Binding EditImagePath}" Stretch="UniformToFill"
+                               MaxHeight="200"/>
+                    </Border>
+                </Grid>
+            </Border>
+
             <Border Grid.Row="2" Background="#03045E" Padding="20,0">
                 <TextBlock Text="{Binding StatusMessage}"
                            Foreground="#90E0EF" FontSize="11" VerticalAlignment="Center"/>

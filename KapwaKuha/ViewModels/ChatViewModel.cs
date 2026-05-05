@@ -90,75 +90,34 @@ namespace KapwaKuha.ViewModels
                     return;
                 }
 
-                var confirm = MessageBox.Show(
-                    $"Accept this donated item?\n\nItem ID: {msg.LinkedItemId}\n\n" +
-                    "This will create a claim in your Claim Tracker.",
-                    "Accept Donation", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (confirm != MessageBoxResult.Yes) return;
-
-                // ── HIDE BUTTONS IMMEDIATELY on UI thread before async work ──
-                Application.Current.Dispatcher.Invoke(() => msg.IsActionable = false);
-
-                try
+                // Build the item from what we know — ClaimItemWindow will do the full claim
+                var itemForClaim = new ItemModel
                 {
-                    IsBusy = true;
-                    string claimId = await KapwaDataService.GetNextClaimId();
+                    Item_ID = msg.LinkedItemId,
+                    Item_Name = msg.Text.Contains("Item: \"")
+                        ? msg.Text[(msg.Text.IndexOf("Item: \"") + 7)..msg.Text.IndexOf("\"", msg.Text.IndexOf("Item: \"") + 7)]
+                        : msg.LinkedItemId,
+                    Donor_ID = _otherId,
+                    Item_ImagePath = msg.LinkedItemPath ?? string.Empty
+                };
 
-                    var claim = new ClaimModel
-                    {
-                        Claim_ID = claimId,
-                        Item_ID = msg.LinkedItemId,
-                        Item_Name = "",
-                        Beneficiary_ID = _myId,
-                        Beneficiary_Name = UserSession.FullName,
-                        Claim_Date = DateTime.Now,
-                        Claim_Status = "Pending",
-                        Handoff_Type = "Pickup",
-                        Verification_Notes = "Accepted via chat notification"
-                    };
-
-                    var (success, error) = await KapwaDataService.SaveClaim(claim);
-                    if (!success)
-                    {
-                        // Restore buttons if save actually failed
-                        Application.Current.Dispatcher.Invoke(() => msg.IsActionable = true);
-                        MessageBox.Show(error, "Cannot Accept",
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                    else
-                    {
-                        // Task 6 Fix 1: Auto-send a default coordination message
-                        await KapwaDataService.SaveChatMessage(_myId, _otherId,
-                            "✅ I've accepted your donation! How would you like to arrange the handoff? " +
-                            "Please let me know if you prefer: 📦 Pickup, 🚚 Delivery, or 🎪 Donation Drive event.");
-
-                        // Buttons permanently hidden (IsActionable already false)
-
-                        // Task 6 Fix 2: Navigate directly to ClaimItemWindow with the linked item
-                        // so the beneficiary can immediately complete the handoff details
-                        Application.Current.Dispatcher.Invoke(() =>
+                // Navigate to ClaimItemWindow WITHOUT pre-claiming
+                // Buttons stay visible until the form is actually submitted
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    // ClaimItemWindow will call SaveClaim itself on ConfirmClaimCommand
+                    // We only hide buttons AFTER successful navigation + confirmed submit
+                    // Pass a callback action that hides the buttons on success
+                    NavigationService.Navigate(
+                        new View.ClaimItemWindow(_myId, itemForClaim, onClaimSuccess: () =>
                         {
-                            // Build a lightweight ItemModel from what we know
-                            var itemForClaim = new ItemModel
+                            Application.Current.Dispatcher.Invoke(() =>
                             {
-                                Item_ID = msg.LinkedItemId,
-                                Item_Name = msg.LinkedItemId, // ID shown until full load
-                                Donor_ID = _otherId,
-                                Item_ImagePath = msg.LinkedItemPath ?? string.Empty
-                            };
-
-                            NavigationService.Navigate(
-                                new View.ClaimItemWindow(_myId, itemForClaim));
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Application.Current.Dispatcher.Invoke(() => msg.IsActionable = true);
-                    MessageBox.Show("Accept failed: " + ex.Message,
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-                finally { IsBusy = false; }
+                                msg.IsActionable = false;
+                                _ = LoadMessages();
+                            });
+                        }));
+                });
             });
 
             DeclineCommand = new AsyncRelayCommand(async param =>

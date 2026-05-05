@@ -16,6 +16,26 @@ namespace KapwaKuha.ViewModels
         private bool _isBusy;
         public bool IsBusy { get => _isBusy; set { _isBusy = value; OnPropertyChanged(); } }
 
+        // Add to the class:
+        private System.Collections.Generic.List<NeedsPostModel> _allPosts = new();
+
+        private string _filterUrgency = "All";
+        public string FilterUrgency
+        {
+            get => _filterUrgency;
+            set { _filterUrgency = value; OnPropertyChanged(); ApplyFilter(); }
+        }
+
+        private void ApplyFilter()
+        {
+            NeedsPosts.Clear();
+            foreach (var p in _allPosts)
+            {
+                bool match = _filterUrgency == "All" || p.Urgency == _filterUrgency;
+                if (match) NeedsPosts.Add(p);
+            }
+        }
+
         public ICommand BackCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand DonateToNeedCommand { get; }
@@ -70,10 +90,8 @@ namespace KapwaKuha.ViewModels
                 var posts = await KapwaDataService.GetOpenNeedsPosts();
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    NeedsPosts.Clear();
-                    // Auto-fulfillment trigger is REMOVED — only beneficiary delete removes a post.
-                    foreach (var p in posts)
-                        NeedsPosts.Add(p);
+                    _allPosts = posts;
+                    ApplyFilter();   // ← uses filter instead of direct add
                 });
             }
             catch { }
