@@ -4,7 +4,12 @@
         Title="KapwaKuha — Claim Tracker"
         Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
-        FontFamily="Segoe UI">
+        FontFamily="Segoe UI"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+           xmlns:vm="clr-namespace:KapwaKuha.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:ClaimTrackerDesignViewModel, IsDesignTimeCreatable=True}">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
@@ -129,9 +134,9 @@
                                           FontSize="12" Padding="10,0">
                                     <ComboBoxItem Content="All" IsSelected="True"/>
                                     <ComboBoxItem Content="Pending"/>
-                                    <ComboBoxItem Content="Verified"/>
+                                    
                                     <ComboBoxItem Content="Released"/>
-                                    <ComboBoxItem Content="Cancelled"/>
+                  
                                 </ComboBox>
                             </Border>
                         </Grid>

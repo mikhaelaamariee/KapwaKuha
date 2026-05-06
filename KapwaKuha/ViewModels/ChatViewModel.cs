@@ -118,6 +118,8 @@ namespace KapwaKuha.ViewModels
                             });
                         }));
                 });
+
+                await Task.CompletedTask;
             });
 
             DeclineCommand = new AsyncRelayCommand(async param =>

@@ -33,6 +33,10 @@ namespace KapwaKuha.Models
         public string TargetBeneficiary_ID { get; set; } = string.Empty;
         public string Item_Description { get; set; } = string.Empty;
 
+        // Computed helper used by GetAvailableItems filter
+        public bool IsGeneralPost => PostType == "GeneralPost";
+        public bool IsDirectTarget => PostType == "DirectTarget";
+
         private string _imagePath = string.Empty;
         public string Item_ImagePath
         {

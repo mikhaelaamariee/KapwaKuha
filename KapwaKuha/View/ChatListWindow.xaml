@@ -4,6 +4,11 @@
         Title="KapwaKuha — Messages"
         Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          xmlns:vm="clr-namespace:KapwaKuha.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:ChatListDesignViewModel, IsDesignTimeCreatable=True}"
         FontFamily="Segoe UI">
 
     <Grid>

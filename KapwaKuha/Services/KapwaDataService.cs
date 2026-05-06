@@ -274,17 +274,18 @@ namespace KapwaKuha.Services
         {
             var list = new List<ItemModel>();
             const string sql = @"
-                SELECT i.Item_ID, i.Item_Name, i.Item_Condition, i.Item_Status,
-                       i.Date_Found, i.Donor_ID, i.Category_ID,
-                       ISNULL(i.PostType,'GeneralPost') AS PostType,
-                       ISNULL(i.TargetBeneficiary_ID,'') AS TargetBeneficiary_ID,
-                       ISNULL(i.Item_Description,'') AS Item_Description,
-                       ISNULL(i.Item_ImagePath,'') AS Item_ImagePath,
-                       d.Donor_FullName AS Donor_Name,
-                       c.Category_Name
-                FROM Items i
-                LEFT JOIN Donors   d ON d.Donor_ID    = i.Donor_ID
-                LEFT JOIN Category c ON c.Category_ID = i.Category_ID";
+        SELECT i.Item_ID, i.Item_Name, i.Item_Condition, i.Item_Status,
+               i.Date_Found, i.Donor_ID, i.Category_ID,
+               ISNULL(p.Post_Type,'GeneralPost')    AS PostType,
+               ISNULL(i.TargetBeneficiary_ID,'')    AS TargetBeneficiary_ID,
+               ISNULL(i.Item_Description,'')         AS Item_Description,
+               ISNULL(i.Item_ImagePath,'')           AS Item_ImagePath,
+               d.Donor_FullName                      AS Donor_Name,
+               c.Category_Name
+        FROM Items i
+        LEFT JOIN Donors   d ON d.Donor_ID    = i.Donor_ID
+        LEFT JOIN Category c ON c.Category_ID = i.Category_ID
+        LEFT JOIN Post     p ON p.Post_ID     = i.Post_ID";
             try
             {
                 using var conn = new SqlConnection(_conn);
@@ -296,19 +297,20 @@ namespace KapwaKuha.Services
             catch (Exception ex) { MessageBox.Show("GetAllItems failed: " + ex.Message); }
             return list;
         }
-
         public static async Task<List<ItemModel>> GetDirectTargetItems(string beneficiaryId)
         {
             var list = new List<ItemModel>();
             const string sql = @"
         SELECT i.Item_ID, i.Item_Name, i.Item_Description, i.Item_Condition,
                i.Item_Status, i.Date_Found, i.Donor_ID, d.Donor_FullName,
-               i.Category_ID, c.Category_Name, i.PostType,
+               i.Category_ID, c.Category_Name,
+               ISNULL(p.Post_Type,'DirectTarget') AS PostType,
                i.TargetBeneficiary_ID, i.Item_ImagePath
         FROM Items i
         JOIN Donors   d ON d.Donor_ID    = i.Donor_ID
         JOIN Category c ON c.Category_ID = i.Category_ID
-        WHERE i.PostType = 'DirectTarget'
+        JOIN Post     p ON p.Post_ID     = i.Post_ID
+        WHERE p.Post_Type = 'DirectTarget'
           AND i.TargetBeneficiary_ID = @bid";
             try
             {
@@ -376,24 +378,26 @@ namespace KapwaKuha.Services
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand(@"
-            INSERT INTO Items(Item_ID, Item_Name, Item_Condition, Item_Status,
-                             Date_Found, Donor_ID, Category_ID, PostType, TargetBeneficiary_ID,
-                             Item_Description, Item_ImagePath)
-            VALUES(@id, @name, @cond, @status, @date, @did, @catid, @ptype, @tbid, @desc, @img)", conn);
-                cmd.Parameters.AddWithValue("@id", item.Item_ID);
-                cmd.Parameters.AddWithValue("@name", item.Item_Name);
-                cmd.Parameters.AddWithValue("@cond", item.Item_Condition);
-                cmd.Parameters.AddWithValue("@status", item.Item_Status);
-                cmd.Parameters.AddWithValue("@date", item.Date_Found);
-                cmd.Parameters.AddWithValue("@did", item.Donor_ID);
-                cmd.Parameters.AddWithValue("@catid", item.Category_ID);
-                cmd.Parameters.AddWithValue("@ptype", item.PostType);
-                cmd.Parameters.AddWithValue("@tbid",
-                    string.IsNullOrEmpty(item.TargetBeneficiary_ID)
-                        ? "" : item.TargetBeneficiary_ID);
-                cmd.Parameters.AddWithValue("@desc", item.Item_Description ?? "");
-                cmd.Parameters.AddWithValue("@img", item.Item_ImagePath ?? "");
+
+                // Resolve Post_ID from Post_Type
+                // 'GeneralPost' → 'P0T1', 'DirectTarget' → 'P0T2'
+                using var postCmd = new SqlCommand(
+                    "SELECT Post_ID FROM Post WHERE Post_Type = @pt", conn);
+                postCmd.Parameters.AddWithValue("@pt", item.PostType);
+                string postId = (await postCmd.ExecuteScalarAsync())?.ToString() ?? "P0T1";
+
+                using var cmd = new SqlCommand("sp_AddItem", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@ItemId", item.Item_ID);
+                cmd.Parameters.AddWithValue("@ItemName", item.Item_Name);
+                cmd.Parameters.AddWithValue("@Description", item.Item_Description ?? "");
+                cmd.Parameters.AddWithValue("@Condition", item.Item_Condition);
+                cmd.Parameters.AddWithValue("@DonorId", item.Donor_ID);
+                cmd.Parameters.AddWithValue("@CategoryId", item.Category_ID);
+                cmd.Parameters.AddWithValue("@PostId", postId);     // ← Post_ID FK
+                cmd.Parameters.AddWithValue("@TargetBeneId",
+                    string.IsNullOrEmpty(item.TargetBeneficiary_ID) ? "" : item.TargetBeneficiary_ID);
+                cmd.Parameters.AddWithValue("@ImagePath", item.Item_ImagePath ?? "");
                 await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex) { MessageBox.Show("AddItem failed: " + ex.Message); throw; }
@@ -475,8 +479,9 @@ namespace KapwaKuha.Services
         {
             Item_ID = r["Item_ID"].ToString() ?? "",
             Item_Name = r["Item_Name"].ToString() ?? "",
-            Item_Condition = r["Item_Condition"].ToString() ?? "Good",
-            Item_Status = r["Item_Status"].ToString() ?? "Available",
+            Item_Description = r["Item_Description"].ToString() ?? "",
+            Item_Condition = r["Item_Condition"].ToString() ?? "",
+            Item_Status = r["Item_Status"].ToString() ?? "",
             Date_Found = Convert.ToDateTime(r["Date_Found"]),
             Donor_ID = r["Donor_ID"].ToString() ?? "",
             Donor_Name = r["Donor_Name"].ToString() ?? "",
@@ -484,7 +489,6 @@ namespace KapwaKuha.Services
             Category_Name = r["Category_Name"].ToString() ?? "",
             PostType = r["PostType"].ToString() ?? "GeneralPost",
             TargetBeneficiary_ID = r["TargetBeneficiary_ID"].ToString() ?? "",
-            Item_Description = r["Item_Description"].ToString() ?? "",
             Item_ImagePath = r["Item_ImagePath"].ToString() ?? ""
         };
 
@@ -1235,14 +1239,17 @@ ORDER BY cm.SentAt ASC";
                         {
                             string itemName = raw.Message[start..end];
                             // Find the specific item for this donor->beneficiary pair with that name
+                            // Find the specific item for this donor→beneficiary pair with that name
+                            // Uses Post JOIN since PostType is now a lookup table
                             using var c2 = new SqlCommand(@"
-                SELECT TOP 1 Item_ID, ISNULL(Item_ImagePath,'') AS Item_ImagePath
-                FROM Items
-                WHERE Donor_ID = @sid
-                  AND TargetBeneficiary_ID = @rid
-                  AND Item_Name = @iname
-                  AND PostType = 'DirectTarget'
-                ORDER BY Date_Found DESC", conn);
+    SELECT TOP 1 i.Item_ID, ISNULL(i.Item_ImagePath,'') AS Item_ImagePath
+    FROM Items i
+    JOIN Post p ON p.Post_ID = i.Post_ID
+    WHERE i.Donor_ID              = @sid
+      AND i.TargetBeneficiary_ID  = @rid
+      AND i.Item_Name             = @iname
+      AND p.Post_Type             = 'DirectTarget'
+    ORDER BY i.Date_Found DESC", conn);
                             c2.Parameters.AddWithValue("@sid", raw.SenderId);
                             c2.Parameters.AddWithValue("@rid", raw.ReceiverId);
                             c2.Parameters.AddWithValue("@iname", itemName);

@@ -12,10 +12,9 @@ namespace KapwaKuha.ViewModels
     public class BeneficiaryClaimHistoryViewModel : ObservableObject
     {
         private readonly string _beneficiaryId;
+        private List<ClaimModel> _allClaims = new();
 
         public ObservableCollection<ClaimModel> Claims { get; } = new();
-
-        private List<ClaimModel> _allClaims = new();
 
         private string _searchText = string.Empty;
         public string SearchText
@@ -41,12 +40,14 @@ namespace KapwaKuha.ViewModels
         private bool _isBusy;
         public bool IsBusy { get => _isBusy; set { _isBusy = value; OnPropertyChanged(); } }
 
-        private string _statusMessage = string.Empty;
+        private string _statusMessage = "Loading...";
         public string StatusMessage
         {
             get => _statusMessage;
             set { _statusMessage = value; OnPropertyChanged(); }
         }
+
+        public bool HasNoClaims => Claims.Count == 0 && !IsBusy;
 
         public ICommand BackCommand { get; }
         public ICommand RefreshCommand { get; }
@@ -66,6 +67,7 @@ namespace KapwaKuha.ViewModels
         private async System.Threading.Tasks.Task LoadAsync()
         {
             IsBusy = true;
+            OnPropertyChanged(nameof(HasNoClaims));
             try
             {
                 var result = await KapwaDataService.GetClaimHistoryByBeneficiary(_beneficiaryId);
@@ -76,7 +78,11 @@ namespace KapwaKuha.ViewModels
                 });
             }
             catch { }
-            finally { IsBusy = false; }
+            finally
+            {
+                IsBusy = false;
+                OnPropertyChanged(nameof(HasNoClaims));
+            }
         }
 
         private void ApplyFilter()
@@ -93,12 +99,53 @@ namespace KapwaKuha.ViewModels
                 bool matchStatus = _filterStatus == "All" ||
                                    c.Claim_Status == _filterStatus;
 
-                bool matchCategory = _filterCategory == "All" ||
-                                     c.Category_Name == _filterCategory;
+                bool matchCat = _filterCategory == "All" ||
+                                c.Category_Name == _filterCategory;
 
-                if (matchSearch && matchStatus && matchCategory) Claims.Add(c);
+                if (matchSearch && matchStatus && matchCat) Claims.Add(c);
             }
             StatusMessage = $"{Claims.Count} claim(s) found.";
+            OnPropertyChanged(nameof(HasNoClaims));
         }
+    }
+
+    // Design-time ViewModel — gives Visual Studio designer a sample to render
+    public class BeneficiaryClaimHistoryDesignViewModel
+    {
+        public string SearchText { get; } = string.Empty;
+        public string FilterStatus { get; } = "All";
+        public string FilterCategory { get; } = "All";
+        public bool IsBusy { get; } = false;
+        public bool HasNoClaims { get; } = false;
+        public string StatusMessage { get; } = "2 claim(s) found.";
+
+        public ObservableCollection<ClaimModel> Claims { get; } = new()
+        {
+            new ClaimModel
+            {
+                Claim_ID         = "CL001",
+                Item_ID          = "ITEM001",
+                Item_Name        = "School Supplies for Grade 1 Students",
+                Category_Name    = "School Supplies",
+                Beneficiary_Name = "Ana Reyes",
+                Claim_Status     = "Released",
+                Handoff_Type     = "Pickup",
+                Claim_Date       = System.DateTime.Now.AddDays(-2)
+            },
+            new ClaimModel
+            {
+                Claim_ID         = "CL002",
+                Item_ID          = "ITEM002",
+                Item_Name        = "Children's Clothing Set",
+                Category_Name    = "Clothing",
+                Beneficiary_Name = "Ana Reyes",
+                Claim_Status     = "Pending",
+                Handoff_Type     = "Delivery",
+                Claim_Date       = System.DateTime.Now.AddDays(-1)
+            }
+        };
+
+        public System.Windows.Input.ICommand BackCommand { get; } = new RelayCommand(_ => { });
+        public System.Windows.Input.ICommand RefreshCommand { get; } = new RelayCommand(_ => { });
     }
 }

@@ -2,10 +2,17 @@
 <Window x:Class="KapwaKuha.View.DonorClaimTrackerWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+         xmlns:vm="clr-namespace:KapwaKuha.ViewModels"
+ mc:Ignorable="d"
+d:DataContext="{d:DesignInstance Type=vm:ClaimTrackerDesignViewModel, IsDesignTimeCreatable=True}"
         Title="KapwaKuha — Claim Tracker (Donor)"
         Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
-        FontFamily="Segoe UI">
+        FontFamily="Segoe UI"
+        
+        >
 
     <Grid>
         <Rectangle>
