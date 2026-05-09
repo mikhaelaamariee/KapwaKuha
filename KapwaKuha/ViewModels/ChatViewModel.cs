@@ -156,32 +156,39 @@ namespace KapwaKuha.ViewModels
                     "Decline this donation?\n\nThe item will be deactivated. " +
                     "The donor can choose to re-post it manually from their listings.",
                     "Decline Donation", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (confirm != MessageBoxResult.Yes) return;
-
-                try
+                if (confirm != MessageBoxResult.Yes)
                 {
-                    IsBusy = true;
-
-                    // Mark item as deactivated (not GeneralPost marketplace — donor decides)
-                    await KapwaDataService.RevertItemToGeneralPost(msg.LinkedItemId);
-
-                    // Immediately hide Accept/Decline buttons for THIS message only
-                    msg.IsActionable = false;
-
-                    // Send decline message to donor
-                    await KapwaDataService.SaveChatMessage(_myId, _otherId,
-                        "❌ I have declined the donation. The item has been deactivated. " +
-                        "You can re-post it from your Active Listings if you wish.");
-
-                    MessageBox.Show("Donation declined.", "Declined",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    await LoadMessages();
+                    ExtractItemNameSafely(msg.Text, msg.LinkedItemId); // Attempt to extract item name for better UX
+                    return;
+                }
 
                 
-                }
-                catch { }
-                finally { IsBusy = false; }
+
+
+                    try
+                    {
+                        IsBusy = true;
+
+                        // Mark item as deactivated (not GeneralPost marketplace — donor decides)
+                        await KapwaDataService.RevertItemToGeneralPost(msg.LinkedItemId);
+
+                        // Immediately hide Accept/Decline buttons for THIS message only
+                        msg.IsActionable = false;
+
+                        // Send decline message to donor
+                        await KapwaDataService.SaveChatMessage(_myId, _otherId,
+                            "❌ I have declined the donation. The item has been deactivated. " +
+                            "You can re-post it from your Active Listings if you wish.");
+
+                        MessageBox.Show("Donation declined.", "Declined",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+
+                        await LoadMessages();
+
+
+                    }
+                    catch { }
+                    finally { IsBusy = false; }
             });
             _ = LoadMessages();
         }

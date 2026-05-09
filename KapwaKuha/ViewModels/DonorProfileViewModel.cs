@@ -16,6 +16,7 @@ namespace KapwaKuha.ViewModels
         private string _address = string.Empty;
         private string _picturePath = string.Empty;
         private bool _isBusy;
+        private string _donorStatus = "Active";
 
         public string FullName
         {
@@ -36,6 +37,12 @@ namespace KapwaKuha.ViewModels
         {
             get => _address;
             set { _address = value; OnPropertyChanged(); }
+        }
+
+        public string DonorStatus
+        {
+            get => _donorStatus;
+            set { _donorStatus = value; OnPropertyChanged(); }
         }
         public string PicturePath
         {
@@ -125,6 +132,7 @@ namespace KapwaKuha.ViewModels
                 Contact = donor.Donor_ContactNumber;
                 Address = donor.Donor_Address ?? "";
                 PicturePath = donor.ProfilePicturePath ?? "";
+                DonorStatus = donor.Donor_AccountStatus ?? "Active";
             }
             catch { }
         }

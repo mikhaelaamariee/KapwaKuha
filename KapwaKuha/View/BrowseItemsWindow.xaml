@@ -187,22 +187,36 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                             <TextBlock Text="{Binding Item_Name}" FontSize="20" FontWeight="Bold" Foreground="#03045E" 
                                                        TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Margin="0,0,0,4"/>
 
-                                            <TextBlock Text="{Binding Donor_Name, StringFormat='Donated by {0}'}" 
-                                                       FontSize="13" Foreground="#5E7A8A" Margin="0,0,0,8" TextTrimming="CharacterEllipsis"/>
+                                            <Grid Margin="0,0,0,8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
 
-                                            <TextBlock Text="{Binding Item_Description}" FontSize="14" Foreground="#445566"
-                                                       TextWrapping="Wrap" MaxHeight="40" TextTrimming="CharacterEllipsis" Margin="0,0,0,12">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Item_Description}" Value="">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
+                                                <TextBlock Text="{Binding Donor_Name, StringFormat='Donated by {0}'}" 
+               FontSize="13" Foreground="#5E7A8A" TextTrimming="CharacterEllipsis" 
+               VerticalAlignment="Center"/>
+
+                                                <Button Grid.Column="1" 
+            Command="{Binding DataContext.OpenChatCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+            CommandParameter="{Binding}" 
+            Cursor="Hand" ToolTip="Message Donor"
+            Background="Transparent" BorderThickness="0" Margin="8,0,0,0">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Background="{TemplateBinding Background}" CornerRadius="14" Padding="6" x:Name="IconBorder">
+                                                                <Path Data="M20,2H4C2.9,2,2,2.9,2,4v18l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z" 
+                          Fill="#00B4D8" Width="16" Height="16" Stretch="Uniform" />
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="IconBorder" Property="Background" Value="#EBF7FB"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+                                            </Grid>
 
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                                 <Border Background="#EBF7FB" CornerRadius="6" Padding="8,4" Margin="0,0,8,0">
