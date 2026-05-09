@@ -455,7 +455,27 @@
                                                 </DataGridTemplateColumn.CellTemplate>
                                             </DataGridTemplateColumn>
 
-                                            <DataGridTextColumn Header="Claim ID" Binding="{Binding Claim_ID}" Width="90" IsReadOnly="True"/>
+                                            <DataGridTextColumn Header="Claim ID" 
+                    Binding="{Binding Claim_ID}" 
+                    Width="90" 
+                    IsReadOnly="True">
+                                                <DataGridTextColumn.CellStyle>
+                                                    <Style TargetType="DataGridCell">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="DataGridCell">
+                                                                    <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                                                                        <ContentPresenter VerticalAlignment="Center" Margin=" -20,0,0,0"
+                                              HorizontalAlignment="Center" />
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </DataGridTextColumn.CellStyle>
+                                            </DataGridTextColumn>
 
                                             <DataGridTextColumn Header="Item Received" Binding="{Binding Item_Name}" Width="*" IsReadOnly="True">
                                                 <DataGridTextColumn.ElementStyle>
