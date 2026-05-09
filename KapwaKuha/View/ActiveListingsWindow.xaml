@@ -43,9 +43,16 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
+                    <!-- REQUIREMENT 2: Replaced Back button with Dashboard home button -->
                     <Button Grid.Column="0" Command="{Binding BackCommand}"
-                            Content="← Back" Background="Transparent" BorderThickness="0"
-                            Foreground="White" FontSize="13" Cursor="Hand" VerticalAlignment="Center"/>
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="White" FontSize="13" Cursor="Hand" VerticalAlignment="Center"
+                            ToolTip="Back to Dashboard">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🏠" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Dashboard" FontSize="13" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal"
                                 HorizontalAlignment="Center" VerticalAlignment="Center">

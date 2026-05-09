@@ -92,8 +92,15 @@ namespace KapwaKuha.ViewModels
             set { _isEditPanelOpen = value; OnPropertyChanged(); }
         }
 
+        // ── REQUIREMENT 5: Item to pinpoint after load ────────────────────────
+        /// <summary>
+        /// When set, the view scrolls to and selects this Item_ID after data loads.
+        /// The code-behind reads PinpointItemId after LoadItems completes.
+        /// </summary>
+        public string PinpointItemId { get; }
+
         // ── Commands ─────────────────────────────────────────────────────────
-        public ICommand BackCommand { get; }
+        public ICommand BackCommand { get; }   // REQUIREMENT 2: navigates to Dashboard
         public ICommand RefreshCommand { get; }
         public ICommand DeleteItemCommand { get; }
         public ICommand OpenEditPanelCommand { get; }
@@ -102,10 +109,22 @@ namespace KapwaKuha.ViewModels
         public ICommand CancelEditCommand { get; }
         public ICommand EditPostCommand { get; }
 
-        public ActiveListingsViewModel(string donorId)
+        // ── Constructors ─────────────────────────────────────────────────────
+
+        /// <summary>Standard navigation — opens top of list.</summary>
+        public ActiveListingsViewModel(string donorId) : this(donorId, string.Empty) { }
+
+        /// <summary>
+        /// REQUIREMENT 5: Pinpoint navigation.
+        /// Pass a non-empty <paramref name="pinpointItemId"/> to pre-select and
+        /// scroll to that item after the list loads.
+        /// </summary>
+        public ActiveListingsViewModel(string donorId, string pinpointItemId)
         {
             _donorId = donorId;
+            PinpointItemId = pinpointItemId;
 
+            // REQUIREMENT 2: Back now goes to Dashboard instead of a generic Back
             BackCommand = new RelayCommand(_ =>
                 NavigationService.Navigate(new View.DonorDashboardWindow(_donorId)));
 
@@ -184,11 +203,12 @@ namespace KapwaKuha.ViewModels
                 finally { IsBusy = false; }
             });
 
-            // Alias for XAML backward compat
             EditPostCommand = OpenEditPanelCommand;
 
             _ = LoadItemsAsync();
         }
+
+        // ── Data helpers ──────────────────────────────────────────────────────
 
         private async System.Threading.Tasks.Task LoadItemsAsync()
         {
@@ -200,6 +220,19 @@ namespace KapwaKuha.ViewModels
                 {
                     _allItems = items;
                     ApplyFilter();
+
+                    // REQUIREMENT 5: Auto-select pinpointed item after load
+                    if (!string.IsNullOrEmpty(PinpointItemId))
+                    {
+                        foreach (var item in Items)
+                        {
+                            if (item.Item_ID == PinpointItemId)
+                            {
+                                SelectedItem = item;
+                                break;
+                            }
+                        }
+                    }
                 });
             }
             catch { }

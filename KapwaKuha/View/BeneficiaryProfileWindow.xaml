@@ -9,46 +9,19 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-        <Style TargetType="TextBlock" x:Key="HCILabel">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#475569"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
-        <Style TargetType="Border" x:Key="HCIInput">
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#CBD5E1"/>
-            <Setter Property="BorderThickness" Value="1.5"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="Margin" Value="0,0,0,20"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="BorderBrush" Value="#94A3B8"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style TargetType="Border" x:Key="HCIReadOnlyInput">
-            <Setter Property="Background" Value="#F1F5F9"/>
-            <Setter Property="BorderBrush" Value="#E2E8F0"/>
-            <Setter Property="BorderThickness" Value="1.5"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="Margin" Value="0,0,0,20"/>
-        </Style>
     </Window.Resources>
 
     <Grid>
         <Rectangle>
             <Rectangle.Fill>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#F8FAFC" Offset="0"/>
-                    <GradientStop Color="#E0F2FE" Offset="1"/>
+                    <GradientStop Color="White" Offset="0"/>
+                    <GradientStop Color="LightSkyBlue" Offset="1"/>
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
+        <Image Source="https://i.imgur.com/y4MrK4c.jpeg" Opacity="0.07" Width="1980"
+        HorizontalAlignment="Center" VerticalAlignment="Center" Height="2808"/>
 
         <Grid>
             <Grid.RowDefinitions>

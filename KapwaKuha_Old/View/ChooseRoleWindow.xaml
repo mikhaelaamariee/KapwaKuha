@@ -1,0 +1,103 @@
+﻿<Window x:Class="KapwaKuha.View.ChooseRoleWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="KapwaKuha — Choose Your Role"
+        Height="720" Width="1280"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        FontFamily="Segoe UI">
+    <!-- NO Window.Resources — all styles live in App.xaml -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1.2*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left panel — hero -->
+        <Grid Grid.Column="0">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#00A8E8" Offset="0"/>
+                    <GradientStop Color="#0077B6" Offset="1"/>
+                </LinearGradientBrush>
+            </Grid.Background>
+            <Ellipse Width="400" Height="400" Fill="#1AFFFFFF"
+                     Margin="-100,-100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <StackPanel Margin="60" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,40">
+                    <Image Source="https://i.imgur.com/FHFRQxB.png"
+                           Width="60" Height="60"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Text="Kapwa" Foreground="White"
+                               FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+
+                    <TextBlock Text="Kuha" Foreground="White"
+           FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+
+
+                </StackPanel>
+                <TextBlock Text="One-stop platform to manage your donations and assistance requests."
+                           Foreground="White" FontSize="36" FontWeight="SemiBold"
+                           TextWrapping="Wrap" Margin="0,0,0,40" LineHeight="46"/>
+                <Border CornerRadius="16" Height="300" HorizontalAlignment="Stretch"
+                        BorderBrush="#4DFFFFFF" BorderThickness="1">
+                    <Border.Background>
+                        <ImageBrush ImageSource="https://i.imgur.com/W3AE99R.jpeg" Stretch="UniformToFill"/>
+                    </Border.Background>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- Right panel — role selector -->
+        <Grid Grid.Column="1" Background="#F0F8FF">
+            <Image Source="https://i.imgur.com/y4MrK4c.jpeg" Opacity="0.03"
+                   Width="1980" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Height="2808" RenderTransformOrigin="0.5,0.5"/>
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="500">
+
+                <Grid HorizontalAlignment="Left" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Image Grid.Column="0" Source="https://i.imgur.com/FHFRQxB.png"
+                           Width="100" Height="100" Stretch="Uniform"
+                           VerticalAlignment="Top" Margin="-25,5,10,0"/>
+                    <TextBlock Grid.Column="1" FontSize="32" FontWeight="Bold"
+                               Foreground="#0A2540" VerticalAlignment="Center" Margin="-30,0,0,-5"><Run Text="Welcome to Kapwa"/><Run Foreground="#FF00A8E8" Text="Kuha"/></TextBlock>
+                </Grid>
+
+                <TextBlock Text="Let's personalize your KapwaKuha experience."
+                           FontSize="16" Foreground="#6B7280" Margin="0,-20,0,40"/>
+                <TextBlock Text="Are you here to donate or receive assistance?"
+                           FontSize="14" FontWeight="SemiBold" Foreground="#0A2540" Margin="0,-20,0,16"/>
+
+                <Grid Margin="0,0,0,40">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- Command bindings FIXED here — was missing in previous version -->
+                    <Button Grid.Column="0"
+                            Content="🤲 Donor"
+                            Command="{Binding DonorCommand}"
+                            Style="{StaticResource KapwaBtn}"
+                            Height="55" FontSize="16"/>
+                    <Button Grid.Column="2"
+                            Content="❤️ Beneficiary"
+                            Command="{Binding BeneficiaryCommand}"
+                            Style="{StaticResource KapwaBtn}"
+                            Height="55" FontSize="16"/>
+                </Grid>
+
+                <Button Content="Exit" Command="{Binding ExitCommand}"
+                        Style="{StaticResource LinkBtn}"
+                        HorizontalAlignment="Center"
+                        Foreground="#9CA3AF" FontSize="12" Margin=" -470,0,0,0"/>
+
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
