@@ -49,7 +49,7 @@ namespace KapwaKuha.ViewModels
         private string _selectedOrgId = string.Empty;
         private string _selectedOrgName = string.Empty;
 
-        private string _selectedSex = string.Empty;
+        private string _selectedSex = "Male";
         public string SelectedSex
         {
             get => _selectedSex;

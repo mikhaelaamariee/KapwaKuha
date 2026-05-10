@@ -232,8 +232,13 @@
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Visibility" Value="Visible"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding HasPicture}" Value="True">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <DataTrigger Binding="{Binding Item_Status}" Value="Claimed">
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                            <Setter Property="Foreground" Value="#999999"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Item_Status}" Value="Reserved">
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                            <Setter Property="Foreground" Value="#999999"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -295,7 +300,7 @@
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="What would you like to do today?"
                    FontSize="20" FontWeight="Bold" Foreground="#03045E"
-                   Margin="0,0,0,6"/>
+                   Margin="0,20,0,10"/>
                                         <TextBlock Text="Post items, track impact, or respond to community needs."
                    FontSize="12" Foreground="#5E7A8A"/>
                                     </StackPanel>
@@ -774,8 +779,10 @@
                                                                
                                                                 <!-- Sidebar CLOSED: Edit Post -->
                                                                 <!-- Single Edit Post button — always visible, never changes text -->
+                                                                <!-- Sidebar CLOSED: Edit Post -->
+                                                                <!-- Single Edit Post button — always visible, never changes text -->
                                                                 <Button Command="{Binding DataContext.EditPostCommand,
-            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+    RelativeSource={RelativeSource AncestorType=ItemsControl}}"
         CommandParameter="{Binding}"
         Height="34" BorderThickness="0" Cursor="Hand"
         FontSize="12" FontWeight="SemiBold"
@@ -783,6 +790,7 @@
                                                                     <Button.Style>
                                                                         <Style TargetType="Button">
                                                                             <Setter Property="IsEnabled" Value="True"/>
+                                                                            <Setter Property="Opacity" Value="1"/>
                                                                             <Setter Property="Template">
                                                                                 <Setter.Value>
                                                                                     <ControlTemplate TargetType="Button">
@@ -800,15 +808,20 @@
                                                                                                 <Setter Property="Opacity" Value="0.85"/>
                                                                                             </Trigger>
                                                                                             <Trigger Property="IsEnabled" Value="False">
-                                                                                                <Setter TargetName="Bd" Property="Background" Value="#CCCCCC"/>
+                                                                                                <Setter TargetName="Bd" Property="Background" Value="#B0BEC5"/>
+                                                                                                <Setter Property="Opacity" Value="0.5"/>
+                                                                                                <Setter Property="Cursor" Value="Arrow"/>
                                                                                             </Trigger>
                                                                                         </ControlTemplate.Triggers>
                                                                                     </ControlTemplate>
                                                                                 </Setter.Value>
                                                                             </Setter>
-                                                                            <!-- Disable (gray out) when item is already Claimed -->
                                                                             <Style.Triggers>
                                                                                 <DataTrigger Binding="{Binding Item_Status}" Value="Claimed">
+                                                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                                                    <Setter Property="Foreground" Value="#999999"/>
+                                                                                </DataTrigger>
+                                                                                <DataTrigger Binding="{Binding Item_Status}" Value="Reserved">
                                                                                     <Setter Property="IsEnabled" Value="False"/>
                                                                                     <Setter Property="Foreground" Value="#999999"/>
                                                                                 </DataTrigger>

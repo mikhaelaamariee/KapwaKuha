@@ -251,7 +251,7 @@ namespace KapwaKuha.ViewModels
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     RecentChats.Clear();
-                    foreach (var d in donors.Take(5))
+                    foreach (var d in donors.Take(4))
                     {
                         RecentChats.Add(new DashboardChatRow
                         {

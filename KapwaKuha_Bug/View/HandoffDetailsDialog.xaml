@@ -1,0 +1,62 @@
+﻿<Window x:Class="KapwaKuha.View.HandoffDetailsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Handoff Details" Height="340" Width="420"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize" FontFamily="Segoe UI">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="TitleText" Grid.Row="0" FontSize="14"
+                   FontWeight="Bold" Foreground="#03045E" TextWrapping="Wrap"/>
+
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="Handoff Type" FontSize="12" Foreground="#5E7A8A" Margin="0,0,0,6"/>
+            <ComboBox x:Name="HandoffCombo" Height="36" FontSize="13">
+                <ComboBoxItem Content="Pickup"/>
+                <ComboBoxItem Content="Delivery"/>
+                <ComboBoxItem Content="Donation Drive"/>
+            </ComboBox>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4">
+            <TextBlock Text="Location / Address" FontSize="12" Foreground="#5E7A8A" Margin="0,0,0,6"/>
+            <TextBox x:Name="LocationBox" Height="36" FontSize="13" Padding="8,0"
+                     VerticalContentAlignment="Center" BorderBrush="#90E0EF"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="6">
+            <TextBlock Text="Event Name (if Donation Drive)" FontSize="12"
+                       Foreground="#5E7A8A" Margin="0,0,0,6"/>
+            <TextBox x:Name="EventNameBox" Height="36" FontSize="13" Padding="8,0"
+                     VerticalContentAlignment="Center" BorderBrush="#90E0EF"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="8">
+            <TextBlock Text="Event Date (yyyy-mm-dd, optional)" FontSize="12"
+                       Foreground="#5E7A8A" Margin="0,0,0,6"/>
+            <TextBox x:Name="EventDateBox" Height="36" FontSize="13" Padding="8,0"
+                     VerticalContentAlignment="Center" BorderBrush="#90E0EF"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="10" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Cancel" Width="80" Height="36" Margin="0,0,10,0"
+                    Click="Cancel_Click" BorderBrush="#90E0EF"/>
+            <Button Content="Confirm" Width="90" Height="36"
+                    Background="#0077B6" Foreground="White" BorderThickness="0"
+                    Click="OK_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

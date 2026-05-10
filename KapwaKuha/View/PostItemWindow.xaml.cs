@@ -8,13 +8,16 @@ namespace KapwaKuha.View
     public partial class PostItemWindow : Window
     {
         public PostItemWindow(string donorId, string prefillTitle = "",
-                      string lockedOrgId = "", bool lockDirect = false,
-                      string lockedBeneficiaryId = "")
+              string lockedOrgId = "", bool lockDirect = false,
+              string lockedBeneficiaryId = "",
+              string linkedNeedsPostId = "")
         {
             InitializeComponent();
             DataContext = new PostItemViewModel(donorId, prefillTitle,
-                                                lockedOrgId, lockDirect, lockedBeneficiaryId);
+                                                lockedOrgId, lockDirect, lockedBeneficiaryId,
+                                                linkedNeedsPostId);
             Loaded += (s, e) => NavigationService.SetCurrent(this);
         }
     }
+
 }

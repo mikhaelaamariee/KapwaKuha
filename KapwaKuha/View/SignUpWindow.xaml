@@ -223,11 +223,12 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Sex" FontSize="13" FontWeight="SemiBold"
-                                           Foreground="#03045E" Margin="0,0,0,8"/>
-                                <ComboBox SelectedItem="{Binding SelectedSex, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                          Height="39">
+               Foreground="#03045E" Margin="0,0,0,8"/>
+                                <ComboBox SelectedValue="{Binding SelectedSex, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+          SelectedValuePath="Content"
+          Height="39">
                                     <ComboBoxItem Content="Select Sex" IsEnabled="False" Visibility="Collapsed"/>
-                                    <ComboBoxItem Content="Male"/>
+                                    <ComboBoxItem Content="Male" IsSelected="True"/>
                                     <ComboBoxItem Content="Female"/>
                                 </ComboBox>
                             </StackPanel>

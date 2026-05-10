@@ -120,8 +120,7 @@
                             </Border>
                         </Button>
 
-                        <Button Command="{Binding NeedsWishlistCommand}"
-                                Style="{StaticResource CardHoverBtn}" Padding="0" Margin="0,4">
+                        <Button Command="{Binding NeedsWishlistCommand}" Style="{StaticResource CardHoverBtn}" Padding="0" Margin="0,0,0,4">
                             <Border CornerRadius="12" Padding="12,12"
                                     Style="{StaticResource SidebarItemStyle}" Background="Transparent">
                                 <StackPanel Orientation="Horizontal">
@@ -271,7 +270,7 @@
                     <StackPanel>
 
                         <!-- ══ ROW A: Hero banner + Messages panel ══ -->
-                        <Grid Margin="0,0,0,20">
+                        <Grid Margin="0,0,0,-10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="16"/>
@@ -282,7 +281,7 @@
                             <StackPanel Grid.Column="0">
 
                                 <!-- Hero banner card — fixed layout so it never squishes -->
-                                <Border CornerRadius="16" Margin="0,0,0,16" Padding="20,16"
+                                <Border CornerRadius="16" Margin="0,0,0,16" Padding="18,16,18,8"
                                         BorderThickness="0">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -325,7 +324,7 @@
                                 </Border>
 
                                 <!-- ══ ITEM CATEGORIES — floating tall cards, no harsh outer border ══ -->
-                                <Border CornerRadius="16" Margin="0,0,0,4" Padding="18,16"
+                                <Border CornerRadius="16" Margin="0,0,0,0" Padding="18,16"
                                         BorderThickness="0">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -480,7 +479,7 @@
                             <!-- end left column -->
 
                             <!-- ══ RIGHT COLUMN — MESSAGES (maximized, no fixed height) ══ -->
-                            <Border Grid.Column="2" CornerRadius="16" BorderThickness="0"
+                            <Border Grid.Column="2" CornerRadius="16" BorderThickness="0" Margin=" 0,0,0,20"
                                     VerticalAlignment="Stretch">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -524,7 +523,7 @@
                                     </StackPanel>
 
                                     <!-- Chat user list with PROFILE PICTURES -->
-                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="260">
                                         <ItemsControl ItemsSource="{Binding RecentChats}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
@@ -671,9 +670,9 @@
                         <!-- ── END ROW A ── -->
 
                         <!-- ══ ROW B: NEEDS WISHLIST carousel ══ -->
-                        <StackPanel Margin="0,0,0,20">
+                        <StackPanel Margin="0,4,0,20">
                             <TextBlock Text="Needs Wishlist" FontSize="16" FontWeight="Bold"
-                                       Foreground="#03045E" Margin="0,0,0,14"/>
+                                       Foreground="#03045E" Margin="0,0,0,10"/>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>

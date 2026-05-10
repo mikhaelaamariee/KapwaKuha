@@ -455,12 +455,23 @@ namespace KapwaKuha.Services
                 }
 
                 // Default verification = V001 (Pending)
+                // Check claim status to assign correct verification
+                string verifId = "V001"; // Pending default
+                using (var statusCmd = new SqlCommand(
+                    "SELECT Claim_Status FROM Claims WHERE Claim_ID = @cid", conn))
+                {
+                    statusCmd.Parameters.AddWithValue("@cid", claimId);
+                    var statusResult = await statusCmd.ExecuteScalarAsync();
+                    if (statusResult?.ToString() == "Released")
+                        verifId = "V002";
+                }
+
                 using var cmd2 = new SqlCommand("sp_SaveProofOfReceipt", conn);
                 cmd2.CommandType = System.Data.CommandType.StoredProcedure;
                 cmd2.Parameters.AddWithValue("@ReceiptId", receiptId);
                 cmd2.Parameters.AddWithValue("@ClaimId", claimId);
                 cmd2.Parameters.AddWithValue("@FilePath", filePath);
-                cmd2.Parameters.AddWithValue("@VerifId", "V001");
+                cmd2.Parameters.AddWithValue("@VerifId", verifId);
                 await cmd2.ExecuteNonQueryAsync();
             }
             catch (Exception ex) { MessageBox.Show("SaveProofOfReceipt failed: " + ex.Message); }
@@ -536,7 +547,9 @@ namespace KapwaKuha.Services
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("SELECT Category_ID, Category_Name FROM Category ORDER BY Category_Name", conn);
+                using var cmd = new SqlCommand(
+       "SELECT Category_ID, Category_Name FROM Category " +
+       "ORDER BY CASE WHEN Category_Name = 'Others' THEN 1 ELSE 0 END, Category_Name ASC", conn);
                 using var r = await cmd.ExecuteReaderAsync();
                 while (await r.ReadAsync())
                     list.Add(r["Category_Name"].ToString() ?? "");
@@ -784,6 +797,40 @@ namespace KapwaKuha.Services
                 cmd.Parameters.AddWithValue("@ClaimId", claimId);
                 cmd.Parameters.AddWithValue("@NewStatus", newStatus);
                 await cmd.ExecuteNonQueryAsync();
+
+                if (newStatus == "Released")
+                {
+                    // Update ProofOfReceipt verification to Released
+                    using var verifCmd = new SqlCommand(
+                        "UPDATE ProofOfReceipt SET Verification_ID = 'V002' WHERE Claim_ID = @cid", conn);
+                    verifCmd.Parameters.AddWithValue("@cid", claimId);
+                    await verifCmd.ExecuteNonQueryAsync();
+
+                    // If the claimed item was a DirectTarget, mark the matching NeedsPost as Fulfilled
+                    using var needsCmd = new SqlCommand(@"
+                UPDATE NeedsPosts SET Status = 'Fulfilled'
+                WHERE Status = 'Open'
+                  AND Org_ID IN (
+                      SELECT b.Organization_ID
+                      FROM Claims cl
+                      JOIN Beneficiaries b ON b.Beneficiary_ID = cl.Beneficiary_ID
+                      WHERE cl.Claim_ID = @cid2
+                  )
+                  AND NeedsPost_ID IN (
+                      SELECT TOP 1 n.NeedsPost_ID
+                      FROM Claims cl
+                      JOIN Items i ON i.Item_ID = cl.Item_ID
+                      JOIN Post p ON p.Post_ID = i.Post_ID
+                      JOIN Beneficiaries b ON b.Beneficiary_ID = cl.Beneficiary_ID
+                      JOIN NeedsPosts n ON n.Org_ID = b.Organization_ID
+                      WHERE cl.Claim_ID = @cid2
+                        AND p.Post_Type = 'DirectTarget'
+                        AND n.Status = 'Open'
+                      ORDER BY n.Post_Date DESC
+                  )", conn);
+                    needsCmd.Parameters.AddWithValue("@cid2", claimId);
+                    await needsCmd.ExecuteNonQueryAsync();
+                }
             }
             catch (Exception ex) { MessageBox.Show("UpdateClaimStatus failed: " + ex.Message); }
         }
@@ -951,6 +998,20 @@ namespace KapwaKuha.Services
             }
             catch (Exception ex)
             { MessageBox.Show("DeleteNeedsPost failed: " + ex.Message); throw; }
+        }
+
+        public static async Task FulfillNeedsPost(string postId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "UPDATE NeedsPosts SET Status = 'Fulfilled' WHERE NeedsPost_ID = @id", conn);
+                cmd.Parameters.AddWithValue("@id", postId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { MessageBox.Show("FulfillNeedsPost failed: " + ex.Message); }
         }
 
         public static async Task<List<NeedsPostModel>> GetNeedsPostsByOrg(string orgId)

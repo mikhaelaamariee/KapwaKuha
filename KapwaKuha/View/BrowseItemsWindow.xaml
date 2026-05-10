@@ -43,7 +43,6 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Top bar -->
             <Border Grid.Row="0" Background="#0077B6">
                 <Grid Margin="20,0">
                     <Grid.ColumnDefinitions>
@@ -67,15 +66,14 @@
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="1" Margin="20,14">
+            <Grid Grid.Row="1" Margin="24,14,0,14">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="10"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Filter / Search bar -->
-                <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,10">
+                <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,10" Margin="0,0,24,0">
                     <Border.Effect>
                         <DropShadowEffect Color="#00B4D8" BlurRadius="14" ShadowDepth="0" Opacity="0.10"/>
                     </Border.Effect>
@@ -88,7 +86,6 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Search box -->
                         <Border Grid.Column="0" CornerRadius="8" BorderBrush="#90E0EF" BorderThickness="1.5"
                                 Background="#F0F8FB" Padding="12,0">
                             <Grid>
@@ -126,11 +123,9 @@
                             </Grid>
                         </Border>
 
-                        <!-- Category filter label -->
                         <TextBlock Grid.Column="2" Text="Category:" FontSize="13"
                                    Foreground="#03045E" VerticalAlignment="Center"/>
 
-                        <!-- Category combobox — now includes Others -->
                         <Border Grid.Column="4" CornerRadius="8" BorderBrush="#90E0EF" BorderThickness="1.5"
                                 Background="#F0F8FB">
                             <ComboBox SelectedValue="{Binding FilterCategory}"
@@ -149,19 +144,16 @@
                     </Grid>
                 </Border>
 
-                <!-- Item count ribbon -->
                 <TextBlock Grid.Row="1" VerticalAlignment="Center" Margin="4,0,0,0"
                            Text="{Binding Items.Count, StringFormat='{}{0} item(s) available'}"
                            Foreground="#5E7A8A" FontSize="12"/>
 
-                <!-- Loading overlay -->
-                <Border Grid.Row="2" Background="Transparent"
+                <Border Grid.Row="2" Background="Transparent" Margin="0,0,24,0"
                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
                     <TextBlock Text="Loading items…" FontSize="14" Foreground="#0077B6"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
 
-                <!-- Items grid -->
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <ScrollViewer.Style>
@@ -175,16 +167,16 @@
                         </Style>
                     </ScrollViewer.Style>
 
-                    <ItemsControl ItemsSource="{Binding Items}" Margin="0,4,0,0">
+                    <ItemsControl ItemsSource="{Binding Items}" Margin="0,8,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"/>
+                                <UniformGrid Columns="4" VerticalAlignment="Top"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
 
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Width="320" Margin="0,0,24,24" Background="White"
+                                <Border Margin="0,0,24,24" Background="White"
                                         CornerRadius="12" Cursor="Hand"
                                         BorderBrush="#E8ECF0" BorderThickness="1">
                                     <Border.Effect>
@@ -194,13 +186,12 @@
                                     <Border.InputBindings>
                                         <MouseBinding MouseAction="LeftClick"
                                                       Command="{Binding DataContext.SelectItemCommand,
-                                                                RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                       CommandParameter="{Binding}"/>
                                     </Border.InputBindings>
 
                                     <StackPanel>
-                                        <!-- Image area -->
-                                        <Border Height="240" CornerRadius="12,12,0,0" ClipToBounds="True">
+                                        <Border Height="180" CornerRadius="12,12,0,0" ClipToBounds="True">
                                             <Grid>
                                                 <Border>
                                                     <Border.Background>
@@ -211,7 +202,7 @@
                                                     </Border.Background>
                                                 </Border>
 
-                                                <TextBlock Text="📦" FontSize="72"
+                                                <TextBlock Text="📦" FontSize="64"
                                                            HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
@@ -240,33 +231,31 @@
                                                 </Image>
 
                                                 <Border VerticalAlignment="Top" HorizontalAlignment="Right"
-                                                        Margin="0,10,10,0" CornerRadius="6" Padding="10,6"
+                                                        Margin="0,10,10,0" CornerRadius="6" Padding="8,4"
                                                         Background="{Binding StatusBadgeBackground}">
-                                                    <TextBlock Text="{Binding Item_Status}" FontSize="12"
+                                                    <TextBlock Text="{Binding Item_Status}" FontSize="11"
                                                                FontWeight="SemiBold"
                                                                Foreground="{Binding StatusBadgeColor}"/>
                                                 </Border>
                                             </Grid>
                                         </Border>
 
-                                        <!-- Card body -->
-                                        <StackPanel Margin="16,16,16,18">
-                                            <TextBlock Text="{Binding Item_Name}" FontSize="20" FontWeight="Bold"
+                                        <StackPanel Margin="16,14,16,16">
+                                            <TextBlock Text="{Binding Item_Name}" FontSize="18" FontWeight="Bold"
                                                        Foreground="#03045E" TextTrimming="CharacterEllipsis"
                                                        TextWrapping="NoWrap" Margin="0,0,0,4"/>
 
-                                            <Grid Margin="0,0,0,8">
+                                            <Grid Margin="0,0,0,10">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
 
                                                 <TextBlock Text="{Binding Donor_Name, StringFormat='Donated by {0}'}"
-                                                           FontSize="13" Foreground="#5E7A8A"
+                                                           FontSize="12" Foreground="#5E7A8A"
                                                            TextTrimming="CharacterEllipsis"
                                                            VerticalAlignment="Center"/>
 
-                                                <!-- Chat icon button — opens ChatWindow with this donor -->
                                                 <Button Grid.Column="1"
                                                         Command="{Binding DataContext.MessageDonorCommand,
                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
@@ -279,7 +268,7 @@
                                                             <Border Background="{TemplateBinding Background}"
                                                                     CornerRadius="14" Padding="6" x:Name="IconBorder">
                                                                 <Path Data="M20,2H4C2.9,2,2,2.9,2,4v18l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z"
-                                                                      Fill="#00B4D8" Width="16" Height="16" Stretch="Uniform"/>
+                                                                      Fill="#00B4D8" Width="14" Height="14" Stretch="Uniform"/>
                                                             </Border>
                                                             <ControlTemplate.Triggers>
                                                                 <Trigger Property="IsMouseOver" Value="True">
@@ -292,18 +281,18 @@
                                             </Grid>
 
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                                <Border Background="#EBF7FB" CornerRadius="6" Padding="8,4" Margin="0,0,8,0">
-                                                    <TextBlock Text="{Binding Category_Name}" FontSize="12"
+                                                <Border Background="#EBF7FB" CornerRadius="6" Padding="8,4" Margin="0,0,6,0">
+                                                    <TextBlock Text="{Binding Category_Name}" FontSize="11"
                                                                Foreground="#0077B6" FontWeight="SemiBold"/>
                                                 </Border>
                                                 <Border Background="#F5F5F5" CornerRadius="6" Padding="8,4">
-                                                    <TextBlock Text="{Binding StorageDaysDisplay}" FontSize="12" Foreground="#666"/>
+                                                    <TextBlock Text="{Binding StorageDaysDisplay}" FontSize="11" Foreground="#666"/>
                                                 </Border>
                                             </StackPanel>
 
                                             <Button Command="{Binding DataContext.SelectItemCommand,
                                                               RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                    CommandParameter="{Binding}" Height="44"
+                                                    CommandParameter="{Binding}" Height="40"
                                                     BorderThickness="0" Cursor="Hand">
                                                 <Button.Template>
                                                     <ControlTemplate TargetType="Button">
@@ -317,7 +306,7 @@
                                                         </ControlTemplate.Triggers>
                                                     </ControlTemplate>
                                                 </Button.Template>
-                                                <TextBlock Text="🤲 Claim Item" FontSize="15" FontWeight="Bold" Foreground="White"/>
+                                                <TextBlock Text="🤲 Claim Item" FontSize="14" FontWeight="Bold" Foreground="White"/>
                                             </Button>
                                         </StackPanel>
                                     </StackPanel>

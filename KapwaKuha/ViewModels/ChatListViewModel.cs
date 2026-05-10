@@ -84,24 +84,25 @@ namespace KapwaKuha.ViewModels
             }
             else
             {
-                // Beneficiaries see ALL registered donors
                 var donors = await KapwaDataService.GetAllDonorsForChat();
+                var chatMeta = await KapwaDataService.GetChatDonorsForBeneficiary(_myId);
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     _allUsers.Clear();
-
                     foreach (var d in donors)
+                    {
+                        var meta = chatMeta.FirstOrDefault(m => m.UserId == d.Donor_ID);
                         _allUsers.Add(new ChatUserRow
                         {
                             UserId = d.Donor_ID,
                             DisplayName = d.Donor_FullName,
                             SubText = "Donor",
-                            LastMessage = "",
-                            UnreadCount = 0,
+                            LastMessage = meta.LastMessage ?? "",
+                            UnreadCount = meta.UnreadCount,
                             ProfilePicturePath = d.ProfilePicturePath ?? string.Empty
                         });
-
+                    }
                     ApplySearch();
                 });
             }

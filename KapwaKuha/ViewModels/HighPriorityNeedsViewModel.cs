@@ -83,12 +83,13 @@ namespace KapwaKuha.ViewModels
                 //   - Pass the DYNAMIC Org_ID so the VM can filter beneficiaries
                 //   - Also pass the specific RequesterBeneficiaryId so it pre-selects correctly
                 NavigationService.Navigate(
-                    new View.PostItemWindow(
-                        _donorId,
-                        prefillTitle: selected.Title,
-                        lockedOrgId: selected.Org_ID,
-                        lockDirect: true,
-                        lockedBeneficiaryId: selected.RequesterBeneficiaryId));  // ← dynamic
+    new View.PostItemWindow(
+        _donorId,
+        prefillTitle: selected.Title,
+        lockedOrgId: selected.Org_ID,
+        lockDirect: true,
+        lockedBeneficiaryId: selected.RequesterBeneficiaryId,
+        linkedNeedsPostId: selected.NeedsPost_ID));
             });
 
             _ = LoadPostsAsync();

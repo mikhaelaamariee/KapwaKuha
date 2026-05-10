@@ -101,6 +101,8 @@ namespace KapwaKuha.ViewModels
         public string ErrorMessage { get => _errorMessage; set { _errorMessage = value; OnPropertyChanged(); } }
         public bool ErrorVisible { get => _errorVisible; set { _errorVisible = value; OnPropertyChanged(); } }
 
+        private readonly string _linkedNeedsPostId;
+
         public bool IsComboLocked => _lockDirect;
 
         public string DonorLabel => $"Donor: {UserSession.Username}";
@@ -123,11 +125,13 @@ namespace KapwaKuha.ViewModels
         public ICommand SetDirectTargetCommand { get; }
 
         public PostItemViewModel(string donorId, string prefillTitle = "",
-                         string lockedOrgId = "", bool lockDirect = false,
-                         string lockedBeneficiaryId = "")
+                 string lockedOrgId = "", bool lockDirect = false,
+                 string lockedBeneficiaryId = "",
+                 string linkedNeedsPostId = "")
         {
             _donorId = donorId;
             _lockDirect = lockDirect;
+            _linkedNeedsPostId = linkedNeedsPostId;
             if (lockDirect) _postType = "DirectTarget";
             if (!string.IsNullOrEmpty(prefillTitle)) ItemName = prefillTitle;
 
@@ -193,6 +197,7 @@ namespace KapwaKuha.ViewModels
                     };
 
                     await KapwaDataService.AddItem(item);
+
                     MessageBox.Show($"✅ Item posted! ID: {itemId}",
                         "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     NavigationService.Navigate(new View.DonorDashboardWindow(_donorId));
