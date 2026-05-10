@@ -10,8 +10,25 @@ namespace KapwaKuha.View
         public ChatWindow(string myId, string otherId, string otherName, string role)
         {
             InitializeComponent();
-            DataContext = new ChatViewModel(myId, otherId, otherName, role);
-            Loaded += (s, e) => NavigationService.SetCurrent(this);
+            var vm = new ChatViewModel(myId, otherId, otherName, role);
+            DataContext = vm;
+
+            // ── Fix: wire ScrollToBottom so new messages auto-scroll for BOTH donor and beneficiary ──
+            vm.ScrollToBottom += () =>
+            {
+                // Dispatch to ensure the UI has rendered the new message before scrolling
+                Dispatcher.InvokeAsync(() =>
+                {
+                    MessagesScroll.ScrollToBottom();
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            };
+
+            Loaded += (s, e) =>
+            {
+                NavigationService.SetCurrent(this);
+                // Scroll to bottom on first load too
+                MessagesScroll.ScrollToBottom();
+            };
         }
 
         private void MsgBox_KeyDown(object sender, KeyEventArgs e)

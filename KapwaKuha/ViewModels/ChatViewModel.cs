@@ -120,15 +120,7 @@ namespace KapwaKuha.ViewModels
                         // ClaimItemWindow will call SaveClaim itself on ConfirmClaimCommand
                         // We only hide buttons AFTER successful navigation + confirmed submit
                         // Pass a callback action that hides the buttons on success
-                        NavigationService.Navigate(
-                            new View.ClaimItemWindow(_myId, itemForClaim, onClaimSuccess: () =>
-                            {
-                                Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    msg.IsActionable = false;
-                                    _ = LoadMessages();
-                                });
-                            }));
+                        
                     });
 
                     await Task.CompletedTask;

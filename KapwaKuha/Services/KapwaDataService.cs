@@ -212,11 +212,11 @@ namespace KapwaKuha.Services
                 cmd.Parameters.AddWithValue("@SecurityA", securityAnswer);
                 await cmd.ExecuteNonQueryAsync();
 
-                // Save profile picture immediately after registration if provided
-                if (!string.IsNullOrEmpty(donor.ProfilePicturePath))
+                // After registration, immediately persist address + profile pic
+                if (!string.IsNullOrEmpty(donor.ProfilePicturePath) || !string.IsNullOrEmpty(donor.Donor_Address))
                 {
                     await UpdateDonorProfile(donor.Donor_ID, donor.Donor_Username,
-                        donor.ProfilePicturePath);
+                        donor.ProfilePicturePath ?? "", donor.Donor_Address ?? "");
                 }
             }
             catch (Exception ex) { MessageBox.Show("RegisterDonor failed: " + ex.Message); throw; }
@@ -437,6 +437,33 @@ namespace KapwaKuha.Services
                 MessageBox.Show("UploadProofOfReceipt failed: " + ex.Message);
             }
 
+        }
+        public static async Task SaveProofOfReceipt(string claimId, string filePath)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+
+                // Get next receipt ID
+                string receiptId = "R001";
+                using (var cmd = new SqlCommand("sp_GetNextReceiptId", conn))
+                {
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    using var r = await cmd.ExecuteReaderAsync();
+                    if (await r.ReadAsync()) receiptId = r["NextId"].ToString() ?? "R001";
+                }
+
+                // Default verification = V001 (Pending)
+                using var cmd2 = new SqlCommand("sp_SaveProofOfReceipt", conn);
+                cmd2.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd2.Parameters.AddWithValue("@ReceiptId", receiptId);
+                cmd2.Parameters.AddWithValue("@ClaimId", claimId);
+                cmd2.Parameters.AddWithValue("@FilePath", filePath);
+                cmd2.Parameters.AddWithValue("@VerifId", "V001");
+                await cmd2.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { MessageBox.Show("SaveProofOfReceipt failed: " + ex.Message); }
         }
 
         /// <summary>
@@ -1336,35 +1363,60 @@ ORDER BY cm.SentAt ASC";
 
                 // For each DirectTarget system message, extract the item name from the message text
                 // then look up the specific item (only items between THIS sender and receiver pair)
+                // For each DirectTarget system message, extract the item name from the message text
+                // then look up the specific item (only items between THIS sender and receiver pair)
+                // For each DirectTarget system message, extract the item name from the message text
+                // then look up the specific item (only items between THIS sender and receiver pair)
                 foreach (var raw in rawMessages)
                 {
                     string linkedItemId = string.Empty;
                     string linkedItemPath = string.Empty;
 
-                    if (raw.Message.Contains("reserved for you") &&
-                        raw.Message.Contains("Item: \""))
+                    if (raw.Message.Contains("reserved for you"))
                     {
-                        // Extract item name from message: Item: "NAME" (
-                        int start = raw.Message.IndexOf("Item: \"") + 7;
-                        int end = raw.Message.IndexOf("\"", start);
-                        if (start > 6 && end > start)
+                        // ── Extract item name robustly ────────────────────────────────
+                        // Message format from trigger:
+                        //   📦 A donation has been reserved for you! Item: "NAME" (condition, category)...
+                        // But if Item_Name itself contained quotes the DB stores: Item: ""NAME""
+                        // So we find "Item:" then strip ALL surrounding quote characters.
+
+                        string itemName = string.Empty;
+                        int colonIdx = raw.Message.IndexOf("Item:");
+                        if (colonIdx >= 0)
                         {
-                            string itemName = raw.Message[start..end];
-                            // Find the specific item for this donor->beneficiary pair with that name
-                            // Find the specific item for this donor→beneficiary pair with that name
-                            // Uses Post JOIN since PostType is now a lookup table
+                            // Grab everything after "Item:"
+                            string afterColon = raw.Message[(colonIdx + 5)..].TrimStart();
+
+                            // Strip any number of leading quotes (handles " and "")
+                            int nameStart = 0;
+                            while (nameStart < afterColon.Length && afterColon[nameStart] == '"')
+                                nameStart++;
+
+                            // From nameStart, find the next quote — that ends the name
+                            int nameEnd = afterColon.IndexOf('"', nameStart);
+                            if (nameEnd > nameStart)
+                                itemName = afterColon[nameStart..nameEnd].Trim();
+
+                            // Final safety: strip any stray quotes the name itself might have
+                            itemName = itemName.Trim('"').Trim();
+                        }
+
+                        if (!string.IsNullOrEmpty(itemName))
+                        {
+                            // ── DB lookup: match by donor, beneficiary, cleaned item name ──
                             using var c2 = new SqlCommand(@"
-    SELECT TOP 1 i.Item_ID, ISNULL(i.Item_ImagePath,'') AS Item_ImagePath
-    FROM Items i
-    JOIN Post p ON p.Post_ID = i.Post_ID
-    WHERE i.Donor_ID              = @sid
-      AND i.TargetBeneficiary_ID  = @rid
-      AND i.Item_Name             = @iname
-      AND p.Post_Type             = 'DirectTarget'
-    ORDER BY i.Date_Found DESC", conn);
+SELECT TOP 1 i.Item_ID, ISNULL(i.Item_ImagePath,'') AS Item_ImagePath
+FROM Items i
+JOIN Post p ON p.Post_ID = i.Post_ID
+WHERE i.Donor_ID             = @sid
+  AND i.TargetBeneficiary_ID = @rid
+  AND LTRIM(RTRIM(REPLACE(i.Item_Name, CHAR(34), ''))) = LTRIM(RTRIM(@iname))
+  AND p.Post_Type            = 'DirectTarget'
+ORDER BY i.Date_Found DESC", conn);
                             c2.Parameters.AddWithValue("@sid", raw.SenderId);
                             c2.Parameters.AddWithValue("@rid", raw.ReceiverId);
-                            c2.Parameters.AddWithValue("@iname", itemName);
+                            // Strip quotes from param too so both sides match cleanly
+                            c2.Parameters.AddWithValue("@iname", itemName.Replace("\"", ""));
                             using var r2 = await c2.ExecuteReaderAsync();
                             if (await r2.ReadAsync())
                             {
@@ -1399,7 +1451,6 @@ ORDER BY cm.SentAt ASC";
                         LinkedItemId = linkedItemId,
                         LinkedItemPath = linkedItemPath,
                         IsFromUser = raw.SenderId == userId1,
-                        // KEY FIX: if claim already exists → IsActionable=false → buttons stay hidden
                         IsActionable = !alreadyActioned
                     });
                 }

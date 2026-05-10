@@ -11,13 +11,23 @@ using KapwaKuha.Services;
 namespace KapwaKuha.ViewModels
 {
     // ── Lightweight chat preview row shown on the dashboard ───────────────────
-    public class DashboardChatRow
+    public class DashboardChatRow : ObservableObject
     {
         public string UserId { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         public string LastMessage { get; set; } = string.Empty;
         public int UnreadCount { get; set; }
         public bool HasUnread => UnreadCount > 0;
+
+        // Profile picture support for chat list avatars
+        private string _profilePicturePath = string.Empty;
+        public string ProfilePicturePath
+        {
+            get => _profilePicturePath;
+            set { _profilePicturePath = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasProfilePic)); }
+        }
+        public bool HasProfilePic =>
+    !string.IsNullOrEmpty(_profilePicturePath);
     }
 
     // ── Main runtime ViewModel ────────────────────────────────────────────────
@@ -292,7 +302,8 @@ namespace KapwaKuha.ViewModels
                             UserId = b.Beneficiary_ID,
                             DisplayName = b.Beneficiary_FullName,
                             LastMessage = string.Empty,
-                            UnreadCount = 0
+                            UnreadCount = 0,
+                            ProfilePicturePath = b.ProfilePicturePath ?? string.Empty
                         });
                     }
                     HasNoChats = !RecentChats.Any();

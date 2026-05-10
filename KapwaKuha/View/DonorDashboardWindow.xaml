@@ -200,10 +200,12 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
                         <Button Grid.Column="0" Command="{Binding HamburgerCommand}"
-                                Content="☰" Foreground="#03045E" Background="Transparent"
-                                BorderThickness="0" FontSize="22" Cursor="Hand" VerticalAlignment="Center"/>
+        Content="☰" Foreground="#03045E" Background="Transparent"
+        BorderThickness="0" FontSize="22" Cursor="Hand" VerticalAlignment="Center"/>
+
+                        <!-- Col 1 intentionally left empty — greeting moved to body -->
+                        <TextBlock Grid.Column="1"/>
 
                         <TextBlock Grid.Column="1" Text="{Binding WelcomeText}"
                                    Foreground="#03045E" FontSize="16" FontWeight="Bold"
@@ -266,6 +268,7 @@
                 <!-- Scrollable body -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,24,0,0">
                     <StackPanel>
+                        
 
                         <!-- Two-column row: My Impact + Messages -->
                         <Grid>
@@ -507,12 +510,12 @@
                                         <ItemsControl ItemsSource="{Binding RecentChats}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Padding="14,10" Cursor="Hand" Background="Transparent">
+                                                    <Border Padding="12,10" Cursor="Hand" Background="Transparent">
                                                         <Border.InputBindings>
                                                             <MouseBinding MouseAction="LeftClick"
-                                                                          Command="{Binding DataContext.OpenChatWithCommand,
-                                                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                          CommandParameter="{Binding}"/>
+                              Command="{Binding DataContext.OpenChatWithCommand,
+                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                              CommandParameter="{Binding}"/>
                                                         </Border.InputBindings>
                                                         <Border.Style>
                                                             <Style TargetType="Border">
@@ -525,57 +528,68 @@
                                                         </Border.Style>
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="42"/>
+                                                                <ColumnDefinition Width="44"/>
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
+
+                                                            <!-- Avatar circle -->
+                                                            <!-- Avatar circle -->
                                                             <Border Width="38" Height="38" CornerRadius="19"
-                                                             ClipToBounds="True" Background="#EBF7FB">
+        ClipToBounds="True" Background="#EBF7FB"
+        VerticalAlignment="Center">
                                                                 <Grid>
+                                                                    <!-- Fallback icon -->
                                                                     <TextBlock Text="👤" FontSize="18"
-                                                               HorizontalAlignment="Center"
-                                                                VerticalAlignment="Center">
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
                                                                                 <Setter Property="Visibility" Value="Visible"/>
                                                                                 <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding HasProfilePicture}" Value="True">
+                                                                                    <DataTrigger Binding="{Binding HasProfilePic}" Value="True">
                                                                                         <Setter Property="Visibility" Value="Collapsed"/>
                                                                                     </DataTrigger>
                                                                                 </Style.Triggers>
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <Image Stretch="UniformToFill">
-                                                                        <Image.Style>
-                                                                            <Style TargetType="Image">
+                                                                    <!-- Profile picture clipped to circle -->
+                                                                    <Ellipse Width="38" Height="38">
+                                                                        <Ellipse.Style>
+                                                                            <Style TargetType="Ellipse">
                                                                                 <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                <Setter Property="Source" Value="{Binding SenderProfilePicture}"/>
                                                                                 <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding HasProfilePicture}" Value="True">
+                                                                                    <DataTrigger Binding="{Binding HasProfilePic}" Value="True">
                                                                                         <Setter Property="Visibility" Value="Visible"/>
                                                                                     </DataTrigger>
                                                                                 </Style.Triggers>
                                                                             </Style>
-                                                                        </Image.Style>
-                                                                    </Image>
+                                                                        </Ellipse.Style>
+                                                                        <Ellipse.Fill>
+                                                                            <ImageBrush ImageSource="{Binding ProfilePicturePath}"
+                            Stretch="UniformToFill"/>
+                                                                        </Ellipse.Fill>
+                                                                    </Ellipse>
                                                                 </Grid>
                                                             </Border>
 
+                                                            <!-- Name + last message -->
                                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,8,0">
                                                                 <TextBlock Text="{Binding DisplayName}"
-                                                                           FontSize="13" FontWeight="SemiBold"
-                                                                           Foreground="#03045E"
-                                                                           TextTrimming="CharacterEllipsis"/>
+                               FontSize="13" FontWeight="SemiBold"
+                               Foreground="#03045E"
+                               TextTrimming="CharacterEllipsis"/>
                                                                 <TextBlock Text="{Binding LastMessage}"
-                                                                           FontSize="11" Foreground="#5E7A8A"
-                                                                           TextTrimming="CharacterEllipsis"
-                                                                           Margin="0,2,0,0"/>
+                               FontSize="11" Foreground="#5E7A8A"
+                               TextTrimming="CharacterEllipsis"
+                               Margin="0,2,0,0"/>
                                                             </StackPanel>
 
+                                                            <!-- Unread badge -->
                                                             <Border Grid.Column="2" CornerRadius="10"
-                                                                    Background="#00B4D8" Padding="6,2"
-                                                                    VerticalAlignment="Center">
+                        Background="#00B4D8" Padding="6,2"
+                        VerticalAlignment="Center">
                                                                 <Border.Style>
                                                                     <Style TargetType="Border">
                                                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -587,7 +601,7 @@
                                                                     </Style>
                                                                 </Border.Style>
                                                                 <TextBlock Text="{Binding UnreadCount}"
-                                                                           FontSize="10" FontWeight="Bold" Foreground="White"/>
+                               FontSize="10" FontWeight="Bold" Foreground="White"/>
                                                             </Border>
                                                         </Grid>
                                                     </Border>
@@ -756,43 +770,8 @@
                                                                            FontSize="11" Foreground="#0077B6"
                                                                            Margin="0,2,0,6"/>
 
-                                                                <!-- Sidebar OPEN: View Description -->
-                                                                <Button Command="{Binding DataContext.ViewDescriptionCommand,
-                                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                        CommandParameter="{Binding}"
-                                                                        Height="34" BorderThickness="0" Cursor="Hand"
-                                                                        FontSize="12" FontWeight="SemiBold"
-                                                                        Foreground="#0077B6">
-                                                                    <Button.Style>
-                                                                        <Style TargetType="Button">
-                                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                                            <Setter Property="Background" Value="#EBF7FB"/>
-                                                                            <Setter Property="Template">
-                                                                                <Setter.Value>
-                                                                                    <ControlTemplate TargetType="Button">
-                                                                                        <Border CornerRadius="10" Background="{TemplateBinding Background}">
-                                                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                                                        </Border>
-                                                                                        <ControlTemplate.Triggers>
-                                                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                                                <Setter Property="Opacity" Value="0.85"/>
-                                                                                            </Trigger>
-                                                                                        </ControlTemplate.Triggers>
-                                                                                    </ControlTemplate>
-                                                                                </Setter.Value>
-                                                                            </Setter>
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding DataContext.IsSidebarOpen,
-                                                                                    RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                                             Value="False">
-                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </Button.Style>
-                                                                    <TextBlock Text="View Description"/>
-                                                                </Button>
-
+                                                               
+                                                               
                                                                 <!-- Sidebar CLOSED: Edit Post -->
                                                                 <!-- Single Edit Post button — always visible, never changes text -->
                                                                 <Button Command="{Binding DataContext.EditPostCommand,

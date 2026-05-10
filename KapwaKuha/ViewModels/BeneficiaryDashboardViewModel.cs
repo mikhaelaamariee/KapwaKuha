@@ -10,33 +10,27 @@ using KapwaKuha.Services;
 
 namespace KapwaKuha.ViewModels
 {
-    // NOTE: DashboardChatRow is defined in DonorDashboardViewModel.cs — do NOT redefine it here.
+    // NOTE: DashboardChatRow is defined in DonorDashboardViewModel.cs
 
     public class BeneficiaryDashboardViewModel : ObservableObject
     {
         private readonly string _beneficiaryId;
 
-        // Sidebar — starts OPEN by default
+        // ── Sidebar ───────────────────────────────────────────────────────────
         private bool _isSidebarOpen = false;
         public bool IsSidebarOpen
         {
             get => _isSidebarOpen;
-            set
-            {
-                _isSidebarOpen = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(MessagesColumnWidth));
-            }
+            set { _isSidebarOpen = value; OnPropertyChanged(); OnPropertyChanged(nameof(MessagesColumnWidth)); }
         }
-
         public GridLength MessagesColumnWidth =>
-            IsSidebarOpen ? new GridLength(240) : new GridLength(300);
+            IsSidebarOpen ? new GridLength(240) : new GridLength(320);
 
-        // Identity
+        // ── Identity ──────────────────────────────────────────────────────────
         public string WelcomeText { get; }
         public string UserLabel { get; }
 
-        // Profile picture
+        // ── Profile picture ───────────────────────────────────────────────────
         private string _profilePicturePath = string.Empty;
         public string ProfilePicturePath
         {
@@ -46,7 +40,7 @@ namespace KapwaKuha.ViewModels
         public bool HasPicture =>
             !string.IsNullOrEmpty(_profilePicturePath) && System.IO.File.Exists(_profilePicturePath);
 
-        // UI State Flags
+        // ── UI State Flags ────────────────────────────────────────────────────
         private string _transactionStatus = string.Empty;
         public string TransactionStatus
         {
@@ -75,46 +69,41 @@ namespace KapwaKuha.ViewModels
             set { _hasNoNeedsPosts = value; OnPropertyChanged(); }
         }
 
-        // Collections
+        // ── Collections ───────────────────────────────────────────────────────
         public ObservableCollection<TransactionRow> Transactions { get; } = new();
         public ObservableCollection<DashboardChatRow> RecentChats { get; } = new();
         public ObservableCollection<NeedsPostModel> MyNeedsPosts { get; } = new();
 
-        // Commands
+        // ── Carousel scroll callback (wired by code-behind) ───────────────────
+        public Action<double>? CarouselScrollRequested { get; set; }
+
+        // ── Commands ──────────────────────────────────────────────────────────
         public ICommand HamburgerCommand { get; }
         public ICommand NavigateDashboardCommand { get; }
         public ICommand BrowseItemsCommand { get; }
         public ICommand BrowseByCategoryCommand { get; }
         public ICommand NeedsWishlistCommand { get; }
         public ICommand ClaimTrackerCommand { get; }
-        public ICommand ClaimHistoryCommand { get; }
         public ICommand ChatCommand { get; }
         public ICommand MyBAccountCommand { get; }
         public ICommand LogoutCommand { get; }
-
         public ICommand CategoryCommand { get; }
         public ICommand AddNeedCommand { get; }
-
-        // EditNeedsPostsCommand  → sidebar nav item  → EditNeedsPostUrgencyWindow
-        // EditNeedsPostCommand   → per-card button   → EditNeedsPostUrgencyWindow
         public ICommand EditNeedsPostsCommand { get; }
         public ICommand EditNeedsPostCommand { get; }
-
         public ICommand OpenChatWithCommand { get; }
         public ICommand CarouselLeftCommand { get; }
         public ICommand CarouselRightCommand { get; }
 
         public BeneficiaryDashboardViewModel(string beneficiaryId)
         {
-
             _beneficiaryId = beneficiaryId;
             WelcomeText = $"Welcome back, {UserSession.FullName}!";
             UserLabel = $"Beneficiary: {UserSession.UserId}";
 
             HamburgerCommand = new RelayCommand(_ => IsSidebarOpen = !IsSidebarOpen);
-            NavigateDashboardCommand = new RelayCommand(_ => { /* Already on dashboard */ });
+            NavigateDashboardCommand = new RelayCommand(_ => { });
 
-            // Category buttons — pass category name as CommandParameter
             BrowseItemsCommand = new RelayCommand(param =>
             {
                 string category = param is string s && !string.IsNullOrWhiteSpace(s) ? s : "All";
@@ -139,9 +128,6 @@ namespace KapwaKuha.ViewModels
             ClaimTrackerCommand = new RelayCommand(_ =>
                 NavigationService.Navigate(new View.ClaimTrackerWindow(_beneficiaryId, "Beneficiary")));
 
-            ClaimHistoryCommand = new RelayCommand(_ =>
-                NavigationService.Navigate(new View.BeneficiaryClaimHistoryWindow(_beneficiaryId)));
-
             ChatCommand = new RelayCommand(_ =>
                 NavigationService.Navigate(new View.ChatListWindow(_beneficiaryId, "Beneficiary")));
 
@@ -162,7 +148,7 @@ namespace KapwaKuha.ViewModels
             AddNeedCommand = new RelayCommand(_ =>
                 NavigationService.Navigate(new View.NeedsWishlistWindow(_beneficiaryId)));
 
-            // Sidebar "Edit My Needs" nav item → resolves org then opens EditNeedsPostUrgencyWindow
+            // Sidebar "Edit My Needs" — opens edit list, no specific post pre-selected
             EditNeedsPostsCommand = new RelayCommand(_ =>
             {
                 _ = System.Threading.Tasks.Task.Run(async () =>
@@ -175,16 +161,22 @@ namespace KapwaKuha.ViewModels
                 });
             });
 
-            // Per-card "Edit Needs" button → resolves org then opens EditNeedsPostUrgencyWindow
+            // Per-card "Edit Needs" button — passes the specific NeedsPostModel as param
             EditNeedsPostCommand = new RelayCommand(param =>
             {
+                var post = param as NeedsPostModel;
                 _ = System.Threading.Tasks.Task.Run(async () =>
                 {
                     var bene = await KapwaDataService.GetBeneficiaryById(_beneficiaryId);
                     if (bene == null) return;
                     Application.Current.Dispatcher.Invoke(() =>
-                        NavigationService.Navigate(
-                            new View.EditNeedsPostUrgencyWindow(_beneficiaryId, bene.Organization_ID)));
+                    {
+                        var win = new View.EditNeedsPostUrgencyWindow(_beneficiaryId, bene.Organization_ID);
+                        // Pre-select the specific post if available
+                        if (post != null && win.DataContext is EditNeedsPostUrgencyViewModel vm)
+                            vm.PreSelectPost(post);
+                        NavigationService.Navigate(win);
+                    });
                 });
             });
 
@@ -195,16 +187,15 @@ namespace KapwaKuha.ViewModels
                         new View.ChatWindow(_beneficiaryId, row.UserId, row.DisplayName, "Beneficiary"));
             });
 
-            CarouselLeftCommand = new RelayCommand(_ => { });
-            CarouselRightCommand = new RelayCommand(_ => { });
+            // Carousel: invoke scroll callback wired from code-behind
+            CarouselLeftCommand = new RelayCommand(_ => CarouselScrollRequested?.Invoke(-250));
+            CarouselRightCommand = new RelayCommand(_ => CarouselScrollRequested?.Invoke(250));
 
             LoadProfileDataAsync();
             LoadBeneficiaryTransactionsAsync();
             LoadNeedsPostsAsync();
             LoadRecentChatsAsync();
         }
-
-        // Data Loading Methods
 
         private async void LoadProfileDataAsync()
         {
@@ -241,7 +232,6 @@ namespace KapwaKuha.ViewModels
             {
                 var bene = await KapwaDataService.GetBeneficiaryById(_beneficiaryId);
                 if (bene == null) return;
-
                 var posts = await KapwaDataService.GetNeedsPostsByOrg(bene.Organization_ID);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -268,7 +258,8 @@ namespace KapwaKuha.ViewModels
                             UserId = d.Donor_ID,
                             DisplayName = d.Donor_FullName,
                             LastMessage = string.Empty,
-                            UnreadCount = 0
+                            UnreadCount = 0,
+                            ProfilePicturePath = d.ProfilePicturePath ?? string.Empty  // ← profile pic
                         });
                     }
                     HasNoChats = !RecentChats.Any();

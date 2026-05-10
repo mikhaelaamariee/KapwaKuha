@@ -1,6 +1,4 @@
 ﻿// FILE: SignUpViewModel.cs
-// Window: SignUpWindow.xaml
-// Parallel to SignUpViewModel in CarRentals — handles both Donor and Beneficiary
 using System;
 using System.Linq;
 using System.Windows;
@@ -15,7 +13,6 @@ namespace KapwaKuha.ViewModels
     {
         private readonly string _role;
 
-        // ── Common fields ──────────────────────────────────────────────────────
         private string _fName = string.Empty;
         private string _lName = string.Empty;
         private string _contact = string.Empty;
@@ -36,10 +33,18 @@ namespace KapwaKuha.ViewModels
         public bool HasPicture =>
             !string.IsNullOrEmpty(_profilePicturePath) && System.IO.File.Exists(_profilePicturePath);
 
-        // Donor-specific
+        // ── Donor-specific ────────────────────────────────────────────────────
         private string _username = string.Empty;
 
-        // Beneficiary-specific
+        // NEW: Donor address field
+        private string _donorAddress = string.Empty;
+        public string DonorAddress
+        {
+            get => _donorAddress;
+            set { _donorAddress = value; OnPropertyChanged(); }
+        }
+
+        // ── Beneficiary-specific ──────────────────────────────────────────────
         private string _sex = "Male";
         private string _selectedOrgId = string.Empty;
         private string _selectedOrgName = string.Empty;
@@ -134,7 +139,6 @@ namespace KapwaKuha.ViewModels
 
         public ICommand RegisterCommand { get; }
         public ICommand BackCommand { get; }
-
         public ICommand BrowsePictureCommand { get; }
 
         public SignUpViewModel(string role)
@@ -153,7 +157,6 @@ namespace KapwaKuha.ViewModels
             {
                 ErrorVisible = false;
 
-                // Validate common fields
                 if (string.IsNullOrWhiteSpace(FName))
                 { ShowError("First name is required."); return; }
                 if (string.IsNullOrWhiteSpace(LName))
@@ -189,27 +192,29 @@ namespace KapwaKuha.ViewModels
                             Donor_FullName = $"{FName} {LName}",
                             Donor_Username = Username,
                             Donor_ContactNumber = Contact,
-                            ProfilePicturePath = ProfilePicturePath  // ADD THIS LINE
+                            Donor_Address = DonorAddress,        // ← NEW: pass address
+                            ProfilePicturePath = ProfilePicturePath
                         };
                         await KapwaDataService.RegisterDonor(donor, Password, SecurityQuestion, SecurityAnswer);
                         MessageBox.Show($"✅ Registered! Your Donor ID: {id}\nLogin with username: {Username}",
                             "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                         NavigationService.Navigate(new View.DonorLoginWindow());
                     }
-                    catch { /* error shown by service */ }
+                    catch { }
                     finally { IsLoading = false; }
                 }
                 else // Beneficiary
                 {
                     if (string.IsNullOrWhiteSpace(SelectedOrgName))
                     { ShowError("Please enter an organization name."); return; }
+                    if (string.IsNullOrEmpty(SelectedSex) || SelectedSex == "Select Sex")
+                    { ShowError("Please select a sex."); return; }
 
                     var confirm = MessageBox.Show(
                         $"Register as Beneficiary?\n\nName: {FName} {LName}\nUsername: {Username}\nOrg: {SelectedOrgName}\nContact: {Contact}",
                         "Confirm Registration", MessageBoxButton.YesNo, MessageBoxImage.Question);
                     if (confirm != MessageBoxResult.Yes) return;
 
-                    // Inside your RegisterCommand -> else // Beneficiary block
                     try
                     {
                         IsLoading = true;
@@ -220,28 +225,19 @@ namespace KapwaKuha.ViewModels
                             Beneficiary_FName = FName,
                             Beneficiary_LName = LName,
                             Beneficiary_Username = Username,
-                            Beneficiary_Sex = Sex,
+                            Beneficiary_Sex = SelectedSex,
                             Beneficiary_Contact = Contact,
                             Organization_Name = SelectedOrgName,
-                            Organization_Address = OrgAddress,   // ← ADD
-                            Organization_Contact = OrgContact,   // ← ADD
+                            Organization_Address = OrgAddress,
+                            Organization_Contact = OrgContact,
                             ProfilePicturePath = ProfilePicturePath
                         };
-
                         await KapwaDataService.RegisterBeneficiary(bene, Password, SecurityQuestion, SecurityAnswer);
-
-                        // 👈 Update the message box so it tells them to login with their Username!
                         MessageBox.Show($"✅ Registered! Your Beneficiary ID: {id}\nLogin with username: {Username}",
                             "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                         NavigationService.Navigate(new View.BeneficiaryLoginWindow());
-
-                        if (string.IsNullOrEmpty(SelectedSex) || SelectedSex == "Select Sex")
-                        {
-                            ErrorMessage = "Please select a sex.";
-                            return;
-                        }
                     }
-                    catch { /* error shown by service */ }
+                    catch { }
                     finally { IsLoading = false; }
                 }
             });

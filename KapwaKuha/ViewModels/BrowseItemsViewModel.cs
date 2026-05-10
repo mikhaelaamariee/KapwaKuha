@@ -58,6 +58,8 @@ namespace KapwaKuha.ViewModels
         public ICommand BackCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand SelectItemCommand { get; }
+        public ICommand MessageDonorCommand { get; }
+
 
         public BrowseItemsViewModel(string beneficiaryId)
             : this(beneficiaryId, "All") { }
@@ -76,6 +78,13 @@ namespace KapwaKuha.ViewModels
             {
                 if (item is ItemModel selected)
                     NavigationService.Navigate(new View.ClaimItemWindow(_beneficiaryId, selected));
+            });
+            MessageDonorCommand = new RelayCommand(item =>
+            {
+                if (item is ItemModel selected)
+                    NavigationService.Navigate(
+                        new View.ChatWindow(_beneficiaryId, selected.Donor_ID,
+                                            selected.Donor_Name, "Beneficiary"));
             });
 
             _ = LoadItemsAsync();

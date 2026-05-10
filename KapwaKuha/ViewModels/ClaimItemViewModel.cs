@@ -162,6 +162,12 @@ namespace KapwaKuha.ViewModels
 
                     KapwaDataService.GenerateClaimReport(claim);
 
+                    // Save proof of receipt to DB — use the generated report file path
+                    string reportPath = System.IO.Path.Combine(
+                        AppDomain.CurrentDomain.BaseDirectory,
+                        "KapwaKuhaData", "ClaimReports", $"Claim_{claimId}.txt");
+                    await KapwaDataService.SaveProofOfReceipt(claimId, reportPath);
+
                     MessageBox.Show($"✅ Claimed! Your Claim ID: {claimId}",
                         "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 

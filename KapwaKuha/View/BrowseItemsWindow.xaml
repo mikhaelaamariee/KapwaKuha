@@ -5,8 +5,8 @@
         Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-               xmlns:vm="clr-namespace:KapwaKuha.ViewModels"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:KapwaKuha.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:BrowseItemsDesignViewModel, IsDesignTimeCreatable=True}"
         FontFamily="Segoe UI">
@@ -33,7 +33,9 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 </RadialGradientBrush>
             </Ellipse.Fill>
         </Ellipse>
-        <Image Source="https://i.imgur.com/y4MrK4c.jpeg" Opacity ="0.03" Width="1980" HorizontalAlignment="Center" VerticalAlignment="Center" Height="2808" RenderTransformOrigin="0.5,0.5" />
+        <Image Source="https://i.imgur.com/y4MrK4c.jpeg" Opacity="0.03"
+               Width="1980" HorizontalAlignment="Center" VerticalAlignment="Center"
+               Height="2808" RenderTransformOrigin="0.5,0.5"/>
 
         <Grid>
             <Grid.RowDefinitions>
@@ -41,6 +43,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
+            <!-- Top bar -->
             <Border Grid.Row="0" Background="#0077B6">
                 <Grid Margin="20,0">
                     <Grid.ColumnDefinitions>
@@ -71,18 +74,68 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,12">
+                <!-- Filter / Search bar -->
+                <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,10">
                     <Border.Effect>
                         <DropShadowEffect Color="#00B4D8" BlurRadius="14" ShadowDepth="0" Opacity="0.10"/>
                     </Border.Effect>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🔍  Filter by Category:" FontSize="13"
-                                   Foreground="#03045E" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                        <Border CornerRadius="8" BorderBrush="#90E0EF" BorderThickness="1.5"
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Search box -->
+                        <Border Grid.Column="0" CornerRadius="8" BorderBrush="#90E0EF" BorderThickness="1.5"
+                                Background="#F0F8FB" Padding="12,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="🔍" FontSize="13"
+                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBox Grid.Column="1"
+                                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                         Height="34" Background="Transparent" BorderThickness="0"
+                                         Foreground="#03045E" FontSize="13" VerticalContentAlignment="Center">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Style.Resources>
+                                                <VisualBrush x:Key="HintBrush" Opacity="0.5" Stretch="None" AlignmentX="Left">
+                                                    <VisualBrush.Visual>
+                                                        <TextBlock Text="Search by name, category, or description…"
+                                                                   FontSize="13" Foreground="#5E7A8A" Margin="2,0,0,0"/>
+                                                    </VisualBrush.Visual>
+                                                </VisualBrush>
+                                            </Style.Resources>
+                                            <Style.Triggers>
+                                                <Trigger Property="Text" Value="">
+                                                    <Setter Property="Background" Value="{StaticResource HintBrush}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                            </Grid>
+                        </Border>
+
+                        <!-- Category filter label -->
+                        <TextBlock Grid.Column="2" Text="Category:" FontSize="13"
+                                   Foreground="#03045E" VerticalAlignment="Center"/>
+
+                        <!-- Category combobox — now includes Others -->
+                        <Border Grid.Column="4" CornerRadius="8" BorderBrush="#90E0EF" BorderThickness="1.5"
                                 Background="#F0F8FB">
                             <ComboBox SelectedValue="{Binding FilterCategory}"
                                       SelectedValuePath="Content"
-                                      Width="180" Height="34" Background="Transparent"
+                                      Width="170" Height="34" Background="Transparent"
                                       BorderThickness="0" Padding="10,0" FontSize="12">
                                 <ComboBoxItem Content="All" IsSelected="True"/>
                                 <ComboBoxItem Content="Clothing"/>
@@ -90,20 +143,25 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 <ComboBoxItem Content="Electronics"/>
                                 <ComboBoxItem Content="Medicine"/>
                                 <ComboBoxItem Content="School Supplies"/>
+                                <ComboBoxItem Content="Others"/>
                             </ComboBox>
                         </Border>
-                        <TextBlock Text="{Binding Items.Count, StringFormat='{}{0} item(s) available'}"
-                                   Foreground="#5E7A8A" FontSize="12"
-                                   VerticalAlignment="Center" Margin="16,0,0,0"/>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
+                <!-- Item count ribbon -->
+                <TextBlock Grid.Row="1" VerticalAlignment="Center" Margin="4,0,0,0"
+                           Text="{Binding Items.Count, StringFormat='{}{0} item(s) available'}"
+                           Foreground="#5E7A8A" FontSize="12"/>
+
+                <!-- Loading overlay -->
                 <Border Grid.Row="2" Background="Transparent"
                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
-                    <TextBlock Text="Loading items..." FontSize="14" Foreground="#0077B6"
+                    <TextBlock Text="Loading items…" FontSize="14" Foreground="#0077B6"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
 
+                <!-- Items grid -->
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <ScrollViewer.Style>
@@ -118,7 +176,6 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     </ScrollViewer.Style>
 
                     <ItemsControl ItemsSource="{Binding Items}" Margin="0,4,0,0">
-
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel Orientation="Horizontal"/>
@@ -127,18 +184,22 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Width="320" Margin="0,0,24,24" Background="White" CornerRadius="12" Cursor="Hand" BorderBrush="#E8ECF0" BorderThickness="1">
+                                <Border Width="320" Margin="0,0,24,24" Background="White"
+                                        CornerRadius="12" Cursor="Hand"
+                                        BorderBrush="#E8ECF0" BorderThickness="1">
                                     <Border.Effect>
                                         <DropShadowEffect Color="#00B4D8" BlurRadius="12" ShadowDepth="2" Opacity="0.10"/>
                                     </Border.Effect>
 
                                     <Border.InputBindings>
                                         <MouseBinding MouseAction="LeftClick"
-                                                      Command="{Binding DataContext.SelectItemCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                      Command="{Binding DataContext.SelectItemCommand,
+                                                                RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                       CommandParameter="{Binding}"/>
                                     </Border.InputBindings>
 
                                     <StackPanel>
+                                        <!-- Image area -->
                                         <Border Height="240" CornerRadius="12,12,0,0" ClipToBounds="True">
                                             <Grid>
                                                 <Border>
@@ -150,7 +211,8 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                                     </Border.Background>
                                                 </Border>
 
-                                                <TextBlock Text="📦" FontSize="72" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock Text="📦" FontSize="72"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Visible"/>
@@ -163,7 +225,8 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <Image Source="{Binding Item_ImagePath}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <Image Source="{Binding Item_ImagePath}" Stretch="UniformToFill"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <Image.Style>
                                                         <Style TargetType="Image">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -176,16 +239,21 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                                     </Image.Style>
                                                 </Image>
 
-                                                <Border VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,10,0" 
-                                                        CornerRadius="6" Padding="10,6" Background="{Binding StatusBadgeBackground}">
-                                                    <TextBlock Text="{Binding Item_Status}" FontSize="12" FontWeight="SemiBold" Foreground="{Binding StatusBadgeColor}"/>
+                                                <Border VerticalAlignment="Top" HorizontalAlignment="Right"
+                                                        Margin="0,10,10,0" CornerRadius="6" Padding="10,6"
+                                                        Background="{Binding StatusBadgeBackground}">
+                                                    <TextBlock Text="{Binding Item_Status}" FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{Binding StatusBadgeColor}"/>
                                                 </Border>
                                             </Grid>
                                         </Border>
 
+                                        <!-- Card body -->
                                         <StackPanel Margin="16,16,16,18">
-                                            <TextBlock Text="{Binding Item_Name}" FontSize="20" FontWeight="Bold" Foreground="#03045E" 
-                                                       TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Margin="0,0,0,4"/>
+                                            <TextBlock Text="{Binding Item_Name}" FontSize="20" FontWeight="Bold"
+                                                       Foreground="#03045E" TextTrimming="CharacterEllipsis"
+                                                       TextWrapping="NoWrap" Margin="0,0,0,4"/>
 
                                             <Grid Margin="0,0,0,8">
                                                 <Grid.ColumnDefinitions>
@@ -193,20 +261,25 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <TextBlock Text="{Binding Donor_Name, StringFormat='Donated by {0}'}" 
-               FontSize="13" Foreground="#5E7A8A" TextTrimming="CharacterEllipsis" 
-               VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Donor_Name, StringFormat='Donated by {0}'}"
+                                                           FontSize="13" Foreground="#5E7A8A"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           VerticalAlignment="Center"/>
 
-                                                <Button Grid.Column="1" 
-            Command="{Binding DataContext.OpenChatCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-            CommandParameter="{Binding}" 
-            Cursor="Hand" ToolTip="Message Donor"
-            Background="Transparent" BorderThickness="0" Margin="8,0,0,0">
+                                                <!-- Chat icon button — opens ChatWindow with this donor -->
+                                                <Button Grid.Column="1"
+                                                        Command="{Binding DataContext.MessageDonorCommand,
+                                                 RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Cursor="Hand" ToolTip="Message this donor"
+                                                        Background="Transparent" BorderThickness="0"
+                                                        Margin="8,0,0,0">
                                                     <Button.Template>
                                                         <ControlTemplate TargetType="Button">
-                                                            <Border Background="{TemplateBinding Background}" CornerRadius="14" Padding="6" x:Name="IconBorder">
-                                                                <Path Data="M20,2H4C2.9,2,2,2.9,2,4v18l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z" 
-                          Fill="#00B4D8" Width="16" Height="16" Stretch="Uniform" />
+                                                            <Border Background="{TemplateBinding Background}"
+                                                                    CornerRadius="14" Padding="6" x:Name="IconBorder">
+                                                                <Path Data="M20,2H4C2.9,2,2,2.9,2,4v18l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z"
+                                                                      Fill="#00B4D8" Width="16" Height="16" Stretch="Uniform"/>
                                                             </Border>
                                                             <ControlTemplate.Triggers>
                                                                 <Trigger Property="IsMouseOver" Value="True">
@@ -220,15 +293,18 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                                 <Border Background="#EBF7FB" CornerRadius="6" Padding="8,4" Margin="0,0,8,0">
-                                                    <TextBlock Text="{Binding Category_Name}" FontSize="12" Foreground="#0077B6" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding Category_Name}" FontSize="12"
+                                                               Foreground="#0077B6" FontWeight="SemiBold"/>
                                                 </Border>
                                                 <Border Background="#F5F5F5" CornerRadius="6" Padding="8,4">
                                                     <TextBlock Text="{Binding StorageDaysDisplay}" FontSize="12" Foreground="#666"/>
                                                 </Border>
                                             </StackPanel>
 
-                                            <Button Command="{Binding DataContext.SelectItemCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                    CommandParameter="{Binding}" Height="44" BorderThickness="0" Cursor="Hand">
+                                            <Button Command="{Binding DataContext.SelectItemCommand,
+                                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" Height="44"
+                                                    BorderThickness="0" Cursor="Hand">
                                                 <Button.Template>
                                                     <ControlTemplate TargetType="Button">
                                                         <Border CornerRadius="8" Background="#00B4D8" x:Name="ClaimBtnBg">

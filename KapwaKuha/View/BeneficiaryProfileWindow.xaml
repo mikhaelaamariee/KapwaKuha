@@ -198,10 +198,12 @@
 
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="Organization Name" Style="{StaticResource HCILabel}"/>
-                                <Border Style="{StaticResource HCIInput}">
-                                    <TextBox Text="{Binding OrganizationName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                                <Border Style="{StaticResource HCIReadOnlyInput}">
+                                    <TextBox Text="{Binding OrganizationName, Mode=OneWay}"
                                              Height="42" Background="Transparent" BorderThickness="0"
-                                             FontSize="14" Foreground="#0F172A" VerticalContentAlignment="Center"/>
+                                             FontSize="14" IsReadOnly="True"
+                                             Foreground="#64748B" VerticalContentAlignment="Center"
+                                             ToolTip="Organization name cannot be changed here. Contact support if needed."/>
                                 </Border>
                             </StackPanel>
                         </Grid>

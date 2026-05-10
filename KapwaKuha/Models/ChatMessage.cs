@@ -11,6 +11,11 @@ namespace KapwaKuha.Models
         public string Text { get; set; } = string.Empty;
         public string Time { get; set; } = string.Empty;
 
+        // True only when path is non-empty — used in XAML to hard-collapse the image border
+        // when LinkedItemPath is empty, preventing WPF from reusing a cached image from another bubble
+        public bool HasLinkedImage =>
+            !string.IsNullOrWhiteSpace(LinkedItemPath);
+
         // Stored per-message — never shared between messages
         public string LinkedItemId { get; set; } = string.Empty;
         public string LinkedItemPath { get; set; } = string.Empty;

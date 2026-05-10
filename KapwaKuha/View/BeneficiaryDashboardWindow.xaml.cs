@@ -9,7 +9,16 @@ namespace KapwaKuha.View
         public BeneficiaryDashboardWindow(string beneficiaryId)
         {
             InitializeComponent();
-            DataContext = new BeneficiaryDashboardViewModel(beneficiaryId);
+            var vm = new BeneficiaryDashboardViewModel(beneficiaryId);
+            DataContext = vm;
+
+            // Wire carousel arrow buttons to the named ScrollViewer
+            vm.CarouselScrollRequested += delta =>
+            {
+                NeedsCarouselScroller.ScrollToHorizontalOffset(
+                    NeedsCarouselScroller.HorizontalOffset + delta);
+            };
+
             Loaded += (s, e) => NavigationService.SetCurrent(this);
         }
     }

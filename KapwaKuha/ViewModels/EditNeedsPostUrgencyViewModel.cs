@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using KapwaKuha.Commands;
@@ -11,6 +12,7 @@ namespace KapwaKuha.ViewModels
     {
         private readonly string _beneficiaryId;
         private readonly string _orgId;
+        private string? _pendingSelectId;
 
         public ObservableCollection<NeedsPostModel> MyPosts { get; } = new();
 
@@ -24,17 +26,17 @@ namespace KapwaKuha.ViewModels
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasSelection));
 
-                // --- LOADING LOGIC: Populates fields when a post is clicked ---
                 if (value != null)
                 {
                     SelectedUrgency = value.Urgency;
                     EditTitle = value.Title;
+                    EditDescription = value.Description ?? string.Empty;
                     EditImagePath = value.ImagePath ?? string.Empty;
                 }
                 else
                 {
-                    // Clear fields if nothing is selected
                     EditTitle = string.Empty;
+                    EditDescription = string.Empty;
                     EditImagePath = string.Empty;
                 }
             }
@@ -51,12 +53,18 @@ namespace KapwaKuha.ViewModels
         private bool _isBusy;
         public bool IsBusy { get => _isBusy; set { _isBusy = value; OnPropertyChanged(); } }
 
-        // --- EDIT FIELDS ---
         private string _editTitle = string.Empty;
         public string EditTitle
         {
             get => _editTitle;
             set { _editTitle = value; OnPropertyChanged(); }
+        }
+
+        private string _editDescription = string.Empty;
+        public string EditDescription
+        {
+            get => _editDescription;
+            set { _editDescription = value; OnPropertyChanged(); }
         }
 
         private string _editImagePath = string.Empty;
@@ -69,7 +77,6 @@ namespace KapwaKuha.ViewModels
         public bool HasEditImage =>
             !string.IsNullOrEmpty(_editImagePath) && System.IO.File.Exists(_editImagePath);
 
-        // --- COMMANDS ---
         public ICommand BrowseImageCommand { get; }
         public ICommand BackCommand { get; }
         public ICommand RefreshCommand { get; }
@@ -89,28 +96,21 @@ namespace KapwaKuha.ViewModels
             SaveUrgencyCommand = new AsyncRelayCommand(async _ =>
             {
                 if (SelectedPost == null) return;
-
                 var confirm = MessageBox.Show(
                     $"Save changes to \"{SelectedPost.Title}\"?",
                     "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (confirm != MessageBoxResult.Yes) return;
-
                 try
                 {
                     IsBusy = true;
-
-                    // --- SAVING LOGIC: Assign edited values back to the model ---
                     SelectedPost.Urgency = SelectedUrgency;
                     SelectedPost.Title = EditTitle.Trim();
+                    SelectedPost.Description = EditDescription.Trim();
                     SelectedPost.ImagePath = EditImagePath;
-
-                    // Call the new Update method to save to database
                     await KapwaDataService.UpdateNeedsPost(SelectedPost);
-
                     MessageBox.Show("✅ Post updated successfully!", "Saved",
                         MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    await LoadPostsAsync(); // Refresh list to show changes
+                    await LoadPostsAsync();
                 }
                 catch { }
                 finally { IsBusy = false; }
@@ -119,12 +119,10 @@ namespace KapwaKuha.ViewModels
             DeletePostCommand = new AsyncRelayCommand(async _ =>
             {
                 if (SelectedPost == null) return;
-
                 var confirm = MessageBox.Show(
                     $"Delete \"{SelectedPost.Title}\"? This cannot be undone.",
                     "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (confirm != MessageBoxResult.Yes) return;
-
                 try
                 {
                     IsBusy = true;
@@ -151,6 +149,16 @@ namespace KapwaKuha.ViewModels
             _ = LoadPostsAsync();
         }
 
+        /// <summary>
+        /// Pre-selects a specific post when navigating from the dashboard carousel Edit button.
+        /// </summary>
+        public void PreSelectPost(NeedsPostModel post)
+        {
+            _pendingSelectId = post.NeedsPost_ID;
+            var match = MyPosts.FirstOrDefault(p => p.NeedsPost_ID == post.NeedsPost_ID);
+            if (match != null) { SelectedPost = match; _pendingSelectId = null; }
+        }
+
         private async System.Threading.Tasks.Task LoadPostsAsync()
         {
             IsBusy = true;
@@ -161,7 +169,18 @@ namespace KapwaKuha.ViewModels
                 {
                     MyPosts.Clear();
                     foreach (var p in posts) MyPosts.Add(p);
-                    SelectedPost = null;
+
+                    // Apply pending pre-selection (from dashboard carousel Edit button)
+                    if (_pendingSelectId != null)
+                    {
+                        var match = MyPosts.FirstOrDefault(p => p.NeedsPost_ID == _pendingSelectId);
+                        if (match != null) { SelectedPost = match; _pendingSelectId = null; }
+                        else SelectedPost = null;
+                    }
+                    else
+                    {
+                        SelectedPost = null;
+                    }
                 });
             }
             catch { }

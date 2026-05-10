@@ -16,6 +16,7 @@
     </Window.Resources>
 
     <Grid>
+        <!-- Background gradient -->
         <Rectangle>
             <Rectangle.Fill>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -25,8 +26,7 @@
             </Rectangle.Fill>
         </Rectangle>
         <Image Source="https://i.imgur.com/y4MrK4c.jpeg" Opacity="0.05"
-               Width="1980" HorizontalAlignment="Center" VerticalAlignment="Center"
-               Height="2808"/>
+               Width="1980" HorizontalAlignment="Center" VerticalAlignment="Center" Height="2808"/>
         <Ellipse Width="380" Height="380" Opacity="0.13"
                  HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-100,-80,0">
             <Ellipse.Fill>
@@ -43,7 +43,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- SIDEBAR -->
+            <!-- ═══════════════════════════ SIDEBAR ═══════════════════════════ -->
             <Border Grid.Column="0"
                     Style="{StaticResource AnimatedSidebarStyle}"
                     BorderThickness="0,0,1.5,0">
@@ -71,8 +71,7 @@
                     <StackPanel Grid.Row="0" Margin="20,24,20,16">
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="38" Height="38" Margin="0,0,4,0">
-                                <Image Source="https://i.imgur.com/FHFRQxB.png"
-                                       Width="60" Height="60"
+                                <Image Source="https://i.imgur.com/FHFRQxB.png" Width="60" Height="60"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Grid>
                             <TextBlock FontSize="18" FontWeight="Bold" VerticalAlignment="Center">
@@ -94,7 +93,7 @@
                         </Rectangle>
                     </StackPanel>
 
-                    <!-- Nav buttons -->
+                    <!-- Nav buttons — Claim History REMOVED per spec -->
                     <StackPanel Grid.Row="1" Margin="12,0">
 
                         <Button Command="{Binding ClaimTrackerCommand}"
@@ -104,18 +103,6 @@
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="📦" Margin="0,0,12,0" FontSize="14"/>
                                     <TextBlock Text="Claim Tracker" Foreground="#03045E"
-                                               FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-                        </Button>
-
-                        <Button Command="{Binding ClaimHistoryCommand}"
-                                Style="{StaticResource CardHoverBtn}" Padding="0" Margin="0,4">
-                            <Border CornerRadius="12" Padding="12,12"
-                                    Style="{StaticResource SidebarItemStyle}" Background="Transparent">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="📋" Margin="0,0,12,0" FontSize="14"/>
-                                    <TextBlock Text="Claim History" Foreground="#03045E"
                                                FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
@@ -196,7 +183,7 @@
                 </Grid>
             </Border>
 
-            <!-- MAIN CONTENT AREA -->
+            <!-- ═══════════════════════════ MAIN CONTENT ═══════════════════════ -->
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="60"/>
@@ -217,12 +204,12 @@
 
                         <Button Grid.Column="0" Command="{Binding HamburgerCommand}"
                                 Content="☰" Foreground="#03045E" Background="Transparent"
-                                BorderThickness="0" FontSize="22" Cursor="Hand"
-                                VerticalAlignment="Center"/>
+                                BorderThickness="0" FontSize="22" Cursor="Hand" VerticalAlignment="Center"/>
 
                         <TextBlock Grid.Column="1" Text="{Binding WelcomeText}"
                                    Foreground="#03045E" FontSize="16" FontWeight="Bold"
-                                   VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                   VerticalAlignment="Center" Margin="14,0,0,0" TextWrapping="NoWrap"
+                                   TextTrimming="CharacterEllipsis"/>
 
                         <!-- Profile chip -->
                         <Border Grid.Column="2" CornerRadius="20" Padding="4,4,12,4"
@@ -280,191 +267,227 @@
                 </Border>
 
                 <!-- Scrollable body -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,24,0,0">
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,20,16,0">
                     <StackPanel>
 
-                        <!-- ── Two-column row: Categories + Messages ── -->
-                        <Grid>
+                        <!-- ══ ROW A: Hero banner + Messages panel ══ -->
+                        <Grid Margin="0,0,0,20">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="697*"/>
-                                <ColumnDefinition Width="0*"/>
-                                <ColumnDefinition Width="339*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="300"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- LEFT COLUMN -->
-                            <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                            <!-- Hero + Categories (left column) -->
+                            <StackPanel Grid.Column="0">
 
-                                <!-- Hero banner -->
-                                <Grid Margin="0,0,0,20">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="16"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
+                                <!-- Hero banner card — fixed layout so it never squishes -->
+                                <Border CornerRadius="16" Margin="0,0,0,16" Padding="20,16"
+                                        BorderThickness="0">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#CCFFFFFF" Offset="0"/>
+                                            <GradientStop Color="#AAEAF8FF" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#00B4D8" BlurRadius="14" ShadowDepth="0" Opacity="0.12"/>
+                                    </Border.Effect>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="16"/>
+                                            <ColumnDefinition Width="260"/>
+                                        </Grid.ColumnDefinitions>
 
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="What would you like to do today?"
-                                                   FontSize="20" FontWeight="Bold" Foreground="#03045E"
-                                                   Margin="0,0,0,6"/>
-                                        <TextBlock Text="Browse items, track your claims, or post your organization's needs."
-                                                   FontSize="12" Foreground="#5E7A8A"/>
-                                    </StackPanel>
-
-                                    <Border Grid.Column="2" Background="#EBF7FB" CornerRadius="14"
-                                            Padding="18,12" VerticalAlignment="Center" MaxWidth="340">
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="#00B4D8" BlurRadius="10" ShadowDepth="0" Opacity="0.10"/>
-                                        </Border.Effect>
-                                        <StackPanel>
-                                            <TextBlock Text="💙 Kapwa Impact" FontSize="13" FontWeight="Bold"
-                                                       Foreground="#0077B6" Margin="0,0,0,4"/>
-                                            <TextBlock FontSize="11" Foreground="#5E7A8A" TextWrapping="Wrap"
-                                                       Text="Every item you claim is a connection. You're not just receiving things — you're receiving hope and dignity from your community."/>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <TextBlock Text="What would you like to do today?"
+                                                       FontSize="19" FontWeight="Bold" Foreground="#03045E"
+                                                       TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                            <TextBlock Text="Browse items, track your claims, or post your organization's needs."
+                                                       FontSize="12" Foreground="#5E7A8A" TextWrapping="Wrap"/>
                                         </StackPanel>
-                                    </Border>
-                                </Grid>
 
-                                <!-- ── ITEM CATEGORIES ── -->
-                                <Border CornerRadius="16" Margin="0,0,0,20" BorderThickness="1.5" Padding="0">
+                                        <!-- Kapwa Impact card — fixed width, no squish -->
+                                        <Border Grid.Column="2" Background="#EBF7FB" CornerRadius="14"
+                                                Padding="16,14" VerticalAlignment="Center">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="#00B4D8" BlurRadius="10" ShadowDepth="0" Opacity="0.10"/>
+                                            </Border.Effect>
+                                            <StackPanel>
+                                                <TextBlock Text="💙 Kapwa Impact" FontSize="13" FontWeight="Bold"
+                                                           Foreground="#0077B6" Margin="0,0,0,6"/>
+                                                <TextBlock FontSize="11" Foreground="#5E7A8A" TextWrapping="Wrap"
+                                                           Text="Every item you claim is a connection. You're not just receiving things — you're receiving hope and dignity from your community."/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- ══ ITEM CATEGORIES — floating tall cards, no harsh outer border ══ -->
+                                <Border CornerRadius="16" Margin="0,0,0,4" Padding="18,16"
+                                        BorderThickness="0">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                             <GradientStop Color="#CCFFFFFF" Offset="0"/>
                                             <GradientStop Color="#66FFFFFF" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <Border.BorderBrush>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                            <GradientStop Color="White" Offset="0"/>
-                                            <GradientStop Color="#33FFFF" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Border.BorderBrush>
                                     <Border.Effect>
                                         <DropShadowEffect Color="#00B4D8" BlurRadius="14" ShadowDepth="0" Opacity="0.10"/>
                                     </Border.Effect>
 
-                                  <StackPanel Margin="0,0,0,24">
-            
-            <TextBlock Text="Item Categories" FontSize="16" FontWeight="Bold"
-                       Foreground="#03045E" Margin="0,0,0,12"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Item Categories" FontSize="15" FontWeight="Bold"
+                                                   Foreground="#03045E" Margin="0,0,0,14"/>
 
-            <UniformGrid Rows="1" Columns="5">
+                                        <!-- 6 columns: Clothing, Food, Electronics, Medicine, School, Others -->
+                                        <UniformGrid Rows="1" Columns="6">
 
-                <Button Command="{Binding BrowseByCategoryCommand}" CommandParameter="Clothing"
-                        Style="{StaticResource CardHoverBtn}" Margin="0,0,5,0">
-                    <Border CornerRadius="16" Background="White" BorderThickness="0" Padding="2,16">
-                        <Border.Effect>
-                            <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.05"/>
-                        </Border.Effect>
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Width="48" Height="48" CornerRadius="24" Background="#E8F4FD" Margin="0,0,0,12">
-                                <TextBlock Text="👕" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Clothing" FontSize="13" FontWeight="Bold" 
-                                       Foreground="#03045E" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="15 items" FontSize="11" Foreground="#5E7A8A" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                </Button>
+                                            <Button Command="{Binding BrowseByCategoryCommand}"
+                                                    CommandParameter="Clothing"
+                                                    Style="{StaticResource CardHoverBtn}" Margin="0,0,6,0">
+                                                <Border CornerRadius="14" Background="White"
+                                                        BorderThickness="0" Padding="4,18" MinHeight="100">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.06"/>
+                                                    </Border.Effect>
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="46" Height="46" CornerRadius="23"
+                                                                Background="#E8F4FD" Margin="0,0,0,10">
+                                                            <TextBlock Text="👕" FontSize="22"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Clothing" FontSize="12" FontWeight="Bold"
+                                                                   Foreground="#03045E" HorizontalAlignment="Center"
+                                                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </Button>
 
-                <Button Command="{Binding BrowseByCategoryCommand}" CommandParameter="Food"
-                        Style="{StaticResource CardHoverBtn}" Margin="5,0,5,0">
-                    <Border CornerRadius="16" Background="White" BorderThickness="0" Padding="2,16">
-                        <Border.Effect>
-                            <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.05"/>
-                        </Border.Effect>
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Width="48" Height="48" CornerRadius="24" Background="#FDE8E8" Margin="0,0,0,12">
-                                <TextBlock Text="🍽️" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Food" FontSize="13" FontWeight="Bold" 
-                                       Foreground="#03045E" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="24 items" FontSize="11" Foreground="#5E7A8A" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                </Button>
+                                            <Button Command="{Binding BrowseByCategoryCommand}"
+                                                    CommandParameter="Food"
+                                                    Style="{StaticResource CardHoverBtn}" Margin="3,0,3,0">
+                                                <Border CornerRadius="14" Background="White"
+                                                        BorderThickness="0" Padding="4,18" MinHeight="100">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.06"/>
+                                                    </Border.Effect>
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="46" Height="46" CornerRadius="23"
+                                                                Background="#FDE8E8" Margin="0,0,0,10">
+                                                            <TextBlock Text="🍽️" FontSize="22"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Food" FontSize="12" FontWeight="Bold"
+                                                                   Foreground="#03045E" HorizontalAlignment="Center"
+                                                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </Button>
 
-                <Button Command="{Binding BrowseByCategoryCommand}" CommandParameter="Electronics"
-                        Style="{StaticResource CardHoverBtn}" Margin="5,0,5,0">
-                    <Border CornerRadius="16" Background="White" BorderThickness="0" Padding="2,16">
-                        <Border.Effect>
-                            <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.05"/>
-                        </Border.Effect>
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Width="48" Height="48" CornerRadius="24" Background="#F4E8FD" Margin="0,0,0,12">
-                                <TextBlock Text="💻" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Electronics" FontSize="12" FontWeight="Bold" 
-                                       Foreground="#03045E" HorizontalAlignment="Center" Margin="0,0,0,2"
-                                       TextWrapping="Wrap" TextAlignment="Center"/>
-                            <TextBlock Text="8 items" FontSize="11" Foreground="#5E7A8A" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                </Button>
+                                            <Button Command="{Binding BrowseByCategoryCommand}"
+                                                    CommandParameter="Electronics"
+                                                    Style="{StaticResource CardHoverBtn}" Margin="3,0,3,0">
+                                                <Border CornerRadius="14" Background="White"
+                                                        BorderThickness="0" Padding="4,18" MinHeight="100">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.06"/>
+                                                    </Border.Effect>
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="46" Height="46" CornerRadius="23"
+                                                                Background="#F4E8FD" Margin="0,0,0,10">
+                                                            <TextBlock Text="💻" FontSize="22"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Electronics" FontSize="11" FontWeight="Bold"
+                                                                   Foreground="#03045E" HorizontalAlignment="Center"
+                                                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </Button>
 
-                <Button Command="{Binding BrowseByCategoryCommand}" CommandParameter="Medicine"
-                        Style="{StaticResource CardHoverBtn}" Margin="5,0,5,0">
-                    <Border CornerRadius="16" Background="White" BorderThickness="0" Padding="2,16">
-                        <Border.Effect>
-                            <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.05"/>
-                        </Border.Effect>
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Width="48" Height="48" CornerRadius="24" Background="#E8FDF4" Margin="0,0,0,12">
-                                <TextBlock Text="💊" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Medicine" FontSize="13" FontWeight="Bold" 
-                                       Foreground="#03045E" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="32 items" FontSize="11" Foreground="#5E7A8A" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                </Button>
+                                            <Button Command="{Binding BrowseByCategoryCommand}"
+                                                    CommandParameter="Medicine"
+                                                    Style="{StaticResource CardHoverBtn}" Margin="3,0,3,0">
+                                                <Border CornerRadius="14" Background="White"
+                                                        BorderThickness="0" Padding="4,18" MinHeight="100">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.06"/>
+                                                    </Border.Effect>
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="46" Height="46" CornerRadius="23"
+                                                                Background="#E8FDF4" Margin="0,0,0,10">
+                                                            <TextBlock Text="💊" FontSize="22"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Medicine" FontSize="12" FontWeight="Bold"
+                                                                   Foreground="#03045E" HorizontalAlignment="Center"
+                                                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </Button>
 
-                <Button Command="{Binding BrowseByCategoryCommand}" CommandParameter="School Supplies"
-                        Style="{StaticResource CardHoverBtn}" Margin="5,0,0,0">
-                    <Border CornerRadius="16" Background="White" BorderThickness="0" Padding="2,16">
-                        <Border.Effect>
-                            <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.05"/>
-                        </Border.Effect>
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Width="48" Height="48" CornerRadius="24" Background="#FDF4E8" Margin="0,0,0,12">
-                                <TextBlock Text="🎒" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="School" FontSize="13" FontWeight="Bold" 
-                                       Foreground="#03045E" HorizontalAlignment="Center" Margin="0,0,0,2"/>
-                            <TextBlock Text="19 items" FontSize="11" Foreground="#5E7A8A" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                </Button>
+                                            <Button Command="{Binding BrowseByCategoryCommand}"
+                                                    CommandParameter="School Supplies"
+                                                    Style="{StaticResource CardHoverBtn}" Margin="3,0,3,0">
+                                                <Border CornerRadius="14" Background="White"
+                                                        BorderThickness="0" Padding="4,18" MinHeight="100">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.06"/>
+                                                    </Border.Effect>
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="46" Height="46" CornerRadius="23"
+                                                                Background="#FDF4E8" Margin="0,0,0,10">
+                                                            <TextBlock Text="🎒" FontSize="22"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="School" FontSize="12" FontWeight="Bold"
+                                                                   Foreground="#03045E" HorizontalAlignment="Center"
+                                                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </Button>
 
-            </UniformGrid>
-        </StackPanel>
+                                            <!-- NEW: Others category -->
+                                            <Button Command="{Binding BrowseByCategoryCommand}"
+                                                    CommandParameter="Others"
+                                                    Style="{StaticResource CardHoverBtn}" Margin="6,0,0,0">
+                                                <Border CornerRadius="14" Background="White"
+                                                        BorderThickness="0" Padding="4,18" MinHeight="100">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="2" Opacity="0.06"/>
+                                                    </Border.Effect>
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="46" Height="46" CornerRadius="23"
+                                                                Background="#F0F0F0" Margin="0,0,0,10">
+                                                            <TextBlock Text="📦" FontSize="22"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Others" FontSize="12" FontWeight="Bold"
+                                                                   Foreground="#03045E" HorizontalAlignment="Center"
+                                                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </Button>
+
+                                        </UniformGrid>
+                                    </StackPanel>
                                 </Border>
                                 <!-- ── END ITEM CATEGORIES ── -->
 
                             </StackPanel>
+                            <!-- end left column -->
 
-                            <!-- ── RIGHT COLUMN — MESSAGES ── -->
-                            <Border Grid.Column="2" CornerRadius="16" BorderThickness="1.5"
-                                    VerticalAlignment="Center" MinHeight="300" RenderTransformOrigin="0.5,0.5" Margin="2,0,0,0" Height="300">
-                                <Border.RenderTransform>
-                                    <TransformGroup>
-                                        <ScaleTransform/>
-                                        <SkewTransform/>
-                                        <RotateTransform Angle="0.211"/>
-                                        <TranslateTransform/>
-                                    </TransformGroup>
-                                </Border.RenderTransform>
+                            <!-- ══ RIGHT COLUMN — MESSAGES (maximized, no fixed height) ══ -->
+                            <Border Grid.Column="2" CornerRadius="16" BorderThickness="0"
+                                    VerticalAlignment="Stretch">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                         <GradientStop Color="#CCFFFFFF" Offset="0"/>
                                         <GradientStop Color="#66FFFFFF" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Border.Background>
-                                <Border.BorderBrush>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="White" Offset="0"/>
-                                        <GradientStop Color="#33FFFF" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.BorderBrush>
                                 <Border.Effect>
                                     <DropShadowEffect Color="#00B4D8" BlurRadius="14" ShadowDepth="0" Opacity="0.10"/>
                                 </Border.Effect>
@@ -486,7 +509,7 @@
                                             <TextBlock Text="Messages" FontSize="14" FontWeight="Bold"
                                                        Foreground="#03045E" VerticalAlignment="Center"/>
                                             <Button Grid.Column="1" Command="{Binding ChatCommand}"
-                                                     Background="Transparent"
+                                                    Content="See All →" Background="Transparent"
                                                     BorderThickness="0" Foreground="#0077B6" FontSize="11"
                                                     Cursor="Hand" VerticalAlignment="Center"/>
                                         </Grid>
@@ -500,8 +523,8 @@
                                         </Rectangle>
                                     </StackPanel>
 
-                                    <!-- Chat user list -->
-                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="340">
+                                    <!-- Chat user list with PROFILE PICTURES -->
+                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                                         <ItemsControl ItemsSource="{Binding RecentChats}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
@@ -528,11 +551,43 @@
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
 
+                                                            <!-- Avatar: profile pic or default -->
                                                             <Border Width="38" Height="38" CornerRadius="19"
                                                                     ClipToBounds="True" Background="#EBF7FB">
-                                                                <TextBlock Text="👤" FontSize="18"
-                                                                           HorizontalAlignment="Center"
-                                                                           VerticalAlignment="Center"/>
+                                                                <Grid>
+                                                                    <!-- Default avatar -->
+                                                                    <TextBlock Text="👤" FontSize="18"
+                                                                               HorizontalAlignment="Center"
+                                                                               VerticalAlignment="Center">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding HasProfilePic}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                    <!-- Profile picture -->
+                                                                    <Image Source="{Binding ProfilePicturePath}"
+                                                                           Stretch="UniformToFill">
+                                                                        <Image.Clip>
+                                                                            <EllipseGeometry RadiusX="19" RadiusY="19" Center="19,19"/>
+                                                                        </Image.Clip>
+                                                                        <Image.Style>
+                                                                            <Style TargetType="Image">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding HasProfilePic}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Image.Style>
+                                                                    </Image>
+                                                                </Grid>
                                                             </Border>
 
                                                             <StackPanel Grid.Column="1" VerticalAlignment="Center"
@@ -613,9 +668,9 @@
                             <!-- ── END RIGHT COLUMN ── -->
 
                         </Grid>
-                        <!-- ── END two-column row ── -->
+                        <!-- ── END ROW A ── -->
 
-                        <!-- ── NEEDS WISHLIST — full width carousel ── -->
+                        <!-- ══ ROW B: NEEDS WISHLIST carousel ══ -->
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock Text="Needs Wishlist" FontSize="16" FontWeight="Bold"
                                        Foreground="#03045E" Margin="0,0,0,14"/>
@@ -627,7 +682,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Left arrow -->
+                                <!-- Left arrow — fully clickable -->
                                 <Button Grid.Column="0"
                                         Command="{Binding CarouselLeftCommand}"
                                         Width="36" Height="36" Margin="0,0,6,0"
@@ -636,21 +691,26 @@
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
                                             <Border CornerRadius="18" Background="#CCF0FAFF"
-                                                    BorderBrush="#9090E0EF" BorderThickness="1">
+                                                    BorderBrush="#9090E0EF" BorderThickness="1"
+                                                    x:Name="LeftBd">
                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Opacity" Value="0.8"/>
+                                                    <Setter TargetName="LeftBd" Property="Background" Value="#AA90E0EF"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="LeftBd" Property="Background" Value="#7700B4D8"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
                                     </Button.Template>
-                                    <TextBlock Text="‹" FontSize="20" FontWeight="Bold"
-                                               Foreground="#0077B6" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,-5,1,0"/>
+                                    <TextBlock Text="‹" FontSize="22" FontWeight="Bold"
+                                               Foreground="#0077B6" HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" Margin="0,-3,1,0"/>
                                 </Button>
 
-                                <!-- Carousel scroll host -->
+                                <!-- Carousel scroll host — named for code-behind wiring -->
                                 <ScrollViewer Grid.Column="1"
                                               x:Name="NeedsCarouselScroller"
                                               HorizontalScrollBarVisibility="Hidden"
@@ -689,8 +749,7 @@
                                                                     <Border Background="#EBF7FB"/>
                                                                     <TextBlock Text="📝" FontSize="40"
                                                                                HorizontalAlignment="Center"
-                                                                               VerticalAlignment="Center"
-                                                                               Opacity="0.5">
+                                                                               VerticalAlignment="Center" Opacity="0.5">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
                                                                                 <Setter Property="Visibility" Value="Visible"/>
@@ -740,28 +799,26 @@
                                                             </Border>
 
                                                             <!-- Card info -->
-                                                            <StackPanel Grid.Row="1" Margin="10,8,10,10">
+                                                            <StackPanel Margin="10,8,10,10">
                                                                 <TextBlock Text="{Binding Title}"
-                                                                                   FontSize="12" FontWeight="Bold"
-                                                                                   Foreground="#03045E"
-                                                                                   TextTrimming="CharacterEllipsis"
-                                                                                   Margin="0,0,0,2"/>
+                                                                           FontSize="12" FontWeight="Bold"
+                                                                           Foreground="#03045E"
+                                                                           TextTrimming="CharacterEllipsis"
+                                                                           Margin="0,0,0,2"/>
                                                                 <TextBlock Text="{Binding Org_Name}"
-                                                                                   FontSize="10" Foreground="#0077B6"
-                                                                                   TextTrimming="CharacterEllipsis"
-                                                                                   Margin="0,0,0,2"/>
+                                                                           FontSize="10" Foreground="#0077B6"
+                                                                           TextTrimming="CharacterEllipsis"
+                                                                           Margin="0,0,0,2"/>
                                                                 <TextBlock Text="{Binding Description}"
-                                                                                   FontSize="10" Foreground="#5E7A8A"
-                                                                                   TextTrimming="CharacterEllipsis"
-                                                                                   Margin="0,0,0,10"/>
+                                                                           FontSize="10" Foreground="#5E7A8A"
+                                                                           TextTrimming="CharacterEllipsis"
+                                                                           Margin="0,0,0,10"/>
 
-                                                                <!-- Edit Needs button — solid blue fill, always visible -->
-                                                                <Button Height="30"
-                                                                                BorderThickness="0"
-                                                                                Cursor="Hand"
-                                                                                Command="{Binding DataContext.EditNeedsPostCommand,
-                                                                                    RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                                CommandParameter="{Binding}">
+                                                                <!-- Edit Needs button — passes the NeedsPostModel as param -->
+                                                                <Button Height="30" BorderThickness="0" Cursor="Hand"
+                                                                        Command="{Binding DataContext.EditNeedsPostCommand,
+                                                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}">
                                                                     <Button.Template>
                                                                         <ControlTemplate TargetType="Button">
                                                                             <Border x:Name="Bd" CornerRadius="8">
@@ -772,7 +829,7 @@
                                                                                     </LinearGradientBrush>
                                                                                 </Border.Background>
                                                                                 <ContentPresenter HorizontalAlignment="Center"
-                                                                                                          VerticalAlignment="Center"/>
+                                                                                                  VerticalAlignment="Center"/>
                                                                             </Border>
                                                                             <ControlTemplate.Triggers>
                                                                                 <Trigger Property="IsMouseOver" Value="True">
@@ -782,8 +839,7 @@
                                                                         </ControlTemplate>
                                                                     </Button.Template>
                                                                     <TextBlock Text="✏️ Edit Needs"
-                                                                                       FontSize="11" FontWeight="SemiBold"
-                                                                                       Foreground="White"/>
+                                                                               FontSize="11" FontWeight="SemiBold" Foreground="White"/>
                                                                 </Button>
                                                             </StackPanel>
                                                         </StackPanel>
@@ -830,25 +886,30 @@
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
                                             <Border CornerRadius="18" Background="#CCF0FAFF"
-                                                    BorderBrush="#9090E0EF" BorderThickness="1">
+                                                    BorderBrush="#9090E0EF" BorderThickness="1"
+                                                    x:Name="RightBd">
                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Opacity" Value="0.8"/>
+                                                    <Setter TargetName="RightBd" Property="Background" Value="#AA90E0EF"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="RightBd" Property="Background" Value="#7700B4D8"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
                                     </Button.Template>
-                                    <TextBlock Text="›" FontSize="20" FontWeight="Bold"
-                                               Foreground="#0077B6" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,-5,-1,0"/>
+                                    <TextBlock Text="›" FontSize="22" FontWeight="Bold"
+                                               Foreground="#0077B6" HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" Margin="1,-3,0,0"/>
                                 </Button>
 
                             </Grid>
                         </StackPanel>
                         <!-- ── END NEEDS WISHLIST ── -->
 
-                        <!-- ── TRANSACTION HISTORY — full width ── -->
+                        <!-- ══ ROW C: TRANSACTION HISTORY ══ -->
                         <Border CornerRadius="16" Margin="0,0,0,24" BorderThickness="1.5" Padding="0">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -895,11 +956,12 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="Item" FontSize="11" FontWeight="Bold" Foreground="#0077B6"/>
-                                        <TextBlock Grid.Column="1" Text="Donor" FontSize="11" FontWeight="Bold" Foreground="#0077B6"/>
+                                        <TextBlock Grid.Column="0" Text="Item"         FontSize="11" FontWeight="Bold" Foreground="#0077B6"/>
+                                        <TextBlock Grid.Column="1" Text="Donor"        FontSize="11" FontWeight="Bold" Foreground="#0077B6"/>
                                         <TextBlock Grid.Column="2" Text="Organization" FontSize="11" FontWeight="Bold" Foreground="#0077B6"/>
-                                        <TextBlock Grid.Column="3" Text="Handoff" FontSize="11" FontWeight="Bold" Foreground="#0077B6"/>
-                                        <TextBlock Grid.Column="4" Text="Date" FontSize="11" FontWeight="Bold" Foreground="#0077B6" HorizontalAlignment="Right"/>
+                                        <TextBlock Grid.Column="3" Text="Handoff"      FontSize="11" FontWeight="Bold" Foreground="#0077B6"/>
+                                        <TextBlock Grid.Column="4" Text="Date"         FontSize="11" FontWeight="Bold" Foreground="#0077B6"
+                                                   HorizontalAlignment="Right"/>
                                     </Grid>
                                 </Border>
 
@@ -917,8 +979,9 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Item_Name}" FontSize="13" FontWeight="SemiBold"
-                                                                   Foreground="#03045E" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Text="{Binding Item_Name}" FontSize="13"
+                                                                   FontWeight="SemiBold" Foreground="#03045E"
+                                                                   TextTrimming="CharacterEllipsis"/>
                                                         <TextBlock Text="{Binding Category_Name}" FontSize="11" Foreground="#0077B6"/>
                                                     </StackPanel>
                                                     <TextBlock Grid.Column="1" Text="{Binding Beneficiary_Name}"

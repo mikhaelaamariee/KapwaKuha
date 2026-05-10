@@ -103,20 +103,26 @@
                                             <StackPanel>
                                                 <!-- Item image if available -->
                                                 <Border CornerRadius="8" ClipToBounds="True"
-                                             Height="120" Margin="0,0,0,8">
+                                                 Height="120" Margin="0,0,0,8">
                                                     <Border.Style>
                                                         <Style TargetType="Border">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
                                                             <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding ShowItemPreview}" Value="True">
+                                                                <!-- Only show when BOTH the preview flag AND a real path exist -->
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding ShowItemPreview}" Value="True"/>
+                                                                        <Condition Binding="{Binding HasLinkedImage}" Value="True"/>
+                                                                    </MultiDataTrigger.Conditions>
                                                                     <Setter Property="Visibility" Value="Visible"/>
-                                                                </DataTrigger>
+                                                                </MultiDataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
                                                     </Border.Style>
                                                     <Grid>
                                                         <Border Background="#EBF7FB"/>
-                                                        <Image Source="{Binding LinkedItemPath}" Stretch="UniformToFill"/>
+                                                        <Image Source="{Binding LinkedItemPath, TargetNullValue={x:Null}}"
+                                                        Stretch="UniformToFill"/>
                                                     </Grid>
                                                 </Border>
 
