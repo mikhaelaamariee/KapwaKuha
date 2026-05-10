@@ -89,7 +89,6 @@ namespace KapwaKuha.Services
                     string uname = r["Donor_Username"].ToString() ?? "";
                     bool isActive = Convert.ToBoolean(r["IsActive"]);
                     r.Close();
-
                     if (!isActive)
                     {
                         var reactivate = System.Windows.MessageBox.Show(
@@ -101,10 +100,33 @@ namespace KapwaKuha.Services
                         if (reactivate != System.Windows.MessageBoxResult.Yes)
                             return (false, "", "", "");
 
-                        using var c2 = new SqlCommand(
-                            "UPDATE Users SET IsActive = 1 WHERE UserID = @id", conn);
-                        c2.Parameters.AddWithValue("@id", userId);
-                        await c2.ExecuteNonQueryAsync();
+                        try
+                        {
+                            // 1. Update the 'Users' table 
+                            // Based on your script: Column is 'IsActive' (BIT), ID is 'UserID'
+                            using var c1 = new SqlCommand(
+                                "UPDATE Users SET IsActive = 1 WHERE UserID = @id", conn);
+                            c1.Parameters.AddWithValue("@id", userId);
+                            await c1.ExecuteNonQueryAsync();
+
+                            // 2. Update the 'Donors' table
+                            // Based on your script: Column is 'Donor_AccountStatus' (String), ID is 'Donor_ID'
+                            using var c2 = new SqlCommand(
+                                "UPDATE Donors SET Donor_AccountStatus = 'Active' WHERE Donor_ID = @id", conn);
+                            c2.Parameters.AddWithValue("@id", userId);
+                            await c2.ExecuteNonQueryAsync();
+
+                            // 3. Update the local variable so the rest of this method 
+                            // treats the user as active for the current login attempt.
+                            isActive = true;
+
+                            System.Windows.MessageBox.Show("Account successfully reactivated! Welcome back.", "Success");
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Windows.MessageBox.Show("Error during reactivation: " + ex.Message);
+                            return (false, "", "", "");
+                        }
                     }
 
                     return (true, userId, fullName, uname);
@@ -1263,34 +1285,45 @@ namespace KapwaKuha.Services
         // ══════════════════════════════════════════════════════════════════════
 
         public static async Task<(int Total, int Claimed, int Active, int FulfilledNeeds, int ActiveBeneficiaries)>
-            GetImpactMetrics(string donorId)
+     GetImpactMetrics(string donorId)
         {
             try
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
 
-                using var c1 = new SqlCommand(
-                    "SELECT COUNT(*) FROM Items WHERE Donor_ID=@did", conn);
+                // 1. Total items donated by THIS donor
+                using var c1 = new SqlCommand("SELECT COUNT(*) FROM Items WHERE Donor_ID=@did", conn);
                 c1.Parameters.AddWithValue("@did", donorId);
                 int total = Convert.ToInt32(await c1.ExecuteScalarAsync());
 
-                using var c2 = new SqlCommand(
-                    "SELECT COUNT(*) FROM Items WHERE Donor_ID=@did AND Item_Status='Claimed'", conn);
+                // 2. Items by THIS donor that are claimed
+                using var c2 = new SqlCommand("SELECT COUNT(*) FROM Items WHERE Donor_ID=@did AND Item_Status='Claimed'", conn);
                 c2.Parameters.AddWithValue("@did", donorId);
                 int claimed = Convert.ToInt32(await c2.ExecuteScalarAsync());
 
-                using var c3 = new SqlCommand(
-                    "SELECT COUNT(*) FROM Items WHERE Donor_ID=@did AND Item_Status='Available'", conn);
+                // 3. Items by THIS donor still available
+                using var c3 = new SqlCommand("SELECT COUNT(*) FROM Items WHERE Donor_ID=@did AND Item_Status='Available'", conn);
                 c3.Parameters.AddWithValue("@did", donorId);
                 int active = Convert.ToInt32(await c3.ExecuteScalarAsync());
 
-                using var c4 = new SqlCommand(
-                    "SELECT COUNT(*) FROM NeedsPosts WHERE Status='Fulfilled'", conn);
+                // 4. FIX: NeedsPosts fulfilled specifically by THIS donor's items
+                // We join Items to Claims to NeedsPosts (or similar logic depending on your flow)
+                using var c4 = new SqlCommand(@"
+            SELECT COUNT(DISTINCT n.NeedsPost_ID) 
+            FROM NeedsPosts n
+            INNER JOIN Items i ON i.TargetBeneficiary_ID <> '' -- Assuming you track fulfillment via items
+            WHERE i.Donor_ID = @did AND n.Status = 'Fulfilled'", conn);
+                c4.Parameters.AddWithValue("@did", donorId);
                 int fulfilled = Convert.ToInt32(await c4.ExecuteScalarAsync());
 
-                using var c5 = new SqlCommand(
-                    "SELECT COUNT(*) FROM Beneficiaries WHERE Beneficiaries_Status='Active'", conn);
+                // 5. FIX: Beneficiaries who have specifically received items from THIS donor
+                using var c5 = new SqlCommand(@"
+            SELECT COUNT(DISTINCT cl.Beneficiary_ID) 
+            FROM Claims cl
+            INNER JOIN Items i ON cl.Item_ID = i.Item_ID
+            WHERE i.Donor_ID = @did AND cl.Claim_Status = 'Released'", conn);
+                c5.Parameters.AddWithValue("@did", donorId);
                 int activeBenes = Convert.ToInt32(await c5.ExecuteScalarAsync());
 
                 return (total, claimed, active, fulfilled, activeBenes);
