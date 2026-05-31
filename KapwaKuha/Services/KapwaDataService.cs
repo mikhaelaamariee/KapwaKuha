@@ -23,6 +23,10 @@ namespace KapwaKuha.Services
         private static readonly string _laptopConn =
             @"Server=DESKTOP-8P1VJSE;Database=KapwaKuha_Database;Trusted_Connection=True;TrustServerCertificate=True;Connection Timeout=5;";
 
+        // Yuan's new laptop
+        private static readonly string _laptopConn1 =
+        @"Server=LAPTOP-IDI5D94J\SQLEXPRESS;Database=KapwaKuha_Database;Trusted_Connection=True;TrustServerCertificate=True;Connection Timeout=5;";
+
         // Teammate 1
         private static readonly string _team1Conn =
             @"Server=LAPTOP-3QIJJ85P\MSSQLSERVER06;Database=KapwaKuha_Database;Trusted_Connection=True;TrustServerCertificate=True;Connection Timeout=5;";
@@ -40,7 +44,7 @@ namespace KapwaKuha.Services
                 if (_cachedConn != null) return _cachedConn;
 
                 // List of all possible strings to try
-                string[] connectionStrings = { _pcConn, _laptopConn, _team1Conn, _team2Conn };
+                string[] connectionStrings = { _pcConn, _laptopConn, _laptopConn1 , _team1Conn, _team2Conn };
 
                 foreach (var connectionString in connectionStrings)
                 {
@@ -1818,6 +1822,587 @@ ORDER BY i.Date_Found DESC", conn);
                 MessageBox.Show($"Receipt error: {ex.Message}",
                     "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+        // ══════════════════════════════════════════════════════════════════════
+        // AUTH — Independent Beneficiary login (NEW for finals)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public static async Task<(bool OK, string UserId, string FullName, string Username)>
+            LoginIndependentBeneficiary(string username, string password)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+            SELECT ib.IndepBene_ID, ib.FullName, ib.Username, u.IsActive,
+                   u.Admin_Approval_Status
+            FROM IndependentBeneficiaries ib
+            INNER JOIN Users u ON u.UserID = ib.IndepBene_ID
+            WHERE ib.Username = @uname AND u.Password = @pw", conn);
+                cmd.Parameters.AddWithValue("@uname", username);
+                cmd.Parameters.AddWithValue("@pw", password);
+                using var r = await cmd.ExecuteReaderAsync();
+                if (await r.ReadAsync())
+                {
+                    string userId = r["IndepBene_ID"].ToString() ?? "";
+                    string fullName = r["FullName"].ToString() ?? "";
+                    string uname = r["Username"].ToString() ?? "";
+                    bool isActive = Convert.ToBoolean(r["IsActive"]);
+                    string approval = r["Admin_Approval_Status"].ToString() ?? "";
+                    r.Close();
+
+                    if (approval == "Pending")
+                    {
+                        System.Windows.MessageBox.Show(
+                            "Your account is still under Admin review.\nPlease wait for approval before logging in.",
+                            "Pending Approval", System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Warning);
+                        return (false, "", "", "");
+                    }
+                    if (approval == "Rejected")
+                    {
+                        System.Windows.MessageBox.Show(
+                            "Your account registration was rejected.\nPlease contact support.",
+                            "Account Rejected", System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Error);
+                        return (false, "", "", "");
+                    }
+                    if (!isActive)
+                    {
+                        var reactivate = System.Windows.MessageBox.Show(
+                            "Your account is currently deactivated.\n\nWould you like to reactivate it?",
+                            "Account Deactivated",
+                            System.Windows.MessageBoxButton.YesNo,
+                            System.Windows.MessageBoxImage.Question);
+                        if (reactivate != System.Windows.MessageBoxResult.Yes)
+                            return (false, "", "", "");
+                        using var c1 = new SqlCommand(
+                            "UPDATE Users SET IsActive = 1 WHERE UserID = @id", conn);
+                        c1.Parameters.AddWithValue("@id", userId);
+                        await c1.ExecuteNonQueryAsync();
+                        using var c2 = new SqlCommand(
+                            "UPDATE IndependentBeneficiaries SET AccountStatus = 'Active' WHERE IndepBene_ID = @id", conn);
+                        c2.Parameters.AddWithValue("@id", userId);
+                        await c2.ExecuteNonQueryAsync();
+                    }
+                    return (true, userId, fullName, uname);
+                }
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("LoginIndependentBeneficiary failed: " + ex.Message); }
+            return (false, "", "", "");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // AUTH — Admin login (NEW for finals)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public static async Task<(bool OK, string UserId, string FullName)>
+            LoginAdmin(string adminId, string password)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+            SELECT a.Admin_ID, a.Admin_FullName, u.IsActive
+            FROM Admins a
+            INNER JOIN Users u ON u.UserID = a.Admin_ID
+            WHERE a.Admin_ID = @id AND u.Password = @pw
+              AND u.Role = 'Admin'", conn);
+                cmd.Parameters.AddWithValue("@id", adminId);
+                cmd.Parameters.AddWithValue("@pw", password);
+                using var r = await cmd.ExecuteReaderAsync();
+                if (await r.ReadAsync())
+                {
+                    string userId = r["Admin_ID"].ToString() ?? "";
+                    string fullName = r["Admin_FullName"].ToString() ?? "";
+                    bool isActive = Convert.ToBoolean(r["IsActive"]);
+                    r.Close();
+                    if (!isActive)
+                    {
+                        System.Windows.MessageBox.Show("Admin account is deactivated.");
+                        return (false, "", "");
+                    }
+                    // Update LastLogin
+                    using var upd = new SqlCommand(
+                        "UPDATE Admins SET LastLogin = GETDATE() WHERE Admin_ID = @id", conn);
+                    upd.Parameters.AddWithValue("@id", userId);
+                    await upd.ExecuteNonQueryAsync();
+                    return (true, userId, fullName);
+                }
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("LoginAdmin failed: " + ex.Message); }
+            return (false, "", "");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // REGISTRATION — Independent Beneficiary (NEW for finals)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public static async Task<string> GetNextIndependentBeneficiaryId()
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("SELECT COUNT(*) FROM IndependentBeneficiaries", conn);
+                int n = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+                return $"IB{n + 1:D3}";
+            }
+            catch { return $"IB{DateTime.Now.Ticks % 900 + 100:D3}"; }
+        }
+
+        public static async Task RegisterIndependentBeneficiary(
+            IndependentBeneficiaryModel bene, string password,
+            string securityQuestion, string securityAnswer)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("sp_RegisterIndependentBeneficiary", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@IndepBeneId", bene.IndepBene_ID);
+                cmd.Parameters.AddWithValue("@FullName", bene.FullName);
+                cmd.Parameters.AddWithValue("@Username", bene.Username);
+                cmd.Parameters.AddWithValue("@Sex", bene.Sex);
+                cmd.Parameters.AddWithValue("@Contact", bene.ContactNumber);
+                cmd.Parameters.AddWithValue("@Address",
+                    string.IsNullOrWhiteSpace(bene.Address) ? (object)DBNull.Value : bene.Address);
+                cmd.Parameters.AddWithValue("@Password", password);
+                cmd.Parameters.AddWithValue("@SecurityQ", securityQuestion);
+                cmd.Parameters.AddWithValue("@SecurityA", securityAnswer);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("RegisterIndependentBeneficiary failed: " + ex.Message); throw; }
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // FEEDBACK (NEW for finals)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public static async Task<string> GetNextFeedbackId()
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("SELECT COUNT(*) FROM Feedback", conn);
+                int n = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+                return $"FB{n + 1:D3}";
+            }
+            catch { return $"FB{DateTime.Now.Ticks % 900 + 100:D3}"; }
+        }
+
+        public static async Task SubmitFeedback(FeedbackModel fb)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("sp_SubmitFeedback", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@FeedbackId", fb.Feedback_ID);
+                cmd.Parameters.AddWithValue("@DonorId", fb.Donor_ID);
+                cmd.Parameters.AddWithValue("@ClaimId", fb.Claim_ID);
+                cmd.Parameters.AddWithValue("@Stars", fb.Stars);
+                cmd.Parameters.AddWithValue("@Comment",
+                    string.IsNullOrWhiteSpace(fb.Comment) ? (object)DBNull.Value : fb.Comment);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("SubmitFeedback failed: " + ex.Message); throw; }
+        }
+
+        public static async Task<double> GetDonorAverageRating(string donorId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "SELECT dbo.fn_GetDonorAverageRating(@did)", conn);
+                cmd.Parameters.AddWithValue("@did", donorId);
+                var result = await cmd.ExecuteScalarAsync();
+                return result == null || result is DBNull ? 0.0 : Convert.ToDouble(result);
+            }
+            catch { return 0.0; }
+        }
+
+        public static async Task<bool> HasAlreadyRatedClaim(string claimId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "SELECT COUNT(*) FROM Feedback WHERE Claim_ID = @cid", conn);
+                cmd.Parameters.AddWithValue("@cid", claimId);
+                int count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+                return count > 0;
+            }
+            catch { return false; }
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // USER REPORTS (NEW for finals)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public static async Task<string> GetNextReportId()
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("SELECT COUNT(*) FROM UserReports", conn);
+                int n = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+                return $"RPT{n + 1:D3}";
+            }
+            catch { return $"RPT{DateTime.Now.Ticks % 900 + 100:D3}"; }
+        }
+
+        public static async Task FileUserReport(UserReportModel report)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+            INSERT INTO UserReports
+                (Report_ID, Reporter_ID, Reported_ID, Report_Type,
+                 Description, Status, Admin_Action_Taken, Filed_At, Admin_Notes)
+            VALUES
+                (@rid, @reporter, @reported, @type,
+                 @desc, 'Open', 'None', GETDATE(), NULL)", conn);
+                cmd.Parameters.AddWithValue("@rid", report.Report_ID);
+                cmd.Parameters.AddWithValue("@reporter", report.Reporter_ID);
+                cmd.Parameters.AddWithValue("@reported", report.Reported_ID);
+                cmd.Parameters.AddWithValue("@type", report.Report_Type);
+                cmd.Parameters.AddWithValue("@desc", report.Description);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("FileUserReport failed: " + ex.Message); throw; }
+        }
+
+        public static async Task<List<UserReportModel>> GetOpenReports()
+        {
+            var list = new List<UserReportModel>();
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+            SELECT r.Report_ID, r.Reporter_ID, r.Reported_ID,
+                   ISNULL(d.Donor_FullName,
+                     ISNULL(ib.Beneficiary_FullName,
+                       ISNULL(ind.FullName, r.Reported_ID))) AS Reported_Name,
+                   r.Report_Type, r.Description, r.Status,
+                   r.Admin_Action_Taken, r.Filed_At,
+                   ISNULL(r.Admin_Notes,'') AS Admin_Notes
+            FROM UserReports r
+            LEFT JOIN Donors d ON d.Donor_ID = r.Reported_ID
+            LEFT JOIN InstitutionalBeneficiaries ib ON ib.Beneficiary_ID = r.Reported_ID
+            LEFT JOIN IndependentBeneficiaries ind ON ind.IndepBene_ID = r.Reported_ID
+            WHERE r.Status = 'Open'
+            ORDER BY r.Filed_At DESC", conn);
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                    list.Add(new UserReportModel
+                    {
+                        Report_ID = reader["Report_ID"].ToString() ?? "",
+                        Reporter_ID = reader["Reporter_ID"].ToString() ?? "",
+                        Reported_ID = reader["Reported_ID"].ToString() ?? "",
+                        Reported_Name = reader["Reported_Name"].ToString() ?? "",
+                        Report_Type = reader["Report_Type"].ToString() ?? "",
+                        Description = reader["Description"].ToString() ?? "",
+                        Status = reader["Status"].ToString() ?? "Open",
+                        Admin_Action_Taken = reader["Admin_Action_Taken"].ToString() ?? "None",
+                        Filed_At = Convert.ToDateTime(reader["Filed_At"]),
+                        Admin_Notes = reader["Admin_Notes"].ToString() ?? ""
+                    });
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("GetOpenReports failed: " + ex.Message); }
+            return list;
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // NOTIFICATIONS (NEW for finals)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public static async Task<string> GetNextNotifId()
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("SELECT COUNT(*) FROM Notifications", conn);
+                int n = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+                return $"NTF{n + 1:D3}";
+            }
+            catch { return $"NTF{DateTime.Now.Ticks % 900 + 100:D3}"; }
+        }
+
+        public static async Task CreateNotification(
+            string recipientId, string notifType, string message, string referenceId = "")
+        {
+            try
+            {
+                string notifId = await GetNextNotifId();
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("sp_CreateNotification", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@NotifId", notifId);
+                cmd.Parameters.AddWithValue("@RecipientId", recipientId);
+                cmd.Parameters.AddWithValue("@NotifType", notifType);
+                cmd.Parameters.AddWithValue("@Message", message);
+                cmd.Parameters.AddWithValue("@ReferenceId", referenceId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("CreateNotification failed: " + ex.Message); }
+        }
+
+        public static async Task<List<NotificationModel>> GetNotificationsForUser(string userId)
+        {
+            var list = new List<NotificationModel>();
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+            SELECT Notif_ID, Recipient_ID, Notif_Type, Message,
+                   IsRead, SentAt, Reference_ID
+            FROM Notifications
+            WHERE Recipient_ID = @uid
+            ORDER BY SentAt DESC", conn);
+                cmd.Parameters.AddWithValue("@uid", userId);
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                    list.Add(new NotificationModel
+                    {
+                        Notif_ID = reader["Notif_ID"].ToString() ?? "",
+                        Recipient_ID = reader["Recipient_ID"].ToString() ?? "",
+                        Notif_Type = reader["Notif_Type"].ToString() ?? "",
+                        Message = reader["Message"].ToString() ?? "",
+                        IsRead = Convert.ToBoolean(reader["IsRead"]),
+                        SentAt = Convert.ToDateTime(reader["SentAt"]),
+                        Reference_ID = reader["Reference_ID"].ToString() ?? ""
+                    });
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("GetNotificationsForUser failed: " + ex.Message); }
+            return list;
+        }
+
+        public static async Task<int> GetUnreadNotificationCount(string userId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "SELECT COUNT(*) FROM Notifications WHERE Recipient_ID = @uid AND IsRead = 0", conn);
+                cmd.Parameters.AddWithValue("@uid", userId);
+                return Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            }
+            catch { return 0; }
+        }
+
+        public static async Task MarkNotificationRead(string notifId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("sp_MarkNotificationRead", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@NotifId", notifId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("MarkNotificationRead failed: " + ex.Message); }
+        }
+
+        public static async Task MarkAllNotificationsRead(string userId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "UPDATE Notifications SET IsRead = 1 WHERE Recipient_ID = @uid AND IsRead = 0", conn);
+                cmd.Parameters.AddWithValue("@uid", userId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("MarkAllNotificationsRead failed: " + ex.Message); }
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ADMIN GATEKEEPER (NEW for finals)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public static async Task<List<ItemModel>> GetPendingItems()
+        {
+            var list = new List<ItemModel>();
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+            SELECT i.Item_ID, i.Item_Name, i.Item_Description, i.Item_Condition,
+                   i.Item_Status, i.Date_Found, i.Donor_ID,
+                   d.Donor_FullName AS Donor_Name,
+                   i.Category_ID, c.Category_Name,
+                   i.Post_ID, p.Post_Type AS PostType,
+                   i.TargetBeneficiary_ID, i.Item_ImagePath,
+                   i.Admin_Approval_Status
+            FROM Items i
+            JOIN Donors   d ON d.Donor_ID    = i.Donor_ID
+            JOIN Category c ON c.Category_ID = i.Category_ID
+            JOIN Post     p ON p.Post_ID     = i.Post_ID
+            WHERE i.Admin_Approval_Status = 'Pending'
+            ORDER BY i.Date_Found DESC", conn);
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                    list.Add(new ItemModel
+                    {
+                        Item_ID = reader["Item_ID"].ToString() ?? "",
+                        Item_Name = reader["Item_Name"].ToString() ?? "",
+                        Item_Description = reader["Item_Description"].ToString() ?? "",
+                        Item_Condition = reader["Item_Condition"].ToString() ?? "",
+                        Item_Status = reader["Item_Status"].ToString() ?? "",
+                        Date_Found = Convert.ToDateTime(reader["Date_Found"]),
+                        Donor_ID = reader["Donor_ID"].ToString() ?? "",
+                        Donor_Name = reader["Donor_Name"].ToString() ?? "",
+                        Category_ID = reader["Category_ID"].ToString() ?? "",
+                        Category_Name = reader["Category_Name"].ToString() ?? "",
+                        PostType = reader["PostType"].ToString() ?? "",
+                        TargetBeneficiary_ID = reader["TargetBeneficiary_ID"].ToString() ?? "",
+                        Item_ImagePath = reader["Item_ImagePath"].ToString() ?? "",
+                        Admin_Approval_Status = reader["Admin_Approval_Status"].ToString() ?? "Pending"
+                    });
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("GetPendingItems failed: " + ex.Message); }
+            return list;
+        }
+
+        public static async Task<List<BeneficiaryModel>> GetPendingBeneficiaries()
+        {
+            var list = new List<BeneficiaryModel>();
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+            SELECT b.Beneficiary_ID, b.Beneficiary_FullName, b.Beneficiary_Username,
+                   b.Beneficiary_Sex, b.Beneficiary_Contact,
+                   b.Beneficiaries_Status, b.Organization_ID,
+                   ISNULL(o.Organization_Name,'') AS Organization_Name,
+                   b.Admin_Approval_Status
+            FROM InstitutionalBeneficiaries b
+            LEFT JOIN Organization o ON o.Organization_ID = b.Organization_ID
+            WHERE b.Admin_Approval_Status = 'Pending'
+            ORDER BY b.Beneficiary_ID DESC", conn);
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                    list.Add(new BeneficiaryModel
+                    {
+                        Beneficiary_ID = reader["Beneficiary_ID"].ToString() ?? "",
+                        Beneficiary_FullName = reader["Beneficiary_FullName"].ToString() ?? "",
+                        Beneficiary_Username = reader["Beneficiary_Username"].ToString() ?? "",
+                        Beneficiary_Sex = reader["Beneficiary_Sex"].ToString() ?? "",
+                        Beneficiary_Contact = reader["Beneficiary_Contact"].ToString() ?? "",
+                        Beneficiaries_Status = reader["Beneficiaries_Status"].ToString() ?? "Active",
+                        Organization_ID = reader["Organization_ID"].ToString() ?? "",
+                        Organization_Name = reader["Organization_Name"].ToString() ?? ""
+                    });
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("GetPendingBeneficiaries failed: " + ex.Message); }
+            return list;
+        }
+
+        public static async Task ApproveItem(string itemId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("sp_ApproveItem", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@ItemId", itemId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("ApproveItem failed: " + ex.Message); throw; }
+        }
+
+        public static async Task RejectItem(string itemId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("sp_RejectItem", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@ItemId", itemId);
+                cmd.Parameters.AddWithValue("@AdminNotes", "");
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("RejectItem failed: " + ex.Message); throw; }
+        }
+
+        public static async Task ApproveBeneficiary(string beneficiaryId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("sp_ApproveBeneficiary", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@BeneficiaryId", beneficiaryId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("ApproveBeneficiary failed: " + ex.Message); throw; }
+        }
+
+        public static async Task RejectBeneficiary(string beneficiaryId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("sp_RejectBeneficiary", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@BeneficiaryId", beneficiaryId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("RejectBeneficiary failed: " + ex.Message); throw; }
+        }
+
+        public static async Task<(int TotalDonated, int TotalClaimed, int ActiveItems,
+            int FulfilledNeeds, int ActiveInstBenes, int ActiveIndepBenes,
+            int PendingItems, int PendingBeneficiaries, int OpenReports)>
+            GetAdminImpactMetrics()
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("sp_GetImpactMetrics", conn);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                using var reader = await cmd.ExecuteReaderAsync();
+                if (await reader.ReadAsync())
+                    return (
+                        Convert.ToInt32(reader["TotalDonated"]),
+                        Convert.ToInt32(reader["TotalClaimed"]),
+                        Convert.ToInt32(reader["ActiveItems"]),
+                        Convert.ToInt32(reader["FulfilledNeeds"]),
+                        Convert.ToInt32(reader["ActiveInstBeneficiaries"]),
+                        Convert.ToInt32(reader["ActiveIndepBeneficiaries"]),
+                        Convert.ToInt32(reader["PendingItems"]),
+                        Convert.ToInt32(reader["PendingBeneficiaries"]),
+                        Convert.ToInt32(reader["OpenReports"])
+                    );
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("GetAdminImpactMetrics failed: " + ex.Message); }
+            return (0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
     }
 }

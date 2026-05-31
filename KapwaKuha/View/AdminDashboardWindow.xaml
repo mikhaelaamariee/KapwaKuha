@@ -1,0 +1,448 @@
+﻿<Window x:Class="KapwaKuha.View.AdminDashboardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="KapwaKuha — Admin Dashboard"
+        Height="720" Width="1280"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        FontFamily="Segoe UI">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="64"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- TOP NAV BAR -->
+        <Border Grid.Row="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#0A2540" Offset="0"/>
+                    <GradientStop Color="#0077B6" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid Margin="24,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🛡" FontSize="22" Foreground="White" Margin="0,0,10,0"/>
+                    <TextBlock Text="KapwaKuha Admin" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{Binding WelcomeText}"
+                           Foreground="#CCFFFFff" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Command="{Binding RefreshCommand}"
+                            Style="{StaticResource LinkBtn}"
+                            Foreground="White" Content="🔄 Refresh" Margin="0,0,16,0"/>
+                    <Button Command="{Binding LogoutCommand}"
+                            Style="{StaticResource OutlineBtn}"
+                            Foreground="White" BorderBrush="White"
+                            Content="Logout" Height="34" Padding="16,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- MAIN BODY -->
+        <Grid Grid.Row="1">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#F0F8FF" Offset="0"/>
+                    <GradientStop Color="#E8F4FD" Offset="1"/>
+                </LinearGradientBrush>
+            </Grid.Background>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT SIDEBAR — KPI cards -->
+            <Border Grid.Column="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,1,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16,24,16,16">
+                        <TextBlock Text="PLATFORM KPIs" FontSize="11" FontWeight="Bold"
+           Foreground="#9CA3AF" Margin="0,0,0,16"/>
+                        
+
+                        <!-- KPI item template -->
+                        <Border Style="{StaticResource GlassCard}" CornerRadius="10"
+                                Padding="14,12" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="📦 Total Donated" FontSize="11" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding TotalDonated}" FontSize="26"
+                                           FontWeight="Bold" Foreground="#0077B6"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource GlassCard}" CornerRadius="10"
+                                Padding="14,12" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="✅ Total Claimed" FontSize="11" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding TotalClaimed}" FontSize="26"
+                                           FontWeight="Bold" Foreground="#059669"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource GlassCard}" CornerRadius="10"
+                                Padding="14,12" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="🟢 Active Items" FontSize="11" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding ActiveItems}" FontSize="26"
+                                           FontWeight="Bold" Foreground="#0077B6"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource GlassCard}" CornerRadius="10"
+                                Padding="14,12" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="❤️ Fulfilled Needs" FontSize="11" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding FulfilledNeeds}" FontSize="26"
+                                           FontWeight="Bold" Foreground="#7C3AED"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource GlassCard}" CornerRadius="10"
+                                Padding="14,12" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="🏢 Inst. Beneficiaries" FontSize="11" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding ActiveInstBenes}" FontSize="26"
+                                           FontWeight="Bold" Foreground="#0077B6"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource GlassCard}" CornerRadius="10"
+                                Padding="14,12" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="👤 Indep. Beneficiaries" FontSize="11" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding ActiveIndepBenes}" FontSize="26"
+                                           FontWeight="Bold" Foreground="#0077B6"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Separator Margin="0,8,0,16" Background="#E5E7EB"/>
+                        <TextBlock Text="PENDING ACTIONS" FontSize="11" FontWeight="Bold"
+                                   Foreground="#9CA3AF" Margin="0,0,0,12"/>
+
+                        <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,8"
+                                Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="⏳ Pending Items" FontSize="11" Foreground="#92400E"/>
+                                <TextBlock Text="{Binding PendingItems}" FontSize="26"
+                                           FontWeight="Bold" Foreground="#D97706"/>
+                            </StackPanel>
+                        </Border>
+                        <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,8"
+                                Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="👥 Pending Benes" FontSize="11" Foreground="#92400E"/>
+                                <TextBlock Text="{Binding PendingBeneficiaries}" FontSize="26"
+                                           FontWeight="Bold" Foreground="#D97706"/>
+                            </StackPanel>
+                        </Border>
+                        <Border CornerRadius="10" Padding="14,12"
+                                Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🚨 Open Reports" FontSize="11" Foreground="#991B1B"/>
+                                <TextBlock Text="{Binding OpenReports}" FontSize="26"
+                                           FontWeight="Bold" Foreground="#DC2626"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- RIGHT — three gatekeeper queues -->
+            <Grid Grid.Column="1" Margin="24,20,24,20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="16"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- QUEUE 1: Pending Items -->
+                <Border Grid.Row="0" Style="{StaticResource GlassCard}" CornerRadius="16" Padding="20,16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock Text="📦 Pending Item Approvals" FontSize="16" FontWeight="Bold"
+                                       Foreground="#0A2540" VerticalAlignment="Center"/>
+                            <Border Background="#FEF3C7" CornerRadius="10" Padding="8,2" Margin="12,0,0,0">
+                                <TextBlock Text="{Binding PendingItems}" FontSize="12"
+                                           FontWeight="Bold" Foreground="#D97706"/>
+                            </Border>
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <!-- Loading -->
+                            <TextBlock Text="Loading..." FontSize="13" Foreground="#9CA3AF"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="{Binding IsLoadingItems, Converter={StaticResource BoolToVis}}"/>
+                            <!-- Empty state -->
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasPendingItems}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <TextBlock Text="✅" FontSize="32" HorizontalAlignment="Center"/>
+                                <TextBlock Text="No pending items — all clear!" FontSize="13"
+                                           Foreground="#6B7280" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <!-- List -->
+                            <ListView ItemsSource="{Binding PendingItemsList}"
+                                      Background="Transparent" BorderThickness="0"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListView.Style>
+                                    <Style TargetType="ListView">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasPendingItems}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ListView.Style>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Padding" Value="0,4"/>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="White" CornerRadius="10"
+                                                BorderBrush="#E5E7EB" BorderThickness="1"
+                                                Padding="14,10">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Item_Name}"
+                                                               FontWeight="SemiBold" FontSize="14"
+                                                               Foreground="#0A2540"/>
+                                                    <TextBlock Foreground="#6B7280" FontSize="12" Margin="0,2,0,0">
+                                                        <Run Text="{Binding Item_Condition}"/>
+                                                        <Run Text=" • "/>
+                                                        <Run Text="{Binding Donor_ID}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Command="{Binding DataContext.ApproveItemCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Content="✅ Approve"
+                                                        Style="{StaticResource GradientButton}"
+                                                        Height="32" Padding="14,0" Margin="0,0,8,0" FontSize="12"/>
+                                                <Button Grid.Column="2"
+                                                        Command="{Binding DataContext.RejectItemCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Content="❌ Reject"
+                                                        Style="{StaticResource OutlineBtn}"
+                                                        Height="32" Padding="14,0" FontSize="12"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- QUEUE 2: Pending Beneficiaries -->
+                <Border Grid.Row="2" Style="{StaticResource GlassCard}" CornerRadius="16" Padding="20,16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock Text="👥 Pending Beneficiary Approvals" FontSize="16" FontWeight="Bold"
+                                       Foreground="#0A2540" VerticalAlignment="Center"/>
+                            <Border Background="#FEF3C7" CornerRadius="10" Padding="8,2" Margin="12,0,0,0">
+                                <TextBlock Text="{Binding PendingBeneficiaries}" FontSize="12"
+                                           FontWeight="Bold" Foreground="#D97706"/>
+                            </Border>
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <TextBlock Text="Loading..." FontSize="13" Foreground="#9CA3AF"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="{Binding IsLoadingBenes, Converter={StaticResource BoolToVis}}"/>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasPendingBeneficiaries}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <TextBlock Text="✅" FontSize="32" HorizontalAlignment="Center"/>
+                                <TextBlock Text="No pending beneficiaries — all clear!" FontSize="13"
+                                           Foreground="#6B7280" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <ListView ItemsSource="{Binding PendingBenesList}"
+                                      Background="Transparent" BorderThickness="0"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListView.Style>
+                                    <Style TargetType="ListView">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasPendingBeneficiaries}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ListView.Style>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Padding" Value="0,4"/>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="White" CornerRadius="10"
+                                                BorderBrush="#E5E7EB" BorderThickness="1"
+                                                Padding="14,10">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Beneficiary_FullName}"
+                                                               FontWeight="SemiBold" FontSize="14"
+                                                               Foreground="#0A2540"/>
+                                                    <TextBlock Foreground="#6B7280" FontSize="12" Margin="0,2,0,0">
+                                                        <Run Text="{Binding Organization_Name}"/>
+                                                        <Run Text=" • "/>
+                                                        <Run Text="{Binding Beneficiary_ID}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Command="{Binding DataContext.ApproveBeneficiaryCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Content="✅ Approve"
+                                                        Style="{StaticResource GradientButton}"
+                                                        Height="32" Padding="14,0" Margin="0,0,8,0" FontSize="12"/>
+                                                <Button Grid.Column="2"
+                                                        Command="{Binding DataContext.RejectBeneficiaryCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Content="❌ Reject"
+                                                        Style="{StaticResource OutlineBtn}"
+                                                        Height="32" Padding="14,0" FontSize="12"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- QUEUE 3: Open Reports -->
+                <Border Grid.Row="4" Style="{StaticResource GlassCard}" CornerRadius="16" Padding="20,16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock Text="🚨 Open User Reports" FontSize="16" FontWeight="Bold"
+                                       Foreground="#0A2540" VerticalAlignment="Center"/>
+                            <Border Background="#FEE2E2" CornerRadius="10" Padding="8,2" Margin="12,0,0,0">
+                                <TextBlock Text="{Binding OpenReports}" FontSize="12"
+                                           FontWeight="Bold" Foreground="#DC2626"/>
+                            </Border>
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <TextBlock Text="Loading..." FontSize="13" Foreground="#9CA3AF"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="{Binding IsLoadingReports, Converter={StaticResource BoolToVis}}"/>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasOpenReports}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <TextBlock Text="🟢" FontSize="32" HorizontalAlignment="Center"/>
+                                <TextBlock Text="No open reports — platform is clean!" FontSize="13"
+                                           Foreground="#6B7280" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <ListView ItemsSource="{Binding OpenReportsList}"
+                                      Background="Transparent" BorderThickness="0"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListView.Style>
+                                    <Style TargetType="ListView">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasOpenReports}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ListView.Style>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Padding" Value="0,4"/>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="White" CornerRadius="10"
+                                                BorderBrush="#FECACA" BorderThickness="1"
+                                                Padding="14,10">
+                                            <StackPanel>
+                                                <TextBlock Foreground="#0A2540" FontWeight="SemiBold" FontSize="14">
+                                                    <Run Text="{Binding ReportType}"/>
+                                                    <Run Text=" — "/>
+                                                    <Run Text="{Binding ReportedName}"/>
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding Description}"
+                                                           Foreground="#6B7280" FontSize="12"
+                                                           TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                                <TextBlock Foreground="#9CA3AF" FontSize="11" Margin="0,4,0,0">
+                                                    <Run Text="Filed by: "/>
+                                                    <Run Text="{Binding ReporterName}"/>
+                                                    <Run Text="  •  "/>
+                                                    <Run Text="{Binding FiledAtDisplay}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

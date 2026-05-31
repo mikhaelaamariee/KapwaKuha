@@ -132,8 +132,12 @@ namespace KapwaKuha.ViewModels
         public bool IsLoading { get => _isLoading; set { _isLoading = value; OnPropertyChanged(); } }
 
         public bool IsDonor => _role == "Donor";
-        public bool IsBeneficiary => _role == "Beneficiary";
-        public string RoleLabel => $"Create {_role} Account";
+        public bool IsInstitutionalBeneficiary => _role == "InstitutionalBeneficiary";
+
+        // Keep existing "Beneficiary" string for backward compat with existing XAML
+        public bool IsBeneficiary => _role == "Beneficiary" || _role == "InstitutionalBeneficiary";
+        public string RoleLabel => _role == "Donor" ? "Create Donor Account"
+                                    : "Create Institutional Beneficiary Account";
 
         public System.Collections.ObjectModel.ObservableCollection<(string Id, string Name)> Organizations { get; } = new();
 

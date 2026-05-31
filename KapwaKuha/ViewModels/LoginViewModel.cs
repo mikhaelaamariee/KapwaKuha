@@ -1,6 +1,4 @@
-﻿// FILE: LoginViewModel.cs  
-// Shared by DonorLoginWindow.xaml and BeneficiaryLoginWindow.xaml
-// Role passed from code-behind: "Donor" | "Beneficiary"
+﻿// FILE: ViewModels/LoginViewModel.cs  (UPDATED — handles 3 login types)
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -33,10 +31,29 @@ namespace KapwaKuha.ViewModels
             set { _errorMessage = value; OnPropertyChanged(); }
         }
 
-        public string RoleLabel => CurrentUser.Role == "Donor"
-            ? "Donor Login" : "Beneficiary Login";
-        public string RoleHint => CurrentUser.Role == "Donor"
-            ? "Username  (e.g. juandc)" : "Username  (e.g. anareyes)";
+        public string RoleLabel => CurrentUser.Role switch
+        {
+            "Donor" => "Donor Login",
+            "InstitutionalBeneficiary" => "Institutional Beneficiary Login",
+            "IndependentBeneficiary" => "Independent Beneficiary Login",
+            _ => "Login"
+        };
+
+        public string RoleHint => CurrentUser.Role switch
+        {
+            "Donor" => "Username  (e.g. juandc)",
+            "InstitutionalBeneficiary" => "Username  (e.g. anareyes)",
+            "IndependentBeneficiary" => "Username  (e.g. juanreyes)",
+            _ => "Username"
+        };
+
+        public string SignUpLabel => CurrentUser.Role == "Donor"
+            ? "New donor? Sign up" : "New here? Sign up";
+
+        // True if this login window should show a SignUp link
+        public bool ShowSignUp =>
+            CurrentUser.Role == "Donor" ||
+            CurrentUser.Role == "IndependentBeneficiary";
 
         public LoginViewModel(string role)
         {
@@ -51,7 +68,12 @@ namespace KapwaKuha.ViewModels
                 NavigationService.Navigate(new View.ForgotPasswordWindow(role)));
 
             SignUpCommand = new RelayCommand(_ =>
-                NavigationService.Navigate(new View.SignUpWindow(CurrentUser.Role)));
+            {
+                if (role == "Donor")
+                    NavigationService.Navigate(new View.SignUpWindow("Donor"));
+                else
+                    NavigationService.Navigate(new View.IndependentBeneficiarySignUpWindow());
+            });
         }
 
         private async void ExecuteLogin(object? parameter)
@@ -63,50 +85,65 @@ namespace KapwaKuha.ViewModels
                 CurrentUser.UserID.Contains(" ") ||
                 string.IsNullOrWhiteSpace(CurrentUser.Password))
             {
-                ErrorMessage = "Username/ID and password are required. No spaces allowed.";
+                ErrorMessage = "Username and password are required. No spaces allowed.";
                 ErrorVisible = true;
                 return;
             }
 
-            if (CurrentUser.Role == "Donor")
+            switch (CurrentUser.Role)
             {
-                var (ok, userId, fullName, username) =
-                    await KapwaDataService.LoginDonor(CurrentUser.UserID, CurrentUser.Password);
+                case "Donor":
+                    {
+                        var (ok, userId, fullName, username) =
+                            await KapwaDataService.LoginDonor(CurrentUser.UserID, CurrentUser.Password);
+                        if (ok)
+                        {
+                            ErrorVisible = false;
+                            UserSession.UserId = userId;
+                            UserSession.Username = username;
+                            UserSession.FullName = fullName;
+                            UserSession.Role = "Donor";
+                            NavigationService.Navigate(new View.DonorDashboardWindow(userId));
+                        }
+                        else { ErrorMessage = "Invalid username or password."; ErrorVisible = true; }
+                        break;
+                    }
 
-                if (ok)
-                {
-                    ErrorVisible = false;
-                    UserSession.UserId = userId;
-                    UserSession.Username = username;
-                    UserSession.FullName = fullName;
-                    UserSession.Role = "Donor";
-                    NavigationService.Navigate(new View.DonorDashboardWindow(userId));
-                }
-                else
-                {
-                    ErrorMessage = "Invalid username or password.";
-                    ErrorVisible = true;
-                }
-            }
-            else // Beneficiary
-            {
-                var (ok, userId, fullName, username) =
-                    await KapwaDataService.LoginBeneficiary(CurrentUser.UserID, CurrentUser.Password);
+                case "InstitutionalBeneficiary":
+                    {
+                        var (ok, userId, fullName, username) =
+                            await KapwaDataService.LoginBeneficiary(CurrentUser.UserID, CurrentUser.Password);
+                        if (ok)
+                        {
+                            ErrorVisible = false;
+                            UserSession.UserId = userId;
+                            UserSession.Username = username;
+                            UserSession.FullName = fullName;
+                            UserSession.Role = "InstitutionalBeneficiary";
+                            NavigationService.Navigate(new View.BeneficiaryDashboardWindow(userId));
+                        }
+                        else { ErrorMessage = "Invalid username or password."; ErrorVisible = true; }
+                        break;
+                    }
 
-                if (ok)
-                {
-                    ErrorVisible = false;
-                    UserSession.UserId = userId;
-                    UserSession.Username = username;
-                    UserSession.FullName = fullName;
-                    UserSession.Role = "Beneficiary";
-                    NavigationService.Navigate(new View.BeneficiaryDashboardWindow(userId));
-                }
-                else
-                {
-                    ErrorMessage = "Invalid User ID or password.";
-                    ErrorVisible = true;
-                }
+                case "IndependentBeneficiary":
+                    {
+                        var (ok, userId, fullName, username) =
+                            await KapwaDataService.LoginIndependentBeneficiary(
+                                CurrentUser.UserID, CurrentUser.Password);
+                        if (ok)
+                        {
+                            ErrorVisible = false;
+                            UserSession.UserId = userId;
+                            UserSession.Username = username;
+                            UserSession.FullName = fullName;
+                            UserSession.Role = "IndependentBeneficiary";
+                            // IndependentBeneficiaries use the same dashboard as Institutional for now
+                            NavigationService.Navigate(new View.BeneficiaryDashboardWindow(userId));
+                        }
+                        else { ErrorMessage = "Invalid username or password."; ErrorVisible = true; }
+                        break;
+                    }
             }
         }
     }

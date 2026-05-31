@@ -1,4 +1,4 @@
-﻿// FILE: Models/ItemModel.cs
+﻿// FILE: Models/ItemModel.cs  (UPDATED — adds Admin_Approval_Status)
 using System;
 using KapwaKuha.ViewModels;
 
@@ -24,6 +24,36 @@ namespace KapwaKuha.Models
             }
         }
 
+        private string _adminApprovalStatus = "Pending";
+        public string Admin_Approval_Status
+        {
+            get => _adminApprovalStatus;
+            set
+            {
+                _adminApprovalStatus = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ApprovalBadgeColor));
+                OnPropertyChanged(nameof(ApprovalBadgeBackground));
+                OnPropertyChanged(nameof(IsApproved));
+            }
+        }
+
+        public bool IsApproved => Admin_Approval_Status == "Approved";
+
+        public string ApprovalBadgeBackground => Admin_Approval_Status switch
+        {
+            "Approved" => "#E8F5E9",
+            "Rejected" => "#FFF0F0",
+            _ => "#FFF8E6"   // Pending
+        };
+
+        public string ApprovalBadgeColor => Admin_Approval_Status switch
+        {
+            "Approved" => "#2DC653",
+            "Rejected" => "#C0304A",
+            _ => "#B8860B"
+        };
+
         public DateTime Date_Found { get; set; } = DateTime.Now;
         public string Donor_ID { get; set; } = string.Empty;
         public string Donor_Name { get; set; } = string.Empty;
@@ -33,9 +63,6 @@ namespace KapwaKuha.Models
         public string TargetBeneficiary_ID { get; set; } = string.Empty;
         public string Item_Description { get; set; } = string.Empty;
 
-
-
-        // Computed helper used by GetAvailableItems filter
         public bool IsGeneralPost => PostType == "GeneralPost";
         public bool IsDirectTarget => PostType == "DirectTarget";
 
@@ -51,7 +78,6 @@ namespace KapwaKuha.Models
             }
         }
 
-        // Checks the file actually exists so the Image control doesn't crash on a stale path
         public bool HasItemImage =>
             !string.IsNullOrEmpty(Item_ImagePath) &&
             System.IO.File.Exists(Item_ImagePath);
@@ -62,8 +88,6 @@ namespace KapwaKuha.Models
             get => StorageDays == 0 ? "Posted today" :
                    StorageDays == 1 ? "1 day posted" :
                    $"{StorageDays} days posted";
-
-            // Add this empty setter to stop WPF from crashing on OneWayToSource/TwoWay bindings
             set { }
         }
 
