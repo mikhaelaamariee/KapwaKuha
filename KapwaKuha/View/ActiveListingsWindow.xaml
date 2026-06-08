@@ -178,19 +178,23 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="2*"/>
                                                 <ColumnDefinition Width="1.5*"/>
-                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="130"/>
+                                                <ColumnDefinition Width="130"/>
                                                 <ColumnDefinition Width="100"/>
                                             </Grid.ColumnDefinitions>
 
+                                            <!-- Name + ID -->
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Item_Name}" FontSize="14" FontWeight="Bold" 
-                                                           Foreground="#03045E" TextTrimming="CharacterEllipsis"/>
-                                                <TextBlock Text="{Binding Item_ID, StringFormat='ID: {0}'}" 
-                                                           FontSize="11" Foreground="#5E7A8A" Margin="0,2,0,0"/>
+                                                <TextBlock Text="{Binding Item_Name}" FontSize="14" FontWeight="Bold"
+                           Foreground="#03045E" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Item_ID, StringFormat='ID: {0}'}"
+                           FontSize="11" Foreground="#5E7A8A" Margin="0,2,0,0"/>
                                             </StackPanel>
 
+                                            <!-- Category + Condition + PostType -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
-                                                <TextBlock Text="{Binding Category_Name}" FontSize="12" FontWeight="SemiBold" Foreground="#0077B6"/>
+                                                <TextBlock Text="{Binding Category_Name}" FontSize="12"
+                           FontWeight="SemiBold" Foreground="#0077B6"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                                                     <TextBlock Text="{Binding Item_Condition}" FontSize="11" Foreground="#5E7A8A"/>
                                                     <TextBlock Text=" • " FontSize="11" Foreground="#90E0EF"/>
@@ -198,17 +202,42 @@
                                                 </StackPanel>
                                             </StackPanel>
 
-                                            <Border Grid.Column="2" CornerRadius="8" Padding="12,4" 
-                                                    HorizontalAlignment="Left" VerticalAlignment="Center"
-                                                    Background="{Binding StatusBadgeBackground}">
-                                                <TextBlock Text="{Binding Item_Status}" FontSize="11" FontWeight="Bold" 
-                                                           Foreground="{Binding StatusBadgeColor}" HorizontalAlignment="Center"/>
+                                            <!-- Item Status badge (Available/Claimed/Reserved) -->
+                                            <Border Grid.Column="2" CornerRadius="8" Padding="12,4"
+                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                    Background="{Binding StatusBadgeBackground}">
+                                                <TextBlock Text="{Binding Item_Status}" FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding StatusBadgeColor}" HorizontalAlignment="Center"/>
                                             </Border>
 
-                                            <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                            <!-- Admin Approval Status badge — NEW -->
+                                            <Border Grid.Column="3" CornerRadius="8" Padding="12,4"
+                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                    Background="{Binding ApprovalBadgeBackground}">
+                                                <TextBlock FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding ApprovalBadgeColor}"
+                           HorizontalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="⏳ Pending"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Admin_Approval_Status}" Value="Approved">
+                                                                    <Setter Property="Text" Value="✅ Approved"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Admin_Approval_Status}" Value="Rejected">
+                                                                    <Setter Property="Text" Value="❌ Rejected"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <!-- Posted days -->
+                                            <StackPanel Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Right">
                                                 <TextBlock Text="Posted" FontSize="10" Foreground="#5E7A8A" HorizontalAlignment="Right"/>
-                                                <TextBlock Text="{Binding StorageDaysDisplay}" FontSize="12" FontWeight="SemiBold" 
-                                                           Foreground="#03045E" HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding StorageDaysDisplay}" FontSize="12" FontWeight="SemiBold"
+                           Foreground="#03045E" HorizontalAlignment="Right"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>

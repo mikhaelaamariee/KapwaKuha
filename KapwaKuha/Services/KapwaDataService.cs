@@ -71,18 +71,18 @@ namespace KapwaKuha.Services
         // ══════════════════════════════════════════════════════════════════════
 
         public static async Task<(bool OK, string UserId, string FullName, string Username)>
-     LoginDonor(string username, string password)
+      LoginDonor(string username, string password)
         {
             try
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(@"
-            SELECT d.Donor_ID, d.Donor_FullName, d.Donor_Username,
-                   u.IsActive
-            FROM Donors d
-            INNER JOIN Users u ON u.UserID = d.Donor_ID
-            WHERE d.Donor_Username = @uname AND u.Password = @pw", conn);
+    SELECT d.Donor_ID, d.Donor_FullName, d.Donor_Username,
+           u.IsActive, u.IsBlacklisted, u.Admin_Approval_Status
+    FROM Donors d
+    INNER JOIN Users u ON u.UserID = d.Donor_ID
+    WHERE d.Donor_Username = @uname AND u.Password = @pw", conn);
                 cmd.Parameters.AddWithValue("@uname", username);
                 cmd.Parameters.AddWithValue("@pw", password);
                 using var r = await cmd.ExecuteReaderAsync();
@@ -92,7 +92,19 @@ namespace KapwaKuha.Services
                     string fullName = r["Donor_FullName"].ToString() ?? "";
                     string uname = r["Donor_Username"].ToString() ?? "";
                     bool isActive = Convert.ToBoolean(r["IsActive"]);
+                    bool isBlacklist = Convert.ToBoolean(r["IsBlacklisted"]);
                     r.Close();
+
+                    // FIX: block blacklisted users entirely — no reactivation path
+                    if (isBlacklist)
+                    {
+                        System.Windows.MessageBox.Show(
+                            "Your account has been permanently suspended due to policy violations.\nContact support if you believe this is an error.",
+                            "Account Suspended", System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Error);
+                        return (false, "", "", "");
+                    }
+
                     if (!isActive)
                     {
                         var reactivate = System.Windows.MessageBox.Show(
@@ -100,39 +112,18 @@ namespace KapwaKuha.Services
                             "Account Deactivated",
                             System.Windows.MessageBoxButton.YesNo,
                             System.Windows.MessageBoxImage.Question);
-
                         if (reactivate != System.Windows.MessageBoxResult.Yes)
                             return (false, "", "", "");
-
-                        try
-                        {
-                            // 1. Update the 'Users' table 
-                            // Based on your script: Column is 'IsActive' (BIT), ID is 'UserID'
-                            using var c1 = new SqlCommand(
-                                "UPDATE Users SET IsActive = 1 WHERE UserID = @id", conn);
-                            c1.Parameters.AddWithValue("@id", userId);
-                            await c1.ExecuteNonQueryAsync();
-
-                            // 2. Update the 'Donors' table
-                            // Based on your script: Column is 'Donor_AccountStatus' (String), ID is 'Donor_ID'
-                            using var c2 = new SqlCommand(
-                                "UPDATE Donors SET Donor_AccountStatus = 'Active' WHERE Donor_ID = @id", conn);
-                            c2.Parameters.AddWithValue("@id", userId);
-                            await c2.ExecuteNonQueryAsync();
-
-                            // 3. Update the local variable so the rest of this method 
-                            // treats the user as active for the current login attempt.
-                            isActive = true;
-
-                            System.Windows.MessageBox.Show("Account successfully reactivated! Welcome back.", "Success");
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Windows.MessageBox.Show("Error during reactivation: " + ex.Message);
-                            return (false, "", "", "");
-                        }
+                        using var c1 = new SqlCommand(
+                            "UPDATE Users SET IsActive = 1 WHERE UserID = @id", conn);
+                        c1.Parameters.AddWithValue("@id", userId);
+                        await c1.ExecuteNonQueryAsync();
+                        using var c2 = new SqlCommand(
+                            "UPDATE Donors SET Donor_AccountStatus = 'Active' WHERE Donor_ID = @id", conn);
+                        c2.Parameters.AddWithValue("@id", userId);
+                        await c2.ExecuteNonQueryAsync();
+                        System.Windows.MessageBox.Show("Account successfully reactivated! Welcome back.", "Success");
                     }
-
                     return (true, userId, fullName, uname);
                 }
             }
@@ -141,20 +132,20 @@ namespace KapwaKuha.Services
         }
 
         public static async Task<(bool OK, string UserId, string FullName, string Username)>
-            LoginBeneficiary(string username, string password)
+    LoginBeneficiary(string username, string password)
         {
             try
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(@"
-            SELECT b.Beneficiary_ID,
-                   b.Beneficiary_FullName AS FullName,
-                   b.Beneficiary_Username AS Username,
-                   u.IsActive
-            FROM Beneficiaries b
-            INNER JOIN Users u ON u.UserID = b.Beneficiary_ID
-            WHERE b.Beneficiary_Username = @uname AND u.Password = @pw", conn);
+    SELECT b.Beneficiary_ID,
+           b.Beneficiary_FullName AS FullName,
+           b.Beneficiary_Username AS Username,
+           u.IsActive, u.IsBlacklisted, u.Admin_Approval_Status
+    FROM Beneficiaries b
+    INNER JOIN Users u ON u.UserID = b.Beneficiary_ID
+    WHERE b.Beneficiary_Username = @uname AND u.Password = @pw", conn);
                 cmd.Parameters.AddWithValue("@uname", username);
                 cmd.Parameters.AddWithValue("@pw", password);
                 using var r = await cmd.ExecuteReaderAsync();
@@ -164,7 +155,36 @@ namespace KapwaKuha.Services
                     string fullName = r["FullName"].ToString() ?? "";
                     string uname = r["Username"].ToString() ?? "";
                     bool isActive = Convert.ToBoolean(r["IsActive"]);
+                    bool isBlacklist = Convert.ToBoolean(r["IsBlacklisted"]);
+                    string approval = r["Admin_Approval_Status"].ToString() ?? "";
                     r.Close();
+
+                    if (isBlacklist)
+                    {
+                        System.Windows.MessageBox.Show(
+                            "Your account has been permanently suspended.",
+                            "Account Suspended", System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Error);
+                        return (false, "", "", "");
+                    }
+
+                    // FIX: gate on approval for institutional beneficiaries
+                    if (approval == "Pending")
+                    {
+                        System.Windows.MessageBox.Show(
+                            "Your account is still awaiting admin approval.\nYou will be notified once approved.",
+                            "Pending Approval", System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Information);
+                        return (false, "", "", "");
+                    }
+                    if (approval == "Rejected")
+                    {
+                        System.Windows.MessageBox.Show(
+                            "Your account application was rejected.\nContact support for more information.",
+                            "Application Rejected", System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Warning);
+                        return (false, "", "", "");
+                    }
 
                     if (!isActive)
                     {
@@ -173,23 +193,19 @@ namespace KapwaKuha.Services
                             "Account Deactivated",
                             System.Windows.MessageBoxButton.YesNo,
                             System.Windows.MessageBoxImage.Question);
-
                         if (reactivate != System.Windows.MessageBoxResult.Yes)
                             return (false, "", "", "");
-
                         using var c2 = new SqlCommand(
                             "UPDATE Users SET IsActive = 1 WHERE UserID = @id", conn);
                         c2.Parameters.AddWithValue("@id", userId);
                         await c2.ExecuteNonQueryAsync();
                     }
-
                     return (true, userId, fullName, uname);
                 }
             }
             catch (Exception ex) { System.Windows.MessageBox.Show("LoginBeneficiary failed: " + ex.Message); }
             return (false, "", "", "");
         }
-
         // ══════════════════════════════════════════════════════════════════════
         // REGISTRATION (sp_RegisterDonor / sp_RegisterBeneficiary)
         // ══════════════════════════════════════════════════════════════════════
@@ -346,18 +362,19 @@ namespace KapwaKuha.Services
         {
             var list = new List<ItemModel>();
             const string sql = @"
-        SELECT i.Item_ID, i.Item_Name, i.Item_Condition, i.Item_Status,
-               i.Date_Found, i.Donor_ID, i.Category_ID,
-               ISNULL(p.Post_Type,'GeneralPost')    AS PostType,
-               ISNULL(i.TargetBeneficiary_ID,'')    AS TargetBeneficiary_ID,
-               ISNULL(i.Item_Description,'')         AS Item_Description,
-               ISNULL(i.Item_ImagePath,'')           AS Item_ImagePath,
-               d.Donor_FullName                      AS Donor_Name,
-               c.Category_Name
-        FROM Items i
-        LEFT JOIN Donors   d ON d.Donor_ID    = i.Donor_ID
-        LEFT JOIN Category c ON c.Category_ID = i.Category_ID
-        LEFT JOIN Post     p ON p.Post_ID     = i.Post_ID";
+SELECT i.Item_ID, i.Item_Name, i.Item_Condition, i.Item_Status,
+       i.Date_Found, i.Donor_ID, i.Category_ID,
+       ISNULL(p.Post_Type,'GeneralPost')    AS PostType,
+       ISNULL(i.TargetBeneficiary_ID,'')    AS TargetBeneficiary_ID,
+       ISNULL(i.Item_Description,'')         AS Item_Description,
+       ISNULL(i.Item_ImagePath,'')           AS Item_ImagePath,
+       ISNULL(i.Admin_Approval_Status,'Pending') AS Admin_Approval_Status,
+       d.Donor_FullName                      AS Donor_Name,
+       c.Category_Name
+FROM Items i
+LEFT JOIN Donors   d ON d.Donor_ID    = i.Donor_ID
+LEFT JOIN Category c ON c.Category_ID = i.Category_ID
+LEFT JOIN Post     p ON p.Post_ID     = i.Post_ID";
             try
             {
                 using var conn = new SqlConnection(_conn);
@@ -373,18 +390,20 @@ namespace KapwaKuha.Services
         {
             var list = new List<ItemModel>();
             const string sql = @"
-        SELECT i.Item_ID, i.Item_Name, i.Item_Description, i.Item_Condition,
-               i.Item_Status, i.Date_Found, i.Donor_ID, d.Donor_FullName,
-               i.Category_ID, c.Category_Name,
-               ISNULL(p.Post_Type,'DirectTarget') AS PostType,
-               i.TargetBeneficiary_ID, i.Item_ImagePath
-        FROM Items i
-        JOIN Donors   d ON d.Donor_ID    = i.Donor_ID
-        JOIN Category c ON c.Category_ID = i.Category_ID
-        JOIN Post     p ON p.Post_ID     = i.Post_ID
-        WHERE p.Post_Type = 'DirectTarget'
-          AND i.TargetBeneficiary_ID = @bid";
-            try
+SELECT i.Item_ID, i.Item_Name, i.Item_Description, i.Item_Condition,
+       i.Item_Status, i.Date_Found, i.Donor_ID, d.Donor_FullName,
+       i.Category_ID, c.Category_Name,
+       ISNULL(p.Post_Type,'DirectTarget') AS PostType,
+       i.TargetBeneficiary_ID, i.Item_ImagePath,
+       ISNULL(i.Admin_Approval_Status,'Pending') AS Admin_Approval_Status
+FROM Items i
+JOIN Donors   d ON d.Donor_ID    = i.Donor_ID
+JOIN Category c ON c.Category_ID = i.Category_ID
+JOIN Post     p ON p.Post_ID     = i.Post_ID
+WHERE p.Post_Type = 'DirectTarget'
+  AND i.TargetBeneficiary_ID = @bid
+  AND i.Admin_Approval_Status = 'Approved'";
+    try
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
@@ -406,7 +425,8 @@ namespace KapwaKuha.Services
                         Category_Name = r["Category_Name"].ToString() ?? "",
                         PostType = r["PostType"].ToString() ?? "",
                         TargetBeneficiary_ID = r["TargetBeneficiary_ID"].ToString() ?? "",
-                        Item_ImagePath = r["Item_ImagePath"].ToString() ?? ""
+                        Item_ImagePath = r["Item_ImagePath"].ToString() ?? "",
+                        Admin_Approval_Status = r["Admin_Approval_Status"].ToString() ?? "Pending"
                     });
             }
             catch (Exception ex) { MessageBox.Show("GetDirectTargetItems failed: " + ex.Message); }
@@ -416,13 +436,18 @@ namespace KapwaKuha.Services
         public static async Task<List<ItemModel>> GetAvailableItems()
         {
             var all = await GetAllItems();
-            return all.FindAll(i => i.Item_Status == "Available" && i.PostType == "GeneralPost");
+            return all.FindAll(i =>
+                i.Item_Status == "Available" &&
+                i.PostType == "GeneralPost" &&
+                i.Admin_Approval_Status == "Approved");  // FIX: block unapproved items from browse
         }
 
+        
         public static async Task<List<ItemModel>> GetItemsByDonor(string donorId)
         {
             var all = await GetAllItems();
             return all.FindAll(i => i.Donor_ID == donorId);
+            // Returns Pending + Approved + Rejected — donor sees everything they posted
         }
 
         public static async Task UpdateItemStatus(string itemId, string status)
@@ -444,27 +469,25 @@ namespace KapwaKuha.Services
         {
             try
             {
-                using (var conn = new SqlConnection(_conn))
-                {
-                    await conn.OpenAsync();
-                    var cmd = new SqlCommand(@"
-            INSERT INTO ProofOfReceipt 
-                (Receipt_ID, Claim_ID, FilePath, UploadDate, Verification_ID)
-            VALUES 
-                (@ReceiptId, @ClaimId, @FilePath, GETDATE(), @VerificationId)", conn);
-
-                    cmd.Parameters.AddWithValue("@ReceiptId", receiptId);
-                    cmd.Parameters.AddWithValue("@ClaimId", claimId);
-                    cmd.Parameters.AddWithValue("@FilePath", filePath);
-                    cmd.Parameters.AddWithValue("@VerificationId", verificationId);
-                    cmd.ExecuteNonQuery();
-                }
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                // Verification_Status column: 'Pending' = V001 logic, 'Released' = V002 logic
+                string statusVal = verificationId == "V002" ? "Released" : "Pending";
+                var cmd = new SqlCommand(@"
+    INSERT INTO ProofOfReceipt
+        (Receipt_ID, Claim_ID, FilePath, UploadDate, Verification_Status)
+    VALUES
+        (@ReceiptId, @ClaimId, @FilePath, GETDATE(), @VerifStatus)", conn);
+                cmd.Parameters.AddWithValue("@ReceiptId", receiptId);
+                cmd.Parameters.AddWithValue("@ClaimId", claimId);
+                cmd.Parameters.AddWithValue("@FilePath", filePath);
+                cmd.Parameters.AddWithValue("@VerifStatus", statusVal);
+                await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("UploadProofOfReceipt failed: " + ex.Message);
             }
-
         }
         public static async Task SaveProofOfReceipt(string claimId, string filePath)
         {
@@ -628,7 +651,8 @@ namespace KapwaKuha.Services
             Category_Name = r["Category_Name"].ToString() ?? "",
             PostType = r["PostType"].ToString() ?? "GeneralPost",
             TargetBeneficiary_ID = r["TargetBeneficiary_ID"].ToString() ?? "",
-            Item_ImagePath = r["Item_ImagePath"].ToString() ?? ""
+            Item_ImagePath = r["Item_ImagePath"].ToString() ?? "",
+            Admin_Approval_Status = r["Admin_Approval_Status"].ToString() ?? "Pending"  // ← ADDED
         };
 
         public static async Task<List<TransactionRow>> GetDonorTransactionHistory(string donorId)
@@ -829,33 +853,37 @@ namespace KapwaKuha.Services
                 if (newStatus == "Released")
                 {
                     // Update ProofOfReceipt verification to Released
+                    // FIX: was Verification_ID = 'V002' — column is Verification_Status
                     using var verifCmd = new SqlCommand(
-                        "UPDATE ProofOfReceipt SET Verification_ID = 'V002' WHERE Claim_ID = @cid", conn);
+                        "UPDATE ProofOfReceipt SET Verification_Status = 'Released' WHERE Claim_ID = @cid", conn);
                     verifCmd.Parameters.AddWithValue("@cid", claimId);
                     await verifCmd.ExecuteNonQueryAsync();
 
+
                     // If the claimed item was a DirectTarget, mark the matching NeedsPost as Fulfilled
                     using var needsCmd = new SqlCommand(@"
-                UPDATE NeedsPosts SET Status = 'Fulfilled'
-                WHERE Status = 'Open'
-                  AND Org_ID IN (
-                      SELECT b.Organization_ID
-                      FROM Claims cl
-                      JOIN Beneficiaries b ON b.Beneficiary_ID = cl.Beneficiary_ID
-                      WHERE cl.Claim_ID = @cid2
-                  )
-                  AND NeedsPost_ID IN (
-                      SELECT TOP 1 n.NeedsPost_ID
-                      FROM Claims cl
-                      JOIN Items i ON i.Item_ID = cl.Item_ID
-                      JOIN Post p ON p.Post_ID = i.Post_ID
-                      JOIN Beneficiaries b ON b.Beneficiary_ID = cl.Beneficiary_ID
-                      JOIN NeedsPosts n ON n.Org_ID = b.Organization_ID
-                      WHERE cl.Claim_ID = @cid2
-                        AND p.Post_Type = 'DirectTarget'
-                        AND n.Status = 'Open'
-                      ORDER BY n.Post_Date DESC
-                  )", conn);
+UPDATE NeedsPosts SET Status = 'Fulfilled'
+WHERE Status = 'Open'
+  AND Org_ID IN (
+      SELECT ISNULL(ib.Organization_ID, '')
+      FROM Claims cl
+      LEFT JOIN InstitutionalBeneficiaries ib ON ib.Beneficiary_ID = cl.InstitutionalBene_ID
+      WHERE cl.Claim_ID = @cid2
+        AND cl.InstitutionalBene_ID IS NOT NULL
+  )
+  AND NeedsPost_ID IN (
+      SELECT TOP 1 n.NeedsPost_ID
+      FROM Claims cl
+      JOIN Items i ON i.Item_ID = cl.Item_ID
+      JOIN Post p ON p.Post_ID = i.Post_ID
+      LEFT JOIN InstitutionalBeneficiaries ib ON ib.Beneficiary_ID = cl.InstitutionalBene_ID
+      JOIN NeedsPosts n ON n.Org_ID = ib.Organization_ID
+      WHERE cl.Claim_ID = @cid2
+        AND p.Post_Type = 'DirectTarget'
+        AND n.Status = 'Open'
+        AND cl.InstitutionalBene_ID IS NOT NULL
+      ORDER BY n.Post_Date DESC
+  )", conn);
                     needsCmd.Parameters.AddWithValue("@cid2", claimId);
                     await needsCmd.ExecuteNonQueryAsync();
                 }
@@ -1051,16 +1079,17 @@ namespace KapwaKuha.Services
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(@"
-            SELECT n.NeedsPost_ID, n.Org_ID, n.Title, n.Description,
-                   n.Urgency, n.Status, n.Post_Date,
-                   ISNULL(n.ImagePath,'') AS ImagePath,
-                   ISNULL(o.Organization_Name,'') AS Org_Name
-            FROM NeedsPosts n
-            LEFT JOIN Organization o ON o.Organization_ID = n.Org_ID
-            WHERE n.Org_ID = @oid
-        AND n.Status = 'Open'
-      
-            ORDER BY n.Post_Date DESC", conn);
+    SELECT n.NeedsPost_ID, n.Org_ID, n.Title, n.Description,
+           n.Urgency, n.Status, n.Post_Date,
+           ISNULL(n.ImagePath,'') AS ImagePath,
+           ISNULL(o.Organization_Name,'') AS Org_Name,
+           n.Admin_Approval_Status
+    FROM NeedsPosts n
+    LEFT JOIN Organization o ON o.Organization_ID = n.Org_ID
+    WHERE n.Org_ID = @oid
+      AND n.Status = 'Open'
+    ORDER BY n.Post_Date DESC", conn);
+                // NOTE: Show ALL statuses to bene (Pending/Approved/Rejected) so they can see state
                 cmd.Parameters.AddWithValue("@oid", orgId);
                 using var r = await cmd.ExecuteReaderAsync();
                 while (await r.ReadAsync())
@@ -1074,11 +1103,11 @@ namespace KapwaKuha.Services
                         Urgency = r["Urgency"].ToString() ?? "Medium",
                         Status = r["Status"].ToString() ?? "Open",
                         Post_Date = Convert.ToDateTime(r["Post_Date"]),
-                        ImagePath = r["ImagePath"].ToString() ?? ""
+                        ImagePath = r["ImagePath"].ToString() ?? "",
+                        Admin_Approval_Status = r["Admin_Approval_Status"].ToString() ?? "Pending"
                     });
             }
-            catch (Exception ex)
-            { MessageBox.Show("GetNeedsPostsByOrg failed: " + ex.Message); }
+            catch (Exception ex) { MessageBox.Show("GetNeedsPostsByOrg failed: " + ex.Message); }
             return list;
         }
 
@@ -2292,15 +2321,27 @@ ORDER BY i.Date_Found DESC", conn);
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(@"
-            SELECT b.Beneficiary_ID, b.Beneficiary_FullName, b.Beneficiary_Username,
-                   b.Beneficiary_Sex, b.Beneficiary_Contact,
-                   b.Beneficiaries_Status, b.Organization_ID,
-                   ISNULL(o.Organization_Name,'') AS Organization_Name,
-                   b.Admin_Approval_Status
-            FROM InstitutionalBeneficiaries b
-            LEFT JOIN Organization o ON o.Organization_ID = b.Organization_ID
-            WHERE b.Admin_Approval_Status = 'Pending'
-            ORDER BY b.Beneficiary_ID DESC", conn);
+    -- Institutional
+    SELECT b.Beneficiary_ID, b.Beneficiary_FullName, b.Beneficiary_Username,
+           b.Beneficiary_Sex, b.Beneficiary_Contact,
+           b.Beneficiaries_Status, b.Organization_ID,
+           ISNULL(o.Organization_Name,'') AS Organization_Name,
+           b.Admin_Approval_Status,
+           'Institutional' AS BeneType
+    FROM InstitutionalBeneficiaries b
+    LEFT JOIN Organization o ON o.Organization_ID = b.Organization_ID
+    WHERE b.Admin_Approval_Status = 'Pending'
+    UNION ALL
+    -- Independent
+    SELECT ib.IndepBene_ID, ib.FullName, ib.Username,
+           ib.Sex, ib.ContactNumber,
+           ib.AccountStatus, '' AS Organization_ID,
+           'Independent' AS Organization_Name,
+           ib.Admin_Approval_Status,
+           'Independent' AS BeneType
+    FROM IndependentBeneficiaries ib
+    WHERE ib.Admin_Approval_Status = 'Pending'
+    ORDER BY Admin_Approval_Status DESC", conn);
                 using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                     list.Add(new BeneficiaryModel
@@ -2403,6 +2444,211 @@ ORDER BY i.Date_Found DESC", conn);
             }
             catch (Exception ex) { System.Windows.MessageBox.Show("GetAdminImpactMetrics failed: " + ex.Message); }
             return (0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+
+        }
+        // ── UserProfileWindow helpers ─────────────────────────────────────────
+
+        public static async Task<int> GetDonorTotalDonations(string donorId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "SELECT dbo.fn_GetDonorTotalDonations(@did)", conn);
+                cmd.Parameters.AddWithValue("@did", donorId);
+                var result = await cmd.ExecuteScalarAsync();
+                return result == null || result is DBNull ? 0 : Convert.ToInt32(result);
+            }
+            catch { return 0; }
+        }
+
+        public static async Task<List<ItemModel>> GetAvailableItemsByDonor(string donorId)
+        {
+            var all = await GetItemsByDonor(donorId);
+            return all.FindAll(i =>
+                i.Item_Status == "Available" &&
+                i.Admin_Approval_Status == "Approved");
+        }
+
+        public static async Task<IndependentBeneficiaryModel?> GetIndependentBeneficiaryById(
+            string indepBeneId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+                    SELECT IndepBene_ID, FullName, Username, Sex, ContactNumber,
+                           Address, AccountStatus, ProfilePicturePath,
+                           Admin_Approval_Status
+                    FROM IndependentBeneficiaries
+                    WHERE IndepBene_ID = @id", conn);
+                cmd.Parameters.AddWithValue("@id", indepBeneId);
+                using var r = await cmd.ExecuteReaderAsync();
+                if (!await r.ReadAsync()) return null;
+                return new IndependentBeneficiaryModel
+                {
+                    IndepBene_ID = r["IndepBene_ID"].ToString()!,
+                    FullName = r["FullName"].ToString()!,
+                    Username = r["Username"].ToString()!,
+                    Sex = r["Sex"].ToString()!,
+                    ContactNumber = r["ContactNumber"].ToString()!,
+                    Address = r["Address"]?.ToString() ?? string.Empty,
+                    AccountStatus = r["AccountStatus"].ToString()!,
+                    ProfilePicturePath = r["ProfilePicturePath"]?.ToString() ?? string.Empty
+                };
+            }
+            catch { return null; }
+        }
+
+        public static async Task ProcessUserReport(
+            string reportId, string reportedId,
+            string newStatus, string adminNotes, string actionTaken)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "EXEC sp_ProcessUserReport @ReportId, @ReportedId, @NewStatus, @AdminNotes, @ActionTaken",
+                    conn);
+                cmd.Parameters.AddWithValue("@ReportId", reportId);
+                cmd.Parameters.AddWithValue("@ReportedId", reportedId);
+                cmd.Parameters.AddWithValue("@NewStatus", newStatus);
+                cmd.Parameters.AddWithValue("@AdminNotes", adminNotes);
+                cmd.Parameters.AddWithValue("@ActionTaken", actionTaken);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show("ProcessUserReport failed: " + ex.Message);
+                throw;
+            }
+        }
+
+        public static async Task AdminBanUser(string userId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+                    UPDATE Users
+                    SET IsBlacklisted = 1, IsActive = 0
+                    WHERE UserID = @uid", conn);
+                cmd.Parameters.AddWithValue("@uid", userId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show("AdminBanUser failed: " + ex.Message);
+                throw;
+            }
+        }
+
+        public static async Task<string> GetUserRoleById(string userId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "SELECT Role FROM Users WHERE UserID = @uid", conn);
+                cmd.Parameters.AddWithValue("@uid", userId);
+                var result = await cmd.ExecuteScalarAsync();
+                return result?.ToString() ?? string.Empty;
+            }
+            catch { return string.Empty; }
+        }
+        // ══════════════════════════════════════════════════════════════════════
+        // NEEDS POST ADMIN GATEKEEPER
+        // ══════════════════════════════════════════════════════════════════════
+
+        public static async Task<List<NeedsPostModel>> GetPendingNeedsPosts()
+        {
+            var list = new List<NeedsPostModel>();
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+    SELECT n.NeedsPost_ID, n.Org_ID, n.Title, n.Description,
+           n.Urgency, n.Status, n.Post_Date,
+           ISNULL(n.ImagePath,'') AS ImagePath,
+           ISNULL(o.Organization_Name,'') AS Org_Name,
+           n.Admin_Approval_Status
+    FROM NeedsPosts n
+    LEFT JOIN Organization o ON o.Organization_ID = n.Org_ID
+    WHERE n.Admin_Approval_Status = 'Pending'
+    ORDER BY n.Post_Date DESC", conn);
+                using var r = await cmd.ExecuteReaderAsync();
+                while (await r.ReadAsync())
+                    list.Add(new NeedsPostModel
+                    {
+                        NeedsPost_ID = r["NeedsPost_ID"].ToString() ?? "",
+                        Org_ID = r["Org_ID"].ToString() ?? "",
+                        Org_Name = r["Org_Name"].ToString() ?? "",
+                        Title = r["Title"].ToString() ?? "",
+                        Description = r["Description"].ToString() ?? "",
+                        Urgency = r["Urgency"].ToString() ?? "Medium",
+                        Status = r["Status"].ToString() ?? "Open",
+                        Post_Date = Convert.ToDateTime(r["Post_Date"]),
+                        ImagePath = r["ImagePath"].ToString() ?? ""
+                    });
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("GetPendingNeedsPosts failed: " + ex.Message); }
+            return list;
+        }
+
+        public static async Task ApproveNeedsPost(string postId, string urgency)
+        {
+            // Admin approves AND sets the final urgency at the same time
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+    UPDATE NeedsPosts
+    SET Admin_Approval_Status = 'Approved',
+        Urgency = @urgency
+    WHERE NeedsPost_ID = @id", conn);
+                cmd.Parameters.AddWithValue("@urgency", urgency);
+                cmd.Parameters.AddWithValue("@id", postId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("ApproveNeedsPost failed: " + ex.Message); throw; }
+        }
+
+        public static async Task RejectNeedsPost(string postId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+    UPDATE NeedsPosts
+    SET Admin_Approval_Status = 'Rejected'
+    WHERE NeedsPost_ID = @id", conn);
+                cmd.Parameters.AddWithValue("@id", postId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("RejectNeedsPost failed: " + ex.Message); throw; }
+        }
+        public static async Task ResetItemApproval(string itemId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "UPDATE Items SET Admin_Approval_Status = 'Pending' WHERE Item_ID = @id", conn);
+                cmd.Parameters.AddWithValue("@id", itemId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { MessageBox.Show("ResetItemApproval failed: " + ex.Message); }
         }
     }
+
 }

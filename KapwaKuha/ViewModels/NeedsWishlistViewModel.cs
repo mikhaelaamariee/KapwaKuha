@@ -151,8 +151,10 @@ namespace KapwaKuha.ViewModels
                     };
                     await KapwaDataService.PostNeedsRequest(post);
                     MyPosts.Insert(0, post);
-                    MessageBox.Show($"✅ Need posted! ID: {postId}",
-                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(
+      $"📋 Need submitted for admin review! ID: {postId}\n\n" +
+      "It will appear publicly once an admin approves and confirms the urgency level.",
+      "Pending Approval", MessageBoxButton.OK, MessageBoxImage.Information);
                     Title = Description = ImagePath = string.Empty;
                     Urgency = "Medium";
                 }

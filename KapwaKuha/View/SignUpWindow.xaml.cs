@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using KapwaKuha.Services;
 using KapwaKuha.ViewModels;
 
@@ -13,19 +14,45 @@ namespace KapwaKuha.View
             Loaded += (s, e) => NavigationService.SetCurrent(this);
         }
 
-        // PasswordBox cannot bind directly — push to ViewModel before executing command
         private void RegisterBtn_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is SignUpViewModel vm)
             {
-                vm.Password = PwBox.Password;
-                vm.ConfirmPass = ConfirmPwBox.Password;
-
-                // We deleted the OrgCombo and SelectedOrgId logic here because 
-                // the TextBox in XAML automatically handles SelectedOrgName!
-
+                // Read from whichever is currently visible
+                vm.Password = PwBox.Visibility == Visibility.Visible
+                    ? PwBox.Password : PwTextBox.Text;
+                vm.ConfirmPass = ConfirmPwBox.Visibility == Visibility.Visible
+                    ? ConfirmPwBox.Password : ConfirmPwTextBox.Text;
                 vm.RegisterCommand.Execute(null);
             }
+        }
+
+        private void ShowPwCheck_Checked(object sender, RoutedEventArgs e)
+        {
+            PwTextBox.Text = PwBox.Password;
+            PwTextBox.Visibility = Visibility.Visible;
+            PwBox.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowPwCheck_Unchecked(object sender, RoutedEventArgs e)
+        {
+            PwBox.Password = PwTextBox.Text;
+            PwBox.Visibility = Visibility.Visible;
+            PwTextBox.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowConfirmPwCheck_Checked(object sender, RoutedEventArgs e)
+        {
+            ConfirmPwTextBox.Text = ConfirmPwBox.Password;
+            ConfirmPwTextBox.Visibility = Visibility.Visible;
+            ConfirmPwBox.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowConfirmPwCheck_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ConfirmPwBox.Password = ConfirmPwTextBox.Text;
+            ConfirmPwBox.Visibility = Visibility.Visible;
+            ConfirmPwTextBox.Visibility = Visibility.Collapsed;
         }
     }
 }

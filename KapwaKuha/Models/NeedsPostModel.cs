@@ -55,5 +55,28 @@ namespace KapwaKuha.Models
             "Medium" => "#B8860B",   // amber text
             _ => "#2E7D52"    // GREEN text for Low (was #185FA5 blue)
         };
+
+        // Add after Status property
+        public string Admin_Approval_Status { get; set; } = "Pending";
+
+        // Approval badge color for the beneficiary wishlist view
+        public string ApprovalBadgeColor => Admin_Approval_Status switch
+        {
+            "Approved" => "#DCFCE7",  // green
+            "Rejected" => "#FEE2E2",  // red
+            _ => "#FEF9C3"   // yellow = Pending
+        };
+        public string ApprovalBadgeText => Admin_Approval_Status switch
+        {
+            "Approved" => "✅ Live",
+            "Rejected" => "❌ Rejected",
+            _ => "⏳ Pending Review"
+        };
+        public string ApprovalTextColor => Admin_Approval_Status switch
+        {
+            "Approved" => "#166534",
+            "Rejected" => "#991B1B",
+            _ => "#854D0E"
+        };
     }
 }

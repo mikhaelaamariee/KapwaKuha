@@ -1,0 +1,379 @@
+﻿<Window x:Class="KapwaKuha.View.UserProfileWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="KapwaKuha — User Profile"
+        Height="780" Width="1280"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        FontFamily="Segoe UI"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <!-- FIX: Inverse converter for IsLoading — built-in doesn't support ConverterParameter=Inverse -->
+        <Style x:Key="InverseVisStyle" TargetType="FrameworkElement">
+            <Setter Property="Visibility" Value="Visible"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="20" Background="#F8FAFC" BorderBrush="#E5E7EB" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" BlurRadius="50" Opacity="0.3" ShadowDepth="10"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="160"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" CornerRadius="20,20,0,0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="SkyBlue" Offset="0.05"/>
+                      
+                        <GradientStop Color="#00B4D8" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid Margin="40,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" Width="100" Height="100" Margin="0,0,24,0" VerticalAlignment="Center">
+                        <Border CornerRadius="50" Background="#1AFFFFFF"
+                                BorderBrush="#4DFFFFFF" BorderThickness="2">
+                            <TextBlock Text="👤" FontSize="46"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasPicture}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+                        <Border CornerRadius="50" ClipToBounds="True">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasPicture}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Border.Background>
+                                <ImageBrush ImageSource="{Binding ProfilePicture}" Stretch="UniformToFill"/>
+                            </Border.Background>
+                        </Border>
+                    </Grid>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding DisplayName}"
+                                   FontSize="32" FontWeight="Bold" Foreground="White"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding SubInfo}"
+                                   FontSize="15" Foreground="#E0F2FE"
+                                   Margin="0,6,0,0" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding AccountCreated}"
+                                   FontSize="13" Foreground="#BAE6FD" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Command="{Binding CloseCommand}"
+                            Background="Transparent" BorderThickness="0"
+                            VerticalAlignment="Top" Margin="0,32,0,0" Cursor="Hand">
+                        <Border Background="#1AFFFFFF" CornerRadius="20" Padding="12,6">
+                            <TextBlock Text="✕ CLOSE" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                        </Border>
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Opacity" Value="0.7"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="40,32">
+                <TextBlock Text="⏳ Fetching profile data…"
+                           FontSize="18" Foreground="#0077B6" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,80,0,0"
+                           Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"/>
+
+                <Grid Style="{StaticResource InverseVisStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="380"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+
+                        <StackPanel Visibility="{Binding IsDonorTarget, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Trust &amp; Impact" FontSize="16" FontWeight="Bold"
+                                       Foreground="#0A2540" Margin="0,0,0,12"/>
+
+                            <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12"
+                                    BorderBrush="#E5E7EB" BorderThickness="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Community Rating" FontSize="14" Foreground="#6B7280" FontWeight="SemiBold"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                            <TextBlock Text="★" FontSize="24" Foreground="{Binding StarFill1}"/>
+                                            <TextBlock Text="★" FontSize="24" Foreground="{Binding StarFill2}"/>
+                                            <TextBlock Text="★" FontSize="24" Foreground="{Binding StarFill3}"/>
+                                            <TextBlock Text="★" FontSize="24" Foreground="{Binding StarFill4}"/>
+                                            <TextBlock Text="★" FontSize="24" Foreground="{Binding StarFill5}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="{Binding StarDisplay}"
+                                               FontSize="28" FontWeight="Bold" Foreground="#F59E0B"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+
+                            <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,24"
+                                    BorderBrush="#E5E7EB" BorderThickness="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Total Successful Hand-offs" FontSize="14" Foreground="#6B7280"
+                                               FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding TotalDonations, StringFormat='{}{0} Items'}"
+                                               FontSize="22" FontWeight="Bold" Foreground="#0077B6"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Visibility="{Binding IsInstBeneTarget, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Organization Details" FontSize="16" FontWeight="Bold"
+                                       Foreground="#0A2540" Margin="0,0,0,12"/>
+                            <Border Background="White" CornerRadius="12" Padding="20,18" Margin="0,0,0,24"
+                                    BorderBrush="#E5E7EB" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="Entity Name" FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding OrgName}" FontSize="16" FontWeight="SemiBold" Foreground="#0A2540" Margin="0,0,0,16"/>
+
+                                    <TextBlock Text="Registered Address" FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding OrgAddress}" FontSize="14" Foreground="#374151" TextWrapping="Wrap" Margin="0,0,0,16"/>
+
+                                    <TextBlock Text="Primary Contact" FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding OrgContact}" FontSize="14" Foreground="#374151"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Visibility="{Binding IsIndepBeneTarget, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Verification Status" FontSize="16" FontWeight="Bold"
+                                       Foreground="#0A2540" Margin="0,0,0,12"/>
+                            <Border Background="White" CornerRadius="12" Padding="20,18" Margin="0,0,0,24"
+                                    BorderBrush="#E5E7EB" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="✅ Identity Verified" FontSize="16" FontWeight="Bold" Foreground="#059669"/>
+                                    <TextBlock Text="This user has passed local community credential checks."
+                                               FontSize="13" Foreground="#6B7280" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <Grid Margin="0,16,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0" Command="{Binding ToggleReportCommand}"
+                                    Height="44" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border CornerRadius="8" Background="White"
+                                                BorderBrush="#FECACA" BorderThickness="1.5" x:Name="bg">
+                                            <TextBlock Text="{Binding ReportPanelVisible, Converter={StaticResource BoolToVis}}" 
+                                                       x:Name="txt" TextAlignment="Center" VerticalAlignment="Center"
+                                                       FontSize="14" FontWeight="SemiBold" Foreground="#DC2626"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="bg" Property="Background" Value="#FEF2F2"/>
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding ReportPanelVisible}" Value="False">
+                                                <Setter TargetName="txt" Property="Text" Value="🚩 Report User"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ReportPanelVisible}" Value="True">
+                                                <Setter TargetName="txt" Property="Text" Value="✕ Cancel Report"/>
+                                            </DataTrigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <Button Grid.Column="2" Command="{Binding BanUserCommand}"
+                                    Height="44" Cursor="Hand"
+                                    Visibility="{Binding ViewerIsAdmin, Converter={StaticResource BoolToVis}}">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border CornerRadius="8" Background="#DC2626" x:Name="bg">
+                                            <TextBlock Text="🚫 Ban Account" Foreground="White" FontSize="14" FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="bg" Property="Background" Value="#B91C1C"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+
+                        <Border Background="#FEF2F2" CornerRadius="12" Padding="20,16" Margin="0,16,0,0"
+                                BorderBrush="#FECACA" BorderThickness="1"
+                                Visibility="{Binding ReportPanelVisible, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <TextBlock Text="File a formal report" FontSize="14" FontWeight="Bold" Foreground="#991B1B" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Infraction Category" FontSize="12" Foreground="#7F1D1D" Margin="0,0,0,4"/>
+                                <ComboBox SelectedValue="{Binding ReportType, Mode=TwoWay}"
+          SelectedValuePath="Tag"
+          Height="38" FontSize="13" Margin="0,0,0,12">
+                                    <ComboBoxItem Tag="FakeItem"       Content="Fake/Fraudulent Item" IsSelected="True"/>
+                                    <ComboBoxItem Tag="Fraud"          Content="Scam/Phishing Attempt"/>
+                                    <ComboBoxItem Tag="Spam"           Content="Spam Activity"/>
+                                    <ComboBoxItem Tag="Inappropriate"  Content="Inappropriate Behavior"/>
+                                </ComboBox>
+
+                                <TextBlock Text="Details (Required)" FontSize="12" Foreground="#7F1D1D" Margin="0,0,0,4"/>
+                                <Border Background="White" CornerRadius="8" BorderBrush="#FCA5A5" BorderThickness="1">
+                                    <TextBox Text="{Binding ReportDescription, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="80" Background="Transparent" BorderThickness="0"
+                                             Padding="12,10" FontSize="13" TextWrapping="Wrap"
+                                             AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                                </Border>
+
+                                <TextBlock Text="{Binding ReportError}" Foreground="#DC2626" FontSize="12" Margin="0,8,0,0"
+                                           Visibility="{Binding ReportErrorVisible, Converter={StaticResource BoolToVis}}"/>
+
+                                <Button Content="Submit to Admins" Command="{Binding SubmitReportCommand}"
+                                        Height="40" Margin="0,16,0,0" Cursor="Hand">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border CornerRadius="8" Background="#B91C1C" x:Name="bg">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                  TextBlock.Foreground="White" TextBlock.FontWeight="Bold"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bg" Property="Background" Value="#991B1B"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+
+                    <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="32,24"
+                            BorderBrush="#E5E7EB" BorderThickness="1">
+                        <StackPanel Visibility="{Binding IsDonorTarget, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Currently Available Items" FontSize="20" FontWeight="Bold"
+                                       Foreground="#0A2540" Margin="0,0,0,24"/>
+
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="420">
+                                <StackPanel>
+
+                                    <ItemsControl ItemsSource="{Binding AvailableItems}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Width="340" Background="#F8FAFC" CornerRadius="12" 
+                                                        BorderBrush="#E5E7EB" BorderThickness="1" Padding="16" Margin="0,0,16,16">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="48"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <Border Grid.Column="0" Width="48" Height="48"
+                                                                CornerRadius="8" Background="#E0F2FE" VerticalAlignment="Top">
+                                                            <TextBlock Text="📦" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+
+                                                        <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                            <TextBlock Text="{Binding Item_Name}" FontSize="16" FontWeight="Bold"
+                                                                       Foreground="#0A2540" TextTrimming="CharacterEllipsis"/>
+
+                                                            <TextBlock Text="{Binding Category_Name}" FontSize="13" 
+                                                                       Foreground="#0077B6" Margin="0,4,0,8"/>
+
+                                                            <Border CornerRadius="6" Background="#DCFCE7" Padding="10,4" 
+                                                                    HorizontalAlignment="Left">
+                                                                <TextBlock Text="{Binding Item_Condition}" FontSize="12" 
+                                                                           FontWeight="SemiBold" Foreground="#166534"/>
+                                                            </Border>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <StackPanel Margin="0,60,0,0">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding AvailableItems.Count}" Value="0">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <TextBlock Text="📭" FontSize="48" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="No active listings at this time."
+                                                   FontSize="16" Foreground="#9CA3AF" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center" Margin="0,16,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </StackPanel>
+                    </Border>
+
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

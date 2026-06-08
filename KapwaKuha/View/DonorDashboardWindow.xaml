@@ -771,6 +771,26 @@
                                                                            FontSize="13" FontWeight="Bold"
                                                                            Foreground="#03045E"
                                                                            TextTrimming="CharacterEllipsis"/>
+
+                                                                <!-- Add this right after the Item_Name TextBlock in the MyPosts DataTemplate -->
+                                                                <Border CornerRadius="6" Padding="8,2" HorizontalAlignment="Left" Margin="0,4,0,0"
+        Background="{Binding ApprovalBadgeBackground}">
+                                                                    <TextBlock FontSize="10" FontWeight="Bold" Foreground="{Binding ApprovalBadgeColor}">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Text" Value="⏳ Pending Review"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Admin_Approval_Status}" Value="Approved">
+                                                                                        <Setter Property="Text" Value="✅ Live"/>
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Admin_Approval_Status}" Value="Rejected">
+                                                                                        <Setter Property="Text" Value="❌ Rejected"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                </Border>
                                                                 <TextBlock Text="{Binding Category_Name}"
                                                                            FontSize="11" Foreground="#0077B6"
                                                                            Margin="0,2,0,6"/>

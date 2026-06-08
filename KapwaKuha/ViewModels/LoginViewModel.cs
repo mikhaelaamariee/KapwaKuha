@@ -1,4 +1,4 @@
-﻿// FILE: ViewModels/LoginViewModel.cs  (UPDATED — handles 3 login types)
+﻿// FILE: ViewModels/LoginViewModel.cs
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -31,6 +31,14 @@ namespace KapwaKuha.ViewModels
             set { _errorMessage = value; OnPropertyChanged(); }
         }
 
+        // Exposed so IndependentBeneficiaryLoginWindow can sync show-pw TextBox
+        private string _plainPassword = string.Empty;
+        public string PlainPassword
+        {
+            get => _plainPassword;
+            set { _plainPassword = value; OnPropertyChanged(); }
+        }
+
         public string RoleLabel => CurrentUser.Role switch
         {
             "Donor" => "Donor Login",
@@ -50,7 +58,6 @@ namespace KapwaKuha.ViewModels
         public string SignUpLabel => CurrentUser.Role == "Donor"
             ? "New donor? Sign up" : "New here? Sign up";
 
-        // True if this login window should show a SignUp link
         public bool ShowSignUp =>
             CurrentUser.Role == "Donor" ||
             CurrentUser.Role == "IndependentBeneficiary";
@@ -78,14 +85,34 @@ namespace KapwaKuha.ViewModels
 
         private async void ExecuteLogin(object? parameter)
         {
+            // Accept PasswordBox OR plain string (from show-password TextBox)
             if (parameter is PasswordBox pb)
                 CurrentUser.Password = pb.Password;
+            else if (parameter is string s)
+                CurrentUser.Password = s;
+            else if (!string.IsNullOrEmpty(PlainPassword))
+                CurrentUser.Password = PlainPassword;
 
-            if (string.IsNullOrWhiteSpace(CurrentUser.UserID) ||
-                CurrentUser.UserID.Contains(" ") ||
-                string.IsNullOrWhiteSpace(CurrentUser.Password))
+            if (string.IsNullOrWhiteSpace(CurrentUser.UserID))
             {
-                ErrorMessage = "Username and password are required. No spaces allowed.";
+                ErrorMessage = "Username is required.";
+                ErrorVisible = true;
+                return;
+            }
+
+            // Institutional and Donor: strict no-spaces rule on UserID
+            // Independent: relaxed — just needs non-empty username (low-barrier model)
+            if (CurrentUser.Role != "IndependentBeneficiary" &&
+                CurrentUser.UserID.Contains(" "))
+            {
+                ErrorMessage = "Username cannot contain spaces.";
+                ErrorVisible = true;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(CurrentUser.Password))
+            {
+                ErrorMessage = "Password is required.";
                 ErrorVisible = true;
                 return;
             }
@@ -128,6 +155,8 @@ namespace KapwaKuha.ViewModels
 
                 case "IndependentBeneficiary":
                     {
+                        // Low-barrier: same LoginIndependentBeneficiary call, but no
+                        // extra front-end gating beyond non-empty username/password
                         var (ok, userId, fullName, username) =
                             await KapwaDataService.LoginIndependentBeneficiary(
                                 CurrentUser.UserID, CurrentUser.Password);
@@ -138,10 +167,9 @@ namespace KapwaKuha.ViewModels
                             UserSession.Username = username;
                             UserSession.FullName = fullName;
                             UserSession.Role = "IndependentBeneficiary";
-                            // IndependentBeneficiaries use the same dashboard as Institutional for now
                             NavigationService.Navigate(new View.BeneficiaryDashboardWindow(userId));
                         }
-                        else { ErrorMessage = "Invalid username or password."; ErrorVisible = true; }
+                        else { ErrorMessage = "Username or password not recognized."; ErrorVisible = true; }
                         break;
                     }
             }

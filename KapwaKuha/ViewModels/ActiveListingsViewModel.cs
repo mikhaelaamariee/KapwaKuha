@@ -55,7 +55,8 @@ namespace KapwaKuha.ViewModels
             }
         }
         public bool IsItemSelected => SelectedItem != null;
-        public bool CanEditSelected => SelectedItem?.Item_Status == "Available";
+        public bool CanEditSelected => SelectedItem?.Item_Status == "Available"
+                              && SelectedItem?.Admin_Approval_Status == "Approved";
 
         // ── Edit panel fields ────────────────────────────────────────────────
         private string _editName = string.Empty;
@@ -200,6 +201,21 @@ namespace KapwaKuha.ViewModels
                     MessageBox.Show("✅ Item updated!", "Saved",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     await LoadItemsAsync();
+
+                    // Inside SaveEditCommand try block, after UpdateItem call, add:
+                    // If the donor edits an approved item, reset it to Pending for re-review
+                    if (SelectedItem.Admin_Approval_Status == "Approved")
+                    {
+                        await KapwaDataService.ResetItemApproval(SelectedItem.Item_ID);
+                        SelectedItem.Admin_Approval_Status = "Pending";
+                        MessageBox.Show(
+                            "✅ Item updated and sent back for admin review.\nIt will be hidden from beneficiaries until re-approved.",
+                            "Re-submitted", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("✅ Item updated!", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
                 }
                 catch { }
                 finally { IsBusy = false; }

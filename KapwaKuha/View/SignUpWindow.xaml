@@ -277,7 +277,7 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Row 5: Password + Confirm -->
+                        <!-- Row 5: Password + Confirm (with Show toggle) -->
                         <Grid Margin="0,0,0,20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -287,21 +287,59 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Password" FontSize="13" FontWeight="SemiBold"
-                                           Foreground="#03045E" Margin="0,0,0,8"/>
-                                <Border Style="{StaticResource GlassInputBorder}">
-                                    <PasswordBox x:Name="PwBox" Height="44" Background="Transparent"
-                                                 BorderThickness="0" Foreground="#03045E"
-                                                 FontSize="14" Padding="14,12,14,0"/>
+                   Foreground="#03045E" Margin="0,0,0,8"/>
+                                <Border Style="{StaticResource GlassInputBorder}" Height="44">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="40"/>
+                                        </Grid.ColumnDefinitions>
+                                        <PasswordBox x:Name="PwBox" Height="44" Background="Transparent"
+                             BorderThickness="0" Foreground="#03045E"
+                             FontSize="14" Padding="14,12,4,0"
+                             Panel.ZIndex="1"/>
+                                        <TextBox x:Name="PwTextBox" Height="44" Background="Transparent"
+                         BorderThickness="0" Foreground="#03045E"
+                         FontSize="14" Padding="14,0,4,0"
+                         VerticalContentAlignment="Center"
+                         Visibility="Collapsed"/>
+                                        <CheckBox Grid.Column="1" x:Name="ShowPwCheck"
+                          VerticalAlignment="Center" HorizontalAlignment="Center"
+                          ToolTip="Show password"
+                          Checked="ShowPwCheck_Checked"
+                          Unchecked="ShowPwCheck_Unchecked">
+                                            <TextBlock Text="👁" FontSize="13"/>
+                                        </CheckBox>
+                                    </Grid>
                                 </Border>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="Confirm Password" FontSize="13" FontWeight="SemiBold"
-                                           Foreground="#03045E" Margin="0,0,0,8"/>
-                                <Border Style="{StaticResource GlassInputBorder}">
-                                    <PasswordBox x:Name="ConfirmPwBox" Height="44" Background="Transparent"
-                                                 BorderThickness="0" Foreground="#03045E"
-                                                 FontSize="14" Padding="14,12,14,0"/>
+                   Foreground="#03045E" Margin="0,0,0,8"/>
+                                <Border Style="{StaticResource GlassInputBorder}" Height="44">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="40"/>
+                                        </Grid.ColumnDefinitions>
+                                        <PasswordBox x:Name="ConfirmPwBox" Height="44" Background="Transparent"
+                             BorderThickness="0" Foreground="#03045E"
+                             FontSize="14" Padding="14,12,4,0"
+                             Panel.ZIndex="1"/>
+                                        <TextBox x:Name="ConfirmPwTextBox" Height="44" Background="Transparent"
+                         BorderThickness="0" Foreground="#03045E"
+                         FontSize="14" Padding="14,0,4,0"
+                         VerticalContentAlignment="Center"
+                         Visibility="Collapsed"/>
+                                        <CheckBox Grid.Column="1" x:Name="ShowConfirmPwCheck"
+                          VerticalAlignment="Center" HorizontalAlignment="Center"
+                          ToolTip="Show password"
+                          Checked="ShowConfirmPwCheck_Checked"
+                          Unchecked="ShowConfirmPwCheck_Unchecked">
+                                            <TextBlock Text="👁" FontSize="13"/>
+                                        </CheckBox>
+                                    </Grid>
                                 </Border>
                             </StackPanel>
                         </Grid>

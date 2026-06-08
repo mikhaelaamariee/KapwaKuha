@@ -59,7 +59,7 @@ namespace KapwaKuha.ViewModels
         public ICommand RefreshCommand { get; }
         public ICommand SelectItemCommand { get; }
         public ICommand MessageDonorCommand { get; }
-
+        public ICommand ViewDonorProfileCommand { get; }   // NEW
 
         public BrowseItemsViewModel(string beneficiaryId)
             : this(beneficiaryId, "All") { }
@@ -79,12 +79,26 @@ namespace KapwaKuha.ViewModels
                 if (item is ItemModel selected)
                     NavigationService.Navigate(new View.ClaimItemWindow(_beneficiaryId, selected));
             });
+
             MessageDonorCommand = new RelayCommand(item =>
             {
                 if (item is ItemModel selected)
                     NavigationService.Navigate(
                         new View.ChatWindow(_beneficiaryId, selected.Donor_ID,
                                             selected.Donor_Name, "Beneficiary"));
+            });
+
+            // NEW: open UserProfileWindow as a floating modal over the current window
+            ViewDonorProfileCommand = new RelayCommand(item =>
+            {
+                if (item is ItemModel selected)
+                {
+                    var modal = new View.UserProfileWindow(
+                        selected.Donor_ID, _beneficiaryId,
+                        UserSession.Role ?? "Beneficiary");
+                    modal.Owner = Application.Current.MainWindow;
+                    modal.ShowDialog();
+                }
             });
 
             _ = LoadItemsAsync();
@@ -96,6 +110,12 @@ namespace KapwaKuha.ViewModels
             try
             {
                 var all = await KapwaDataService.GetAvailableItems();
+                // Fetch ratings in parallel then stamp onto each item
+                var ratingTasks = all.Select(async i =>
+                {
+                    i.DonorAverageRating = await KapwaDataService.GetDonorAverageRating(i.Donor_ID);
+                });
+                await System.Threading.Tasks.Task.WhenAll(ratingTasks);
                 _allItems = all;
                 Application.Current.Dispatcher.Invoke(ApplyFilter);
             }

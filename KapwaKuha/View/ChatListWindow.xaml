@@ -117,61 +117,90 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <Grid Grid.Column="0" Width="46" Height="46">
-                                                <Border CornerRadius="23">
-                                                    <Border.Style>
-                                                        <Style TargetType="Border">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding HasProfilePicture}" Value="True">
-                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Border.Style>
-                                                    <Border.Background>
-                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                            <GradientStop Color="#00B4D8" Offset="0"/>
-                                                            <GradientStop Color="#0077B6" Offset="1"/>
-                                                        </LinearGradientBrush>
-                                                    </Border.Background>
-                                                    <TextBlock Text="👤" FontSize="22" Foreground="White"
-                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
+                                            <!-- Clickable avatar -->
+                                            <Button Grid.Column="0"
+        Command="{Binding DataContext.ViewProfileCommand,
+            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+        CommandParameter="{Binding}"
+        Background="Transparent" BorderThickness="0" Cursor="Hand"
+        ToolTip="View profile" Width="46" Height="46">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Grid Width="46" Height="46">
+                                                            <Border CornerRadius="23">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding HasProfilePicture}" Value="True">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                                <Border.Background>
+                                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                                        <GradientStop Color="#00B4D8" Offset="0"/>
+                                                                        <GradientStop Color="#0077B6" Offset="1"/>
+                                                                    </LinearGradientBrush>
+                                                                </Border.Background>
+                                                                <TextBlock Text="👤" FontSize="22" Foreground="White"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <Border CornerRadius="23">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding HasProfilePicture}" Value="True">
+                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                                <Border.Background>
+                                                                    <ImageBrush ImageSource="{Binding ProfilePicturePath}" Stretch="UniformToFill"/>
+                                                                </Border.Background>
+                                                            </Border>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
 
-                                                <Border CornerRadius="23">
-                                                    <Border.Style>
-                                                        <Style TargetType="Border">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding HasProfilePicture}" Value="True">
-                                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Border.Style>
-                                                    <Border.Background>
-                                                        <ImageBrush ImageSource="{Binding ProfilePicturePath}" Stretch="UniformToFill"/>
-                                                    </Border.Background>
-                                                </Border>
-                                            </Grid>
-
+                                            <!-- Name + last message — clicking name opens profile -->
                                             <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,2,0,2">
-                                                <TextBlock Text="{Binding DisplayName}"
-                                                           FontSize="13" FontWeight="SemiBold"
-                                                           Foreground="#03045E"
-                                                           TextWrapping="NoWrap"
-                                                           TextTrimming="CharacterEllipsis"/>
+                                                <Button Background="Transparent" BorderThickness="0"
+            HorizontalAlignment="Left" Cursor="Hand"
+            Command="{Binding DataContext.ViewProfileCommand,
+                RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+            CommandParameter="{Binding}">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <TextBlock x:Name="nameLnk"
+                           Text="{Binding DisplayName}"
+                           FontSize="13" FontWeight="SemiBold"
+                           Foreground="#03045E"
+                           TextWrapping="NoWrap"
+                           TextTrimming="CharacterEllipsis"/>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="nameLnk" Property="Foreground" Value="#0077B6"/>
+                                                                    <Setter TargetName="nameLnk" Property="TextDecorations" Value="Underline"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
                                                 <TextBlock Text="{Binding SubText}"
-                                                           FontSize="10" Foreground="#0077B6"
-                                                           Margin="0,1,0,2"
-                                                           TextWrapping="NoWrap"
-                                                           TextTrimming="CharacterEllipsis"/>
+               FontSize="10" Foreground="#0077B6"
+               Margin="0,1,0,2"
+               TextWrapping="NoWrap"
+               TextTrimming="CharacterEllipsis"/>
                                                 <TextBlock Text="{Binding LastMessage}"
-                                                           FontSize="11" Foreground="#5E7A8A"
-                                                           TextTrimming="CharacterEllipsis"
-                                                           TextWrapping="NoWrap"
-                                                           MaxWidth="260"/>
+               FontSize="11" Foreground="#5E7A8A"
+               TextTrimming="CharacterEllipsis"
+               TextWrapping="NoWrap"
+               MaxWidth="260"/>
                                             </StackPanel>
 
                                             <Border Grid.Column="3" Width="22" Height="22"

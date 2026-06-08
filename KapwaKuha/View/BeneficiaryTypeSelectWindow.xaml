@@ -1,0 +1,165 @@
+﻿<Window x:Class="KapwaKuha.View.BeneficiaryTypeSelectWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="KapwaKuha — Select Beneficiary Type"
+        Height="720" Width="1280"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        FontFamily="Segoe UI">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1.2*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left hero panel (same as ChooseRole) -->
+        <Grid Grid.Column="0">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#00A8E8" Offset="0"/>
+                    <GradientStop Color="#0077B6" Offset="1"/>
+                </LinearGradientBrush>
+            </Grid.Background>
+            <Ellipse Width="400" Height="400" Fill="#1AFFFFFF"
+                     Margin="-100,-100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <StackPanel Margin="60" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,40">
+                    <Image Source="https://i.imgur.com/FHFRQxB.png"
+                           Width="60" Height="60"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Text="Kapwa" Foreground="White"
+                               FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="Kuha" Foreground="White"
+                               FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Text="Who are you as a beneficiary?"
+                           Foreground="White" FontSize="36" FontWeight="SemiBold"
+                           TextWrapping="Wrap" Margin="0,0,0,24" LineHeight="46"/>
+                <TextBlock TextWrapping="Wrap" Foreground="#CCFFFFff" FontSize="15" LineHeight="24">
+                    Institutional Beneficiaries are part of a registered organization.
+                    Independent Beneficiaries are individual citizens seeking assistance.
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+
+        <!-- Right panel — type selector -->
+        <Grid Grid.Column="1" Background="#F0F8FF">
+            <Image Source="https://i.imgur.com/y4MrK4c.jpeg" Opacity="0.03"
+                   Width="1980" Height="2808"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+            <Button Command="{Binding BackCommand}"
+                    Style="{StaticResource LinkBtn}"
+                    Content="← Back"
+                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Margin="40,40,0,0" FontSize="14"/>
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="500">
+
+                <TextBlock Text="Select your beneficiary type"
+                           FontSize="26" FontWeight="Bold" Foreground="#0A2540"
+                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="Choose the option that best describes you."
+                           FontSize="14" Foreground="#6B7280"
+                           HorizontalAlignment="Center" Margin="0,0,0,40"/>
+
+                <!-- Institutional card -->
+                <Border CornerRadius="16" Background="White" BorderBrush="#E5E7EB"
+                        BorderThickness="1.5" Margin="0,0,0,16" Padding="28,24"
+                        Cursor="Hand">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="BorderBrush" Value="#0077B6"/>
+                                    <Setter Property="Background" Value="#F0F8FF"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Border.InputBindings>
+                        <MouseBinding MouseAction="LeftClick"
+                                      Command="{Binding InstitutionalCommand}"/>
+                    </Border.InputBindings>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Width="52" Height="52" CornerRadius="26">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#00A8E8" Offset="0"/>
+                                    <GradientStop Color="#0077B6" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <TextBlock Text="🏢" FontSize="22"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0">
+                            <TextBlock Text="Institutional Beneficiary"
+                                       FontSize="16" FontWeight="Bold" Foreground="#0A2540"/>
+                            <TextBlock Text="Registered with an organization or barangay. Full credential check required."
+                                       FontSize="12" Foreground="#6B7280" TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="›" FontSize="22"
+                                   Foreground="#9CA3AF" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Independent card -->
+                <Border CornerRadius="16" Background="White" BorderBrush="#E5E7EB"
+                        BorderThickness="1.5" Margin="0,0,0,32" Padding="28,24"
+                        Cursor="Hand">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="BorderBrush" Value="#00B4D8"/>
+                                    <Setter Property="Background" Value="#F0FDFF"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Border.InputBindings>
+                        <MouseBinding MouseAction="LeftClick"
+                                      Command="{Binding IndependentCommand}"/>
+                    </Border.InputBindings>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Width="52" Height="52" CornerRadius="26">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#00B4D8" Offset="0"/>
+                                    <GradientStop Color="#48CAE4" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <TextBlock Text="🙋" FontSize="22"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0">
+                            <TextBlock Text="Independent Beneficiary"
+                                       FontSize="16" FontWeight="Bold" Foreground="#0A2540"/>
+                            <TextBlock Text="Individual citizen seeking donation assistance. Simple sign-in."
+                                       FontSize="12" Foreground="#6B7280" TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="›" FontSize="22"
+                                   Foreground="#9CA3AF" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <Button Content="Exit" Command="{Binding ExitCommand}"
+                        Style="{StaticResource LinkBtn}"
+                        HorizontalAlignment="Center"
+                        Foreground="#9CA3AF" FontSize="12"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

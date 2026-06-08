@@ -242,33 +242,63 @@
 
                                         <StackPanel Margin="16,14,16,16">
                                             <TextBlock Text="{Binding Item_Name}" FontSize="18" FontWeight="Bold"
-                                                       Foreground="#03045E" TextTrimming="CharacterEllipsis"
-                                                       TextWrapping="NoWrap" Margin="0,0,0,4"/>
+               Foreground="#03045E" TextTrimming="CharacterEllipsis"
+               TextWrapping="NoWrap" Margin="0,0,0,4"/>
 
-                                            <Grid Margin="0,0,0,10">
+                                            <!-- Donor row: clickable name + star rating + message icon -->
+                                            <Grid Margin="0,0,0,8">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <TextBlock Text="{Binding Donor_Name, StringFormat='Donated by {0}'}"
-                                                           FontSize="12" Foreground="#5E7A8A"
-                                                           TextTrimming="CharacterEllipsis"
-                                                           VerticalAlignment="Center"/>
+                                                <!-- Clickable donor name -->
+                                                <Button Grid.Column="0"
+                Command="{Binding DataContext.ViewDonorProfileCommand,
+                    RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                CommandParameter="{Binding}"
+                Background="Transparent" BorderThickness="0"
+                HorizontalAlignment="Left" Cursor="Hand"
+                ToolTip="View donor profile">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <TextBlock x:Name="DonorLink"
+                               Text="{Binding Donor_Name, StringFormat='🤲 {0}'}"
+                               FontSize="12" Foreground="#0077B6"
+                               TextDecorations="Underline"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center"/>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="DonorLink" Property="Foreground" Value="#00B4D8"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
 
-                                                <Button Grid.Column="1"
-                                                        Command="{Binding DataContext.MessageDonorCommand,
-                                                 RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                        CommandParameter="{Binding}"
-                                                        Cursor="Hand" ToolTip="Message this donor"
-                                                        Background="Transparent" BorderThickness="0"
-                                                        Margin="8,0,0,0">
+                                                <!-- Live star rating -->
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
+                    Margin="6,0">
+                                                    <TextBlock Text="★" FontSize="11" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding DonorRatingDisplay}" FontSize="10"
+                       Foreground="#6B7280" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                                                </StackPanel>
+
+                                                <!-- Message icon -->
+                                                <Button Grid.Column="2"
+                Command="{Binding DataContext.MessageDonorCommand,
+                    RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                CommandParameter="{Binding}"
+                Cursor="Hand" ToolTip="Message this donor"
+                Background="Transparent" BorderThickness="0">
                                                     <Button.Template>
                                                         <ControlTemplate TargetType="Button">
                                                             <Border Background="{TemplateBinding Background}"
-                                                                    CornerRadius="14" Padding="6" x:Name="IconBorder">
+                            CornerRadius="14" Padding="6" x:Name="IconBorder">
                                                                 <Path Data="M20,2H4C2.9,2,2,2.9,2,4v18l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z"
-                                                                      Fill="#00B4D8" Width="14" Height="14" Stretch="Uniform"/>
+                              Fill="#00B4D8" Width="14" Height="14" Stretch="Uniform"/>
                                                             </Border>
                                                             <ControlTemplate.Triggers>
                                                                 <Trigger Property="IsMouseOver" Value="True">
@@ -283,7 +313,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                                 <Border Background="#EBF7FB" CornerRadius="6" Padding="8,4" Margin="0,0,6,0">
                                                     <TextBlock Text="{Binding Category_Name}" FontSize="11"
-                                                               Foreground="#0077B6" FontWeight="SemiBold"/>
+                       Foreground="#0077B6" FontWeight="SemiBold"/>
                                                 </Border>
                                                 <Border Background="#F5F5F5" CornerRadius="6" Padding="8,4">
                                                     <TextBlock Text="{Binding StorageDaysDisplay}" FontSize="11" Foreground="#666"/>
@@ -291,9 +321,9 @@
                                             </StackPanel>
 
                                             <Button Command="{Binding DataContext.SelectItemCommand,
-                                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                    CommandParameter="{Binding}" Height="40"
-                                                    BorderThickness="0" Cursor="Hand">
+                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+            CommandParameter="{Binding}" Height="40"
+            BorderThickness="0" Cursor="Hand">
                                                 <Button.Template>
                                                     <ControlTemplate TargetType="Button">
                                                         <Border CornerRadius="8" Background="#00B4D8" x:Name="ClaimBtnBg">

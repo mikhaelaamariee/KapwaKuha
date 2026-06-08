@@ -1,155 +1,174 @@
 ﻿<Window x:Class="KapwaKuha.View.NeedsWishlistWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                         xmlns:vm="clr-namespace:KapwaKuha.ViewModels"
+        xmlns:vm="clr-namespace:KapwaKuha.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
- mc:Ignorable="d"
-d:DataContext="{d:DesignInstance Type=vm:NeedsWishlistDesignViewModel, IsDesignTimeCreatable=True}"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:NeedsWishlistDesignViewModel, IsDesignTimeCreatable=True}"
         Title="KapwaKuha — Needs Wishlist"
         Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI">
+
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </Window.Resources>
 
     <Grid>
-        <Rectangle>
-            <Rectangle.Fill>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="White" Offset="0"/>
-                    <GradientStop Color="LightSkyBlue" Offset="1"/>
-                </LinearGradientBrush>
-            </Rectangle.Fill>
-        </Rectangle>
-        <Image Source="https://i.imgur.com/y4MrK4c.jpeg" Opacity ="0.06" Width="1980" HorizontalAlignment="Center" VerticalAlignment="Center" Height="2808" RenderTransformOrigin="0.5,0.5" />
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#FFFFFF" Offset="0"/>
+                <GradientStop Color="#E0F2FE" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Image Source="https://i.imgur.com/y4MrK4c.jpeg" Opacity="0.04" Stretch="UniformToFill"/>
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="56"/>
+                <RowDefinition Height="60"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="#0077B6">
-                <Grid Margin="20,0">
+                <Grid Margin="24,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
+
                     <Button Grid.Column="0" Command="{Binding BackCommand}"
-                            Content="← Back" Background="Transparent" BorderThickness="0"
-                            Foreground="White" FontSize="13" Cursor="Hand" VerticalAlignment="Center"/>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal"
-                                HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Text="KAPWAKUHA  /  " FontSize="12" FontWeight="Black" Foreground="#90E0EF" VerticalAlignment="Center"/>
-                        <TextBlock Text="Needs Wishlist" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                            Content="← Back to Dashboard" Background="Transparent" BorderThickness="0"
+                            Foreground="White" FontSize="14" FontWeight="SemiBold" Cursor="Hand" VerticalAlignment="Center"/>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="KAPWAKUHA  /  " FontSize="13" FontWeight="Black" Foreground="#90E0EF" VerticalAlignment="Center"/>
+                        <TextBlock Text="Needs Wishlist Manager" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <Grid Margin="32">
+                <Grid Margin="40,32">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="#44FF4D4D" BorderBrush="#66FF0000" BorderThickness="1" 
-                            CornerRadius="10" Padding="12,10" Margin="0,0,0,16" MaxWidth="800"
+                    <Border Grid.Row="0" Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1" 
+                            CornerRadius="12" Padding="16,12" Margin="0,0,0,24" MaxWidth="1200" HorizontalAlignment="Stretch"
                             Visibility="{Binding ErrorVisible, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#B30000" FontWeight="SemiBold"
-                                   FontSize="13" TextWrapping="Wrap" HorizontalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="⚠️ " FontSize="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#991B1B" FontWeight="SemiBold"
+                                       FontSize="14" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Border>
 
-                    <Grid Grid.Row="1">
+                    <Grid Grid.Row="1" MaxWidth="1200" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="1.2*"/>
                             <ColumnDefinition Width="0.8*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Background="#EEFFFFFF" BorderBrush="#88FFFFFF" BorderThickness="1.5" 
+                        <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" 
                                 CornerRadius="20" Padding="32" Margin="0,0,16,0" VerticalAlignment="Stretch">
                             <Border.Effect>
-                                <DropShadowEffect Color="#0077B6" BlurRadius="20" ShadowDepth="4" Opacity="0.08"/>
+                                <DropShadowEffect Color="#0F172A" BlurRadius="24" ShadowDepth="4" Opacity="0.05"/>
                             </Border.Effect>
 
                             <Grid>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <StackPanel Grid.Row="0">
-                                    <Grid Margin="0,0,0,24">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
+                                <Grid Grid.Row="0" Margin="0,0,0,24">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock FontSize="20" FontWeight="Bold" Foreground="#0A2540" Margin="0,0,0,4">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Text" Value="📝 Post a New Need"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsEditing}" Value="True">
-                                                                <Setter Property="Text" Value="✏️ Edit Your Post"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                            <TextBlock Text="Fill out the details of what your organization urgently needs."
-                                                       FontSize="13" Foreground="#5E7A8A"/>
-                                        </StackPanel>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock FontSize="22" FontWeight="Bold" Foreground="#0A2540" Margin="0,0,0,4">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="📝 Post a New Need"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                                            <Setter Property="Text" Value="✏️ Edit Your Post"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Text="Fill out the details of what your organization urgently requires."
+                                                   FontSize="13" Foreground="#64748B"/>
 
-                                        <Button Grid.Column="1" Command="{Binding ClearSelectionCommand}" Height="34" Padding="16,0"
-                                                FontSize="12" FontWeight="SemiBold" Foreground="#0077B6"
-                                                BorderBrush="#0077B6" BorderThickness="1.5" Background="Transparent" Cursor="Hand"
+                                        <Border CornerRadius="8" Padding="10,4" HorizontalAlignment="Left" Margin="0,10,0,0"
+                                                Background="{Binding ApprovalBadgeColor}"
                                                 Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}">
-                                            <TextBlock Text="✕ Cancel Edit"/>
-                                        </Button>
-                                    </Grid>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Status: " FontSize="12" FontWeight="Normal" Foreground="{Binding ApprovalTextColor}"/>
+                                                <TextBlock Text="{Binding ApprovalBadgeText}" FontSize="12" FontWeight="Bold" Foreground="{Binding ApprovalTextColor}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
 
-                                    <TextBlock Text="Request Title" FontSize="13" FontWeight="SemiBold" Foreground="#0A2540" Margin="4,0,0,8"/>
-                                    <Border CornerRadius="10" BorderBrush="#6600B4D8" BorderThickness="1"
-                                            Padding="12,0" Background="White" Margin="0,0,0,20">
+                                    <Button Grid.Column="1" Command="{Binding ClearSelectionCommand}" Height="36" Padding="16,0"
+                                            FontSize="13" FontWeight="SemiBold" Foreground="#EF4444"
+                                            BorderBrush="#FCA5A5" BorderThickness="1" Background="White" Cursor="Hand"
+                                            Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="8"/>
+                                            </Style>
+                                        </Button.Resources>
+                                        <TextBlock Text="✕ Cancel Edit"/>
+                                    </Button>
+                                </Grid>
+
+                                <StackPanel Grid.Row="1">
+                                    <TextBlock Text="Request Title" FontSize="14" FontWeight="SemiBold" Foreground="#0A2540" Margin="4,0,0,8"/>
+                                    <Border CornerRadius="10" BorderBrush="#CBD5E1" BorderThickness="1"
+                                            Padding="14,0" Background="White" Margin="0,0,0,20">
                                         <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                                 Height="44" Background="Transparent" BorderThickness="0"
+                                                 Height="46" Background="Transparent" BorderThickness="0"
                                                  Foreground="#0A2540" FontSize="15" VerticalContentAlignment="Center" MaxLength="200"/>
                                     </Border>
 
-                                    <TextBlock Text="Description (What is needed and why?)" FontSize="13" FontWeight="SemiBold" Foreground="#0A2540" Margin="4,0,0,8"/>
-                                    <Border CornerRadius="10" BorderBrush="#6600B4D8" BorderThickness="1"
-                                            Padding="12,12" Background="White" Margin="0,0,0,24">
+                                    <TextBlock Text="Description (What is needed and why?)" FontSize="14" FontWeight="SemiBold" Foreground="#0A2540" Margin="4,0,0,8"/>
+                                    <Border CornerRadius="10" BorderBrush="#CBD5E1" BorderThickness="1"
+                                            Padding="14,12" Background="White" Margin="0,0,0,20">
                                         <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                                                 Height="160" Background="Transparent" BorderThickness="0"
+                                                 Height="140" Background="Transparent" BorderThickness="0"
                                                  Foreground="#0A2540" FontSize="14" TextWrapping="Wrap"
                                                  AcceptsReturn="True" VerticalContentAlignment="Top" MaxLength="1000"/>
                                     </Border>
 
-                                    <TextBlock Text="Urgency Level" FontSize="13" FontWeight="SemiBold" Foreground="#0A2540" Margin="4,0,0,12"/>
-                                    <Border Background="#FAFDFF" BorderBrush="#CAF0F8" BorderThickness="1" CornerRadius="12" Padding="16">
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="Urgency Level" FontSize="14" FontWeight="SemiBold" Foreground="#0A2540" Margin="4,0,0,8"/>
+                                    <Border Background="#F1F5F9" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,24">
+                                        <UniformGrid Columns="3">
                                             <RadioButton Content="Low" GroupName="Urgency" IsChecked="{Binding IsLow}"
-                                                         Foreground="#185FA5" FontWeight="SemiBold" FontSize="14" Margin="0,0,40,0"/>
+                                                         Foreground="#1E40AF" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center"/>
                                             <RadioButton Content="Medium" GroupName="Urgency" IsChecked="{Binding IsMedium}"
-                                                         Foreground="#B8860B" FontWeight="SemiBold" FontSize="14" Margin="0,0,40,0"/>
+                                                         Foreground="#854D0E" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center"/>
                                             <RadioButton Content="High" GroupName="Urgency" IsChecked="{Binding IsHigh}"
-                                                         Foreground="#C0304A" FontWeight="SemiBold" FontSize="14"/>
-                                        </StackPanel>
+                                                         Foreground="#991B1B" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center"/>
+                                        </UniformGrid>
                                     </Border>
                                 </StackPanel>
 
-                                <Border Background="#0A0077B6" BorderBrush="#2200B4D8" BorderThickness="1" 
-                                        CornerRadius="12" Padding="20" Margin="0,503,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" Height="200" Grid.RowSpan="2" Width="600">
+                                <Border Grid.Row="2" Background="#E0F2FE" BorderBrush="#BAE6FD" BorderThickness="1" 
+                                        CornerRadius="14" Padding="24,16" Margin="0,16,0,0">
                                     <StackPanel>
                                         <TextBlock Text="&quot;The best way to find yourself is to lose yourself in the service of others.&quot;" 
-                                                   FontSize="15" FontStyle="Italic" FontWeight="SemiBold" Foreground="#005A8C" 
-                                                   TextAlignment="Center" TextWrapping="Wrap" Margin="0,60,0,0"/>
-                                        <TextBlock Text="— Mahatma Gandhi" FontSize="13" FontWeight="SemiBold" Foreground="#5E7A8A" 
-                                                   TextAlignment="Center" Margin="0,8,0,-15"/>
+                                                   FontSize="14" FontStyle="Italic" FontWeight="Medium" Foreground="#0369A1" 
+                                                   TextAlignment="Center" TextWrapping="Wrap"/>
+                                        <TextBlock Text="— Mahatma Gandhi" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" 
+                                                   TextAlignment="Center" Margin="0,6,0,0"/>
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -157,95 +176,81 @@ d:DataContext="{d:DesignInstance Type=vm:NeedsWishlistDesignViewModel, IsDesignT
 
                         <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Top">
 
-                            <Border Background="#EEFFFFFF" BorderBrush="#88FFFFFF" BorderThickness="1.5" 
-                                    CornerRadius="20" Padding="28" Margin="0,0,0,20">
+                            <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" 
+                                    CornerRadius="20" Padding="24" Margin="0,0,0,20">
                                 <Border.Effect>
-                                    <DropShadowEffect Color="#0077B6" BlurRadius="20" ShadowDepth="4" Opacity="0.08"/>
+                                    <DropShadowEffect Color="#0F172A" BlurRadius="24" ShadowDepth="4" Opacity="0.05"/>
                                 </Border.Effect>
                                 <StackPanel>
-                                    <TextBlock Text="Attach a Photo (Optional)" FontSize="15" FontWeight="Bold" Foreground="#0A2540" Margin="0,0,0,16"/>
+                                    <TextBlock Text="Attach a Photo (Optional)" FontSize="15" FontWeight="Bold" Foreground="#0A2540" Margin="0,0,0,14"/>
 
-                                    <Grid Margin="0,0,0,16">
+                                    <Grid Margin="0,0,0,14">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="12"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <Border Grid.Column="0" CornerRadius="10" BorderBrush="#6600B4D8" BorderThickness="1" Padding="12,0" Background="White">
-                                            <TextBox Text="{Binding ImagePath}" Height="40" Background="Transparent" BorderThickness="0"
-                                                     Foreground="#5E7A8A" FontSize="12" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                                        <Border Grid.Column="0" CornerRadius="10" BorderBrush="#CBD5E1" BorderThickness="1" Padding="12,0" Background="#F8FAFC">
+                                            <TextBox Text="{Binding ImagePath}" Height="42" Background="Transparent" BorderThickness="0"
+                                                     Foreground="#64748B" FontSize="13" IsReadOnly="True" VerticalContentAlignment="Center"/>
                                         </Border>
 
-                                        <Button Grid.Column="2" Command="{Binding BrowseImageCommand}" Height="40" Padding="16,0" BorderThickness="0" Cursor="Hand">
+                                        <Button Grid.Column="2" Command="{Binding BrowseImageCommand}" Height="42" Padding="20,0" BorderThickness="0" Cursor="Hand">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">
-                                                    <Border CornerRadius="10" Background="#0077B6">
+                                                    <Border CornerRadius="10" Background="#0077B6" x:Name="BtnBg">
                                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                     </Border>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Opacity" Value="0.85"/>
+                                                            <Setter TargetName="BtnBg" Property="Background" Value="#005A8C"/>
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
                                             </Button.Template>
-                                            <TextBlock Text="📷 Browse" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                            <TextBlock Text="📷 Browse" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
                                         </Button>
                                     </Grid>
 
-                                    <Border CornerRadius="12" Background="#FAFDFF" BorderBrush="#CAF0F8" BorderThickness="2"
-                                            Padding="6" MinHeight="150" HorizontalAlignment="Stretch"
+                                    <Border CornerRadius="12" Background="#F1F5F9" BorderBrush="#E2E8F0" BorderThickness="1"
+                                            Padding="6" MinHeight="160" HorizontalAlignment="Stretch"
                                             Visibility="{Binding HasImage, Converter={StaticResource BoolToVis}}">
                                         <Border CornerRadius="8" ClipToBounds="True">
-                                            <Image Source="{Binding ImagePath}" Stretch="Uniform" MaxHeight="220" />
+                                            <Image Source="{Binding ImagePath}" Stretch="Uniform" MaxHeight="200" />
                                         </Border>
                                     </Border>
                                 </StackPanel>
                             </Border>
 
-                            <Border Background="#2200B4D8" BorderBrush="#4400B4D8" BorderThickness="1" CornerRadius="14" Padding="20" Margin="0,0,0,24">
+                            <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="14" Padding="16" Margin="0,0,0,20">
                                 <StackPanel>
-                                    <TextBlock Text="💙 How It Reaches Donors" FontSize="13" FontWeight="Bold" Foreground="#005A8C" Margin="0,0,0,6"/>
-                                    <TextBlock Text="Your post will appear in the Donor's Needs section, sorted by urgency. Donors can tap 'Donate for This Need' to fulfill it directly."
-                                               FontSize="12" Foreground="#0A2540" TextWrapping="Wrap" LineHeight="18"/>
+                                    <TextBlock Text="💙 How It Reaches Donors" FontSize="13" FontWeight="Bold" Foreground="#166534" Margin="0,0,0,6"/>
+                                    <TextBlock Text="Your item request will appear transparently in the community open-feed feed, prioritized systematically by the urgency level selected."
+                                               FontSize="13" Foreground="#1F2937" TextWrapping="Wrap" LineHeight="18"/>
                                 </StackPanel>
                             </Border>
 
-                            <StackPanel Margin="0,0,0,24">
-                                <Button Command="{Binding PostNeedCommand}" Height="54"
-                                        FontSize="15" FontWeight="Bold" Foreground="White" BorderThickness="0" Cursor="Hand"
+                            <StackPanel Margin="0,0,0,20">
+                                <Button Command="{Binding PostNeedCommand}" Height="54" Cursor="Hand"
                                         Visibility="{Binding IsCreating, Converter={StaticResource BoolToVis}}">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
-                                            <Border CornerRadius="14" Background="{TemplateBinding Background}">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Border CornerRadius="14" Background="#0077B6" x:Name="ActionBg">
+                                                <TextBlock x:Name="BtnText" Text="📬  Post This Need" Foreground="White" FontSize="16" FontWeight="Bold"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Opacity" Value="0.9"/>
+                                                    <Setter TargetName="ActionBg" Property="Background" Value="#005A8C"/>
                                                 </Trigger>
+                                                <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                                    <Setter TargetName="BtnText" Property="Text" Value="Processing Request..."/>
+                                                    <Setter TargetName="ActionBg" Property="Background" Value="#94A3B8"/>
+                                                </DataTrigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
                                     </Button.Template>
-                                    <Button.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                            <GradientStop Color="#00A8E8" Offset="0"/>
-                                            <GradientStop Color="#0077B6" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Button.Background>
-                                    <TextBlock>
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Text" Value="📬  Post This Need"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
-                                                        <Setter Property="Text" Value="Posting..."/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
                                 </Button>
 
                                 <Grid Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}">
@@ -254,20 +259,49 @@ d:DataContext="{d:DesignInstance Type=vm:NeedsWishlistDesignViewModel, IsDesignT
                                         <ColumnDefinition Width="12"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" Command="{Binding PostNeedCommand}" Height="54" Cursor="Hand">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border CornerRadius="14" Background="#10B981" x:Name="SaveBg">
+                                                    <TextBlock Text="💾 Save Changes" Foreground="White" FontSize="15" FontWeight="Bold"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="SaveBg" Property="Background" Value="#059669"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+
+                                    <Button Grid.Column="2" Command="{Binding DeleteNeedCommand}" Height="54" Cursor="Hand">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border CornerRadius="14" Background="#EF4444" x:Name="DelBg">
+                                                    <TextBlock Text="🗑️ Delete Post" Foreground="White" FontSize="15" FontWeight="Bold"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="DelBg" Property="Background" Value="#DC2626"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
                                 </Grid>
                             </StackPanel>
 
-                            <Border Background="#F9FDFF" BorderBrush="#BDE0FE" BorderThickness="1.5" CornerRadius="16" Padding="20">
-                                <Border.Effect>
-                                    <DropShadowEffect Color="#0077B6" BlurRadius="15" ShadowDepth="2" Opacity="0.05"/>
-                                </Border.Effect>
+                            <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="16" Padding="20">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                         <TextBlock Text="💡" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="Pro Tip for Organizations" FontSize="14" FontWeight="Bold" Foreground="#0077B6" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Pro Tip for Organizations" FontSize="14" FontWeight="Bold" Foreground="#1E40AF" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                    <TextBlock Text="Needs with clear, specific descriptions and high-quality photos get fulfilled up to 3x faster by our KapwaKuha donor community."
-                                               FontSize="12" Foreground="#5E7A8A" TextWrapping="Wrap" LineHeight="18"/>
+                                    <TextBlock Text="Needs containing highly specific descriptions accompanied by real structural photos get matched up to 3x faster by our active donor base."
+                                               FontSize="12" Foreground="#1E3A8A" TextWrapping="Wrap" LineHeight="18"/>
                                 </StackPanel>
                             </Border>
 

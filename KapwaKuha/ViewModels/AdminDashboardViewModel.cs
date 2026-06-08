@@ -39,6 +39,25 @@ namespace KapwaKuha.ViewModels
         public ObservableCollection<BeneficiaryModel> PendingBenesList { get; } = new();
         public ObservableCollection<UserReportModel> OpenReportsList { get; } = new();
 
+        public ObservableCollection<NeedsPostModel> PendingNeedsPostsList { get; } = new();
+        private int _pendingNeedsPosts;
+        public int PendingNeedsPosts
+        {
+            get => _pendingNeedsPosts;
+            set { _pendingNeedsPosts = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasPendingNeedsPosts)); }
+        }
+        public bool HasPendingNeedsPosts => PendingNeedsPosts > 0;
+
+        private bool _isLoadingNeedsPosts;
+        public bool IsLoadingNeedsPosts
+        {
+            get => _isLoadingNeedsPosts;
+            set { _isLoadingNeedsPosts = value; OnPropertyChanged(); }
+        }
+
+        public ICommand ApproveNeedsPostCommand { get; }
+        public ICommand RejectNeedsPostCommand { get; }
+
         private bool _isLoadingItems, _isLoadingBenes, _isLoadingReports;
         public bool IsLoadingItems { get => _isLoadingItems; set { _isLoadingItems = value; OnPropertyChanged(); } }
         public bool IsLoadingBenes { get => _isLoadingBenes; set { _isLoadingBenes = value; OnPropertyChanged(); } }
@@ -51,6 +70,8 @@ namespace KapwaKuha.ViewModels
         public ICommand RejectBeneficiaryCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand LogoutCommand { get; }
+        public ICommand ProcessReportCommand { get; }
+        public ICommand AdminBanUserCommand { get; }
 
         public AdminDashboardViewModel(string adminId)
         {
@@ -132,6 +153,125 @@ namespace KapwaKuha.ViewModels
                 catch { }
             });
 
+            ProcessReportCommand = new AsyncRelayCommand(async param =>
+            {
+                if (param is not UserReportModel report) return;
+                var result = MessageBox.Show(
+                    $"Apply a STRIKE to {report.Reported_Name} for report \"{report.Report_Type}\"?\n\n" +
+                    "3 strikes = automatic blacklist.",
+                    "Apply Strike", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Cancel) return;
+
+                string action = result == MessageBoxResult.Yes ? "Strike" : "None";
+                try
+                {
+                    await KapwaDataService.ProcessUserReport(
+                        report.Report_ID, report.Reported_ID,
+                        "Reviewed", "Reviewed by Admin.", action);
+
+                    if (action == "Strike")
+                        await KapwaDataService.CreateNotification(
+                            report.Reported_ID, "AccountAlert",
+                            "⚠️ A strike has been applied to your account for a policy violation.",
+                            report.Report_ID);
+
+                    await LoadGatekeeperQueuesAsync();
+                }
+                catch { }
+            });
+
+            AdminBanUserCommand = new AsyncRelayCommand(async param =>
+            {
+                if (param is not UserReportModel report) return;
+                var r = MessageBox.Show(
+                    $"Permanently BAN user {report.Reported_ID} ({report.Reported_Name})?\n\n" +
+                    "This will blacklist and deactivate their account immediately.",
+                    "Confirm Ban", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (r != MessageBoxResult.Yes) return;
+                try
+                {
+                    await KapwaDataService.AdminBanUser(report.Reported_ID);
+                    await KapwaDataService.CreateNotification(
+                        report.Reported_ID, "AccountAlert",
+                        "⚠️ Your account has been permanently banned due to repeated violations.",
+                        report.Report_ID);
+                    await LoadGatekeeperQueuesAsync();
+                    await LoadMetricsAsync();
+                }
+                catch { }
+            });
+
+            ApproveNeedsPostCommand = new AsyncRelayCommand(async param =>
+            {
+                if (param is not NeedsPostModel post) return;
+
+                // Admin picks urgency at approval time
+                string[] urgencyOptions = { "Low", "Medium", "High" };
+                // Default to what bene submitted — admin can confirm or change
+                string chosenUrgency = post.Urgency;
+
+                var result = MessageBox.Show(
+                    $"Approve needs post \"{post.Title}\" from {post.Org_Name}?\n\n" +
+                    $"Submitted urgency: {post.Urgency}\n\n" +
+                    "Click YES to approve at this urgency level.\n" +
+                    "Click NO to approve but override urgency (you will be prompted).",
+                    "Approve Needs Post", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Cancel) return;
+
+                if (result == MessageBoxResult.No)
+                {
+                    // Let admin pick urgency override
+                 
+                    // Simple approach: ask via sequential MessageBoxes
+                    var highResult = MessageBox.Show(
+                        "Set urgency to HIGH (🔴 Urgent)?\n\nYes = High  |  No = proceed to next option",
+                        "Set Urgency", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (highResult == MessageBoxResult.Yes) chosenUrgency = "High";
+                    else
+                    {
+                        var medResult = MessageBox.Show(
+                            "Set urgency to MEDIUM (🟡 Moderate)?\n\nYes = Medium  |  No = Low",
+                            "Set Urgency", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                        chosenUrgency = medResult == MessageBoxResult.Yes ? "Medium" : "Low";
+                    }
+                }
+
+                try
+                {
+                    await KapwaDataService.ApproveNeedsPost(post.NeedsPost_ID, chosenUrgency);
+
+                    // Notify the org beneficiaries
+                    await KapwaDataService.CreateNotification(
+                        post.Org_ID, "Approval",
+                        $"✅ Your needs post \"{post.Title}\" has been approved as {chosenUrgency} urgency and is now visible to donors.",
+                        post.NeedsPost_ID);
+
+                    await LoadGatekeeperQueuesAsync();
+                    await LoadMetricsAsync();
+                }
+                catch { }
+            });
+
+            RejectNeedsPostCommand = new AsyncRelayCommand(async param =>
+            {
+                if (param is not NeedsPostModel post) return;
+                var r = MessageBox.Show(
+                    $"Reject needs post \"{post.Title}\"?\nIt will be hidden from donors.",
+                    "Confirm Rejection", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (r != MessageBoxResult.Yes) return;
+                try
+                {
+                    await KapwaDataService.RejectNeedsPost(post.NeedsPost_ID);
+                    await KapwaDataService.CreateNotification(
+                        post.Org_ID, "Approval",
+                        $"❌ Your needs post \"{post.Title}\" was not approved. Please revise and resubmit.",
+                        post.NeedsPost_ID);
+                    await LoadGatekeeperQueuesAsync();
+                }
+                catch { }
+            });
+
             RefreshCommand = new AsyncRelayCommand(async _ =>
             {
                 await LoadMetricsAsync();
@@ -194,6 +334,16 @@ namespace KapwaKuha.ViewModels
                     OpenReportsList.Clear();
                     foreach (var r in reports) OpenReportsList.Add(r);
                 });
+
+                IsLoadingNeedsPosts = true;
+                var needsPosts = await KapwaDataService.GetPendingNeedsPosts();
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    PendingNeedsPostsList.Clear();
+                    foreach (var np in needsPosts) PendingNeedsPostsList.Add(np);
+                    PendingNeedsPosts = needsPosts.Count;
+                });
+                IsLoadingNeedsPosts = false;
             }
             catch { }
             finally

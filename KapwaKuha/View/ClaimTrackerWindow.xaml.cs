@@ -12,5 +12,7 @@ namespace KapwaKuha.View
             DataContext = new ClaimTrackerViewModel(userId, role);
             Loaded += (s, e) => Services.NavigationService.SetCurrent(this);
         }
+
+    
     }
 }

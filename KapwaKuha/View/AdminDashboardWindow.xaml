@@ -12,7 +12,6 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- TOP NAV BAR -->
         <Border Grid.Row="0">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -45,7 +44,6 @@
             </Grid>
         </Border>
 
-        <!-- MAIN BODY -->
         <Grid Grid.Row="1">
             <Grid.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -58,15 +56,12 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- LEFT SIDEBAR — KPI cards -->
             <Border Grid.Column="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,1,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="16,24,16,16">
                         <TextBlock Text="PLATFORM KPIs" FontSize="11" FontWeight="Bold"
-           Foreground="#9CA3AF" Margin="0,0,0,16"/>
-                        
+                                   Foreground="#9CA3AF" Margin="0,0,0,16"/>
 
-                        <!-- KPI item template -->
                         <Border Style="{StaticResource GlassCard}" CornerRadius="10"
                                 Padding="14,12" Margin="0,0,0,10">
                             <StackPanel>
@@ -148,7 +143,6 @@
                 </ScrollViewer>
             </Border>
 
-            <!-- RIGHT — three gatekeeper queues -->
             <Grid Grid.Column="1" Margin="24,20,24,20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -158,7 +152,6 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- QUEUE 1: Pending Items -->
                 <Border Grid.Row="0" Style="{StaticResource GlassCard}" CornerRadius="16" Padding="20,16">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -174,11 +167,9 @@
                             </Border>
                         </StackPanel>
                         <Grid Grid.Row="1">
-                            <!-- Loading -->
                             <TextBlock Text="Loading..." FontSize="13" Foreground="#9CA3AF"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"
                                        Visibility="{Binding IsLoadingItems, Converter={StaticResource BoolToVis}}"/>
-                            <!-- Empty state -->
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
@@ -194,7 +185,6 @@
                                 <TextBlock Text="No pending items — all clear!" FontSize="13"
                                            Foreground="#6B7280" HorizontalAlignment="Center"/>
                             </StackPanel>
-                            <!-- List -->
                             <ListView ItemsSource="{Binding PendingItemsList}"
                                       Background="Transparent" BorderThickness="0"
                                       ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -260,7 +250,6 @@
                     </Grid>
                 </Border>
 
-                <!-- QUEUE 2: Pending Beneficiaries -->
                 <Border Grid.Row="2" Style="{StaticResource GlassCard}" CornerRadius="16" Padding="20,16">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -359,48 +348,54 @@
                     </Grid>
                 </Border>
 
-                <!-- QUEUE 3: Open Reports -->
-                <Border Grid.Row="4" Style="{StaticResource GlassCard}" CornerRadius="16" Padding="20,16">
+                <!-- ══ PENDING NEEDS POSTS ══ -->
+                <Border Margin="0,16,0,0" Background="White" CornerRadius="16"
+        BorderBrush="#E5E7EB" BorderThickness="1" Padding="20,16">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
+
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
-                            <TextBlock Text="🚨 Open User Reports" FontSize="16" FontWeight="Bold"
-                                       Foreground="#0A2540" VerticalAlignment="Center"/>
-                            <Border Background="#FEE2E2" CornerRadius="10" Padding="8,2" Margin="12,0,0,0">
-                                <TextBlock Text="{Binding OpenReports}" FontSize="12"
-                                           FontWeight="Bold" Foreground="#DC2626"/>
+                            <TextBlock Text="📋 Pending Needs Posts" FontSize="16" FontWeight="Bold"
+                       Foreground="#0A2540" VerticalAlignment="Center"/>
+                            <Border Background="#FEF3C7" CornerRadius="10" Padding="8,2" Margin="12,0,0,0">
+                                <TextBlock Text="{Binding PendingNeedsPosts}" FontSize="12"
+                           FontWeight="Bold" Foreground="#92400E"/>
                             </Border>
                         </StackPanel>
+
                         <Grid Grid.Row="1">
                             <TextBlock Text="Loading..." FontSize="13" Foreground="#9CA3AF"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       Visibility="{Binding IsLoadingReports, Converter={StaticResource BoolToVis}}"/>
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding IsLoadingNeedsPosts, Converter={StaticResource BoolToVis}}"/>
+
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HasOpenReports}" Value="False">
+                                            <DataTrigger Binding="{Binding HasPendingNeedsPosts}" Value="False">
                                                 <Setter Property="Visibility" Value="Visible"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </StackPanel.Style>
-                                <TextBlock Text="🟢" FontSize="32" HorizontalAlignment="Center"/>
-                                <TextBlock Text="No open reports — platform is clean!" FontSize="13"
-                                           Foreground="#6B7280" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📭" FontSize="32" HorizontalAlignment="Center"/>
+                                <TextBlock Text="No pending needs posts — all clear!" FontSize="13"
+                           Foreground="#6B7280" HorizontalAlignment="Center"/>
                             </StackPanel>
-                            <ListView ItemsSource="{Binding OpenReportsList}"
-                                      Background="Transparent" BorderThickness="0"
-                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+                            <ListView ItemsSource="{Binding PendingNeedsPostsList}"
+                      Background="Transparent" BorderThickness="0"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      MaxHeight="320">
                                 <ListView.Style>
                                     <Style TargetType="ListView">
                                         <Setter Property="Visibility" Value="Visible"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HasOpenReports}" Value="False">
+                                            <DataTrigger Binding="{Binding HasPendingNeedsPosts}" Value="False">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -416,25 +411,46 @@
                                 </ListView.ItemContainerStyle>
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="White" CornerRadius="10"
-                                                BorderBrush="#FECACA" BorderThickness="1"
-                                                Padding="14,10">
-                                            <StackPanel>
-                                                <TextBlock Foreground="#0A2540" FontWeight="SemiBold" FontSize="14">
-                                                    <Run Text="{Binding ReportType}"/>
-                                                    <Run Text=" — "/>
-                                                    <Run Text="{Binding ReportedName}"/>
-                                                </TextBlock>
-                                                <TextBlock Text="{Binding Description}"
-                                                           Foreground="#6B7280" FontSize="12"
-                                                           TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
-                                                <TextBlock Foreground="#9CA3AF" FontSize="11" Margin="0,4,0,0">
-                                                    <Run Text="Filed by: "/>
-                                                    <Run Text="{Binding ReporterName}"/>
-                                                    <Run Text="  •  "/>
-                                                    <Run Text="{Binding FiledAtDisplay}"/>
-                                                </TextBlock>
-                                            </StackPanel>
+                                        <Border Background="#FFFBEB" CornerRadius="10"
+                                BorderBrush="#FDE68A" BorderThickness="1" Padding="14,10">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="#0A2540">
+                                        <Run Text="{Binding Title}"/>
+                                                    </TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="#6B7280" Margin="0,2,0,0">
+                                        <Run Text="{Binding Org_Name}"/>
+                                        <Run Text=" · Submitted urgency: "/>
+                                        <Run Text="{Binding Urgency}" FontWeight="Bold"/>
+                                                    </TextBlock>
+                                                    <TextBlock Text="{Binding Description}" FontSize="11"
+                                               Foreground="#9CA3AF" TextTrimming="CharacterEllipsis"
+                                               Margin="0,4,0,0" MaxWidth="500"/>
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                            VerticalAlignment="Center" Margin="12,0,0,0">
+                                                    <Button Content="✅ Approve"
+                                            Command="{Binding DataContext.ApproveNeedsPostCommand,
+                                                      RelativeSource={RelativeSource AncestorType=ListView}}"
+                                            CommandParameter="{Binding}"
+                                            Height="32" Padding="14,0" FontSize="12" Margin="0,0,8,0"
+                                            Background="#059669" Foreground="White"
+                                            BorderThickness="0" Cursor="Hand"/>
+                                                    <Button Content="❌ Reject"
+                                            Command="{Binding DataContext.RejectNeedsPostCommand,
+                                                      RelativeSource={RelativeSource AncestorType=ListView}}"
+                                            CommandParameter="{Binding}"
+                                            Height="32" Padding="14,0" FontSize="12"
+                                            Background="#DC2626" Foreground="White"
+                                            BorderThickness="0" Cursor="Hand"/>
+                                                </StackPanel>
+                                            </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>

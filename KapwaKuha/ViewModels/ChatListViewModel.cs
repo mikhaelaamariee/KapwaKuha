@@ -37,6 +37,8 @@ namespace KapwaKuha.ViewModels
         public ICommand BackCommand { get; }
         public ICommand OpenChatCommand { get; }
 
+        public ICommand ViewProfileCommand { get; }
+
         public ChatListViewModel(string myId, string role)
         {
             _myId = myId;
@@ -55,6 +57,17 @@ namespace KapwaKuha.ViewModels
                 if (user is ChatUserRow row)
                     NavigationService.Navigate(
                         new View.ChatWindow(_myId, row.UserId, row.DisplayName, _role));
+            });
+
+            ViewProfileCommand = new RelayCommand(user =>
+            {
+                if (user is ChatUserRow row)
+                {
+                    var modal = new View.UserProfileWindow(
+                        row.UserId, _myId, _role);
+                    modal.Owner = System.Windows.Application.Current.MainWindow;
+                    modal.ShowDialog();
+                }
             });
 
             LoadChats();

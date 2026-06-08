@@ -257,6 +257,36 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
+                            <!-- Insert this column before the Action column -->
+                            <DataGridTemplateColumn Header="Beneficiary" Width="160" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Height="34" Margin="6,4"
+                    Background="Transparent" BorderThickness="0"
+                    Cursor="Hand" ToolTip="View beneficiary profile"
+                    Command="{Binding DataContext.ViewBeneficiaryProfileCommand,
+                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                    CommandParameter="{Binding}">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <TextBlock x:Name="lnk"
+                                   Text="{Binding Beneficiary_Name}"
+                                   FontSize="12" Foreground="#0077B6"
+                                   TextDecorations="Underline"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center" Padding="6,0"/>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="lnk" Property="Foreground" Value="#00B4D8"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
                             <DataGridTemplateColumn Header="Action" Width="150" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

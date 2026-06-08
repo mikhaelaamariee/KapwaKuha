@@ -198,8 +198,14 @@ namespace KapwaKuha.ViewModels
 
                     await KapwaDataService.AddItem(item);
 
-                    MessageBox.Show($"✅ Item posted! ID: {itemId}",
-                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    string postTypeLabel = IsDirectTarget ? "Direct donation" : "General post";
+                    MessageBox.Show(
+                        $"📋 Item submitted for admin review!\n\n" +
+                        $"Item: {ItemName}\n" +
+                        $"Type: {postTypeLabel}\n" +
+                        $"ID: {itemId}\n\n" +
+                        "It will go live once an admin approves it. Check your Active Listings for status.",
+                        "Pending Admin Approval", MessageBoxButton.OK, MessageBoxImage.Information);
                     NavigationService.Navigate(new View.DonorDashboardWindow(_donorId));
                 }
                 catch { }

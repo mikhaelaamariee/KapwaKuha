@@ -67,6 +67,8 @@ namespace KapwaKuha.ViewModels
 
         public ICommand UpdateClaimStatusCommand { get; }
 
+        public ICommand ViewBeneficiaryProfileCommand { get; }
+
         public ClaimTrackerViewModel(string userId, string role)
         {
             _userId = userId;
@@ -197,10 +199,27 @@ namespace KapwaKuha.ViewModels
                     MessageBox.Show("Update failed: " + ex.Message,
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+
+
             });
 
+
+
             _ = LoadAsync();
+
+            ViewBeneficiaryProfileCommand = new RelayCommand(param =>
+            {
+                if (param is not ClaimModel c) return;
+                string beneId = c.Beneficiary_ID ?? string.Empty;
+                if (string.IsNullOrEmpty(beneId)) return;
+                var modal = new View.UserProfileWindow(
+                    beneId, _userId, _role);
+                modal.Owner = System.Windows.Application.Current.MainWindow;
+                modal.ShowDialog();
+            });
         }
+
+
 
         private async System.Threading.Tasks.Task LoadAsync()
         {

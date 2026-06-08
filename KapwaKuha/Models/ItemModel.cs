@@ -11,6 +11,7 @@ namespace KapwaKuha.Models
         public string Item_Condition { get; set; } = "Good";
 
         private string _itemStatus = "Available";
+
         public string Item_Status
         {
             get => _itemStatus;
@@ -37,6 +38,19 @@ namespace KapwaKuha.Models
                 OnPropertyChanged(nameof(IsApproved));
             }
         }
+        private double _donorAverageRating;
+        public double DonorAverageRating
+        {
+            get => _donorAverageRating;
+            set
+            {
+                _donorAverageRating = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(DonorRatingDisplay));
+            }
+        }
+        public string DonorRatingDisplay =>
+            _donorAverageRating > 0 ? $"{_donorAverageRating:F1}★" : "—";
 
         public bool IsApproved => Admin_Approval_Status == "Approved";
 
@@ -53,6 +67,8 @@ namespace KapwaKuha.Models
             "Rejected" => "#C0304A",
             _ => "#B8860B"
         };
+
+
 
         public DateTime Date_Found { get; set; } = DateTime.Now;
         public string Donor_ID { get; set; } = string.Empty;
