@@ -97,8 +97,8 @@ namespace KapwaKuha.ViewModels
             {
                 if (SelectedPost == null) return;
                 var confirm = MessageBox.Show(
-                    $"Save changes to \"{SelectedPost.Title}\"?",
-                    "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    $"Submit your edits to \"{SelectedPost.Title}\" for admin review?\n\nYour post will be hidden until re-approved.",
+                    "Confirm Edit Submission", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (confirm != MessageBoxResult.Yes) return;
                 try
                 {
@@ -107,9 +107,11 @@ namespace KapwaKuha.ViewModels
                     SelectedPost.Title = EditTitle.Trim();
                     SelectedPost.Description = EditDescription.Trim();
                     SelectedPost.ImagePath = EditImagePath;
-                    await KapwaDataService.UpdateNeedsPost(SelectedPost);
-                    MessageBox.Show("✅ Post updated successfully!", "Saved",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Submit edit for admin review — sets Pending, stores snapshot
+                    await KapwaDataService.SubmitNeedsPostEditForReview(SelectedPost);
+                    MessageBox.Show(
+                        "✅ Your edits have been submitted for admin review.\nYour post will be re-activated once approved.",
+                        "Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
                     await LoadPostsAsync();
                 }
                 catch { }

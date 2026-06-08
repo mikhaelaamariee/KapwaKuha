@@ -1,15 +1,15 @@
 ﻿<Window x:Class="KapwaKuha.View.ClaimTrackerWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:KapwaKuha.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:ClaimTrackerDesignViewModel, IsDesignTimeCreatable=True}"
         Title="KapwaKuha — Claim Tracker"
         Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
-        FontFamily="Segoe UI"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-           xmlns:vm="clr-namespace:KapwaKuha.ViewModels"
-        mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance Type=vm:ClaimTrackerDesignViewModel, IsDesignTimeCreatable=True}">
+        FontFamily="Segoe UI">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
@@ -35,6 +35,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 <RowDefinition Height="36"/>
             </Grid.RowDefinitions>
 
+            <!-- Topbar -->
             <Border Grid.Row="0" Background="#0077B6">
                 <Grid Margin="20,0">
                     <Grid.ColumnDefinitions>
@@ -58,6 +59,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 </Grid>
             </Border>
 
+            <!-- Main card -->
             <Border Grid.Row="1" CornerRadius="16" Margin="20,14,20,20" BorderThickness="1.5">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -81,6 +83,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
+                    <!-- Filter bar -->
                     <StackPanel Grid.Row="0" Margin="20,16,20,10">
                         <TextBlock Text="📦 My Claims" FontSize="16" FontWeight="Bold" Foreground="#03045E"/>
                         <TextBlock Text="Items claimed from the marketplace or donated directly to you."
@@ -95,6 +98,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 <ColumnDefinition Width="160"/>
                             </Grid.ColumnDefinitions>
 
+                            <!-- Search -->
                             <Border Grid.Column="0" CornerRadius="8" BorderBrush="#90E0EF"
                                     BorderThickness="1.5" Background="White" Padding="10,0">
                                 <Grid>
@@ -111,6 +115,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 </Grid>
                             </Border>
 
+                            <!-- Category filter -->
                             <Border Grid.Column="2" CornerRadius="8" BorderBrush="#90E0EF"
                                     BorderThickness="1.5" Background="White">
                                 <ComboBox SelectedValue="{Binding FilterCategory}"
@@ -123,9 +128,11 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                     <ComboBoxItem Content="Electronics"/>
                                     <ComboBoxItem Content="Medicine"/>
                                     <ComboBoxItem Content="School Supplies"/>
+                                    <ComboBoxItem Content="Others"/>
                                 </ComboBox>
                             </Border>
 
+                            <!-- Status filter -->
                             <Border Grid.Column="4" CornerRadius="8" BorderBrush="#90E0EF"
                                     BorderThickness="1.5" Background="White">
                                 <ComboBox SelectedValue="{Binding FilterStatus}"
@@ -134,14 +141,13 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                           FontSize="12" Padding="10,0">
                                     <ComboBoxItem Content="All" IsSelected="True"/>
                                     <ComboBoxItem Content="Pending"/>
-                                    
                                     <ComboBoxItem Content="Released"/>
-                  
                                 </ComboBox>
                             </Border>
                         </Grid>
                     </StackPanel>
 
+                    <!-- DataGrid -->
                     <DataGrid Grid.Row="1" ItemsSource="{Binding Claims}"
                               AutoGenerateColumns="False" CanUserAddRows="False"
                               CanUserDeleteRows="False" CanUserResizeRows="False"
@@ -149,7 +155,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                               BorderThickness="0" GridLinesVisibility="Horizontal"
                               HorizontalGridLinesBrush="#EBF7FB"
                               RowBackground="White" AlternatingRowBackground="#F7FBFD"
-                              ColumnHeaderHeight="38" RowHeight="68" FontSize="13"
+                              ColumnHeaderHeight="38" RowHeight="74" FontSize="13"
                               Margin="0,0,0,8">
 
                         <DataGrid.ColumnHeaderStyle>
@@ -163,14 +169,16 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                         </DataGrid.ColumnHeaderStyle>
 
                         <DataGrid.Columns>
+
+                            <!-- Photo -->
                             <DataGridTemplateColumn Header="Photo" Width="70" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border Width="52" Height="52" CornerRadius="8" ClipToBounds="True" Margin="6,4">
                                             <Grid>
                                                 <Border Background="#EBF7FB"/>
-                                                <TextBlock Text="📦" FontSize="24" HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center">
+                                                <TextBlock Text="📦" FontSize="24"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Visible"/>
@@ -200,9 +208,11 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
+                            <!-- Claim ID -->
                             <DataGridTextColumn Header="Claim ID" Binding="{Binding Claim_ID}"
                                                 Width="90" IsReadOnly="True"/>
 
+                            <!-- Item Name -->
                             <DataGridTextColumn Header="Item Name" Binding="{Binding Item_Name}"
                                                 Width="*" IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
@@ -214,6 +224,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
+                            <!-- Category -->
                             <DataGridTextColumn Header="Category" Binding="{Binding Category_Name}"
                                                 Width="120" IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
@@ -225,6 +236,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
+                            <!-- Handoff -->
                             <DataGridTextColumn Header="Handoff" Binding="{Binding Handoff_Type}"
                                                 Width="110" IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
@@ -234,6 +246,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
+                            <!-- Claim Date -->
                             <DataGridTextColumn Header="Claim Date" Binding="{Binding ClaimDateDisplay}"
                                                 Width="160" IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
@@ -245,6 +258,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
+                            <!-- Status badge -->
                             <DataGridTemplateColumn Header="Status" Width="120" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -257,24 +271,24 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <!-- Insert this column before the Action column -->
+                            <!-- Beneficiary link -->
                             <DataGridTemplateColumn Header="Beneficiary" Width="160" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Button Height="34" Margin="6,4"
-                    Background="Transparent" BorderThickness="0"
-                    Cursor="Hand" ToolTip="View beneficiary profile"
-                    Command="{Binding DataContext.ViewBeneficiaryProfileCommand,
-                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                    CommandParameter="{Binding}">
+                                                Background="Transparent" BorderThickness="0"
+                                                Cursor="Hand" ToolTip="View beneficiary profile"
+                                                Command="{Binding DataContext.ViewBeneficiaryProfileCommand,
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">
                                                     <TextBlock x:Name="lnk"
-                                   Text="{Binding Beneficiary_Name}"
-                                   FontSize="12" Foreground="#0077B6"
-                                   TextDecorations="Underline"
-                                   TextTrimming="CharacterEllipsis"
-                                   VerticalAlignment="Center" Padding="6,0"/>
+                                                               Text="{Binding Beneficiary_Name}"
+                                                               FontSize="12" Foreground="#0077B6"
+                                                               TextDecorations="Underline"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               VerticalAlignment="Center" Padding="6,0"/>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
                                                             <Setter TargetName="lnk" Property="Foreground" Value="#00B4D8"/>
@@ -287,7 +301,8 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTemplateColumn Header="Action" Width="150" IsReadOnly="True">
+                            <!-- Mark Received (bene action) -->
+                            <DataGridTemplateColumn Header="Confirm Receipt" Width="150" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Button Height="34" Margin="6,6"
@@ -345,11 +360,58 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
+                            <!-- ⭐ Rate Donor — only enabled once Released -->
+                            <DataGridTemplateColumn Header="Rate Donor" Width="130" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Height="34" Margin="6,6"
+                                                FontSize="11" FontWeight="SemiBold"
+                                                BorderThickness="0" Cursor="Hand"
+                                                Command="{Binding DataContext.RateDonorCommand,
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border CornerRadius="8" Padding="10,0" x:Name="bd"
+                                                            Background="{TemplateBinding Background}">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Opacity" Value="0.85"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <!-- default: greyed out, disabled -->
+                                                    <Setter Property="Background" Value="#E5E7EB"/>
+                                                    <Setter Property="Foreground" Value="#9CA3AF"/>
+                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                    <Style.Triggers>
+                                                        <!-- only active when Released -->
+                                                        <DataTrigger Binding="{Binding Claim_Status}" Value="Released">
+                                                            <Setter Property="Background" Value="#FFF7ED"/>
+                                                            <Setter Property="Foreground" Value="#C05621"/>
+                                                            <Setter Property="IsEnabled" Value="True"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                            <TextBlock Text="⭐ Rate Donor" VerticalAlignment="Center"/>
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
             </Border>
 
+            <!-- Status bar -->
             <Border Grid.Row="2" Background="#03045E" Padding="20,0">
                 <TextBlock Text="{Binding StatusMessage}"
                            Foreground="#90E0EF" FontSize="11" VerticalAlignment="Center"/>

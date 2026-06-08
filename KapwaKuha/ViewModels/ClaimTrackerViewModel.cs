@@ -69,6 +69,8 @@ namespace KapwaKuha.ViewModels
 
         public ICommand ViewBeneficiaryProfileCommand { get; }
 
+        public ICommand RateDonorCommand { get; }
+
         public ClaimTrackerViewModel(string userId, string role)
         {
             _userId = userId;
@@ -158,6 +160,26 @@ namespace KapwaKuha.ViewModels
                     MessageBox.Show("Update failed: " + ex.Message,
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            });
+
+            RateDonorCommand = new AsyncRelayCommand(async param =>
+            {
+                if (param is not ClaimModel claim) return;
+                if (claim.Claim_Status != "Released")
+                {
+                    MessageBox.Show("You can only rate a donor after the item has been released.",
+                        "Not Available", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                bool alreadyRated = await KapwaDataService.HasAlreadyRatedClaim(claim.Claim_ID);
+                if (alreadyRated)
+                {
+                    MessageBox.Show("You have already submitted feedback for this donation.",
+                        "Already Rated", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                NavigationService.Navigate(
+                    new View.FeedbackWindow(claim.Claim_ID, claim.Donor_Name, claim.Donor_Name));
             });
 
             UpdateClaimStatusCommand = new AsyncRelayCommand(async param =>

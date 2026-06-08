@@ -198,8 +198,10 @@ namespace KapwaKuha.ViewModels
                     SelectedItem.Item_ImagePath = EditImagePath;
                     await KapwaDataService.UpdateItem(SelectedItem);
                     IsEditPanelOpen = false;
-                    MessageBox.Show("✅ Item updated!", "Saved",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    // After calling KapwaDataService.UpdateItem(...)
+                    MessageBox.Show(
+                        "✅ Your post has been updated and submitted for admin review.\nIt will reappear in listings once re-approved.",
+                        "Edit Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
                     await LoadItemsAsync();
 
                     // Inside SaveEditCommand try block, after UpdateItem call, add:

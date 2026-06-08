@@ -1,6 +1,4 @@
-﻿// FILE: NeedsPostModel.cs
-// DB Table: NeedsPosts
-// Used by: HighPriorityNeedsWindow (Donor view) and NeedsWishlistWindow (Beneficiary view)
+﻿// FILE: Models/NeedsPostModel.cs
 using System;
 using KapwaKuha.ViewModels;
 
@@ -13,12 +11,21 @@ namespace KapwaKuha.Models
         public string Org_Name { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-
-        private string _urgency = "Medium";
         public string RequesterBeneficiaryId { get; set; } = string.Empty;
-
         public string ImagePath { get; set; } = string.Empty;
         public bool HasImage => !string.IsNullOrEmpty(ImagePath) && System.IO.File.Exists(ImagePath);
+        public DateTime Post_Date { get; set; } = DateTime.Now;
+        public string PostDateDisplay => Post_Date.ToString("MMM dd, yyyy");
+
+        // ── Before/After edit snapshot (null when this is a fresh post) ──────
+        public string? PreviousTitle { get; set; }
+        public string? PreviousDescription { get; set; }
+        public string? PreviousUrgency { get; set; }
+        /// <summary>True when this pending item is a re-submission of an existing post.</summary>
+        public bool IsEdit => !string.IsNullOrEmpty(PreviousTitle);
+
+        // ── Urgency ──────────────────────────────────────────────────────────
+        private string _urgency = "Medium";
         public string Urgency
         {
             get => _urgency;
@@ -30,7 +37,20 @@ namespace KapwaKuha.Models
                 OnPropertyChanged(nameof(UrgencyTextColor));
             }
         }
+        public string UrgencyColor => Urgency switch
+        {
+            "High" => "#FFF0F0",
+            "Medium" => "#FFF8E6",
+            _ => "#E8F5E9"
+        };
+        public string UrgencyTextColor => Urgency switch
+        {
+            "High" => "#C0304A",
+            "Medium" => "#B8860B",
+            _ => "#2E7D52"
+        };
 
+        // ── Status ───────────────────────────────────────────────────────────
         private string _status = "Open";
         public string Status
         {
@@ -38,41 +58,38 @@ namespace KapwaKuha.Models
             set { _status = value; OnPropertyChanged(); }
         }
 
-        public DateTime Post_Date { get; set; } = DateTime.Now;
-        public string PostDateDisplay => Post_Date.ToString("MMM dd, yyyy");
-
-        // Badge colors per doc Section 9.3
-        public string UrgencyColor => Urgency switch
+        // ── Admin Approval ───────────────────────────────────────────────────
+        private string _adminApprovalStatus = "Pending";
+        public string Admin_Approval_Status
         {
-            "High" => "#FFF0F0",   // light red background
-            "Medium" => "#FFF8E6",   // light yellow background
-            _ => "#E8F5E9"    // light GREEN background for Low (was #F0F8FF blue)
-        };
+            get => _adminApprovalStatus;
+            set
+            {
+                _adminApprovalStatus = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ApprovalBadgeBackground));
+                OnPropertyChanged(nameof(ApprovalBadgeText));
+                OnPropertyChanged(nameof(ApprovalBadgeTextColor));
+                OnPropertyChanged(nameof(IsApproved));
+                OnPropertyChanged(nameof(CanEdit));
+            }
+        }
+        public bool IsApproved => Admin_Approval_Status == "Approved";
+        public bool CanEdit => Admin_Approval_Status != "Approved";
 
-        public string UrgencyTextColor => Urgency switch
+        public string ApprovalBadgeBackground => Admin_Approval_Status switch
         {
-            "High" => "#C0304A",   // red text
-            "Medium" => "#B8860B",   // amber text
-            _ => "#2E7D52"    // GREEN text for Low (was #185FA5 blue)
-        };
-
-        // Add after Status property
-        public string Admin_Approval_Status { get; set; } = "Pending";
-
-        // Approval badge color for the beneficiary wishlist view
-        public string ApprovalBadgeColor => Admin_Approval_Status switch
-        {
-            "Approved" => "#DCFCE7",  // green
-            "Rejected" => "#FEE2E2",  // red
-            _ => "#FEF9C3"   // yellow = Pending
+            "Approved" => "#DCFCE7",
+            "Rejected" => "#FEE2E2",
+            _ => "#FEF9C3"
         };
         public string ApprovalBadgeText => Admin_Approval_Status switch
         {
             "Approved" => "✅ Live",
-            "Rejected" => "❌ Rejected",
-            _ => "⏳ Pending Review"
+            "Rejected" => "❌ Rejected — edit & resubmit",
+            _ => "⏳ Awaiting Admin Approval"
         };
-        public string ApprovalTextColor => Admin_Approval_Status switch
+        public string ApprovalBadgeTextColor => Admin_Approval_Status switch
         {
             "Approved" => "#166534",
             "Rejected" => "#991B1B",

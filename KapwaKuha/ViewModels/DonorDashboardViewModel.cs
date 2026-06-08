@@ -281,7 +281,16 @@ namespace KapwaKuha.ViewModels
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     MyPosts.Clear();
-                    foreach (var item in items) MyPosts.Add(item);
+                    // Available items: latest Date_Found first
+                    var available = items
+                        .Where(i => i.Item_Status == "Available" || i.Item_Status == "Reserved")
+                        .OrderByDescending(i => i.Date_Found);
+                    // Claimed items: at the end
+                    var claimed = items
+                        .Where(i => i.Item_Status == "Claimed")
+                        .OrderByDescending(i => i.Date_Found);
+                    foreach (var item in available.Concat(claimed))
+                        MyPosts.Add(item);
                 });
             }
             catch { }

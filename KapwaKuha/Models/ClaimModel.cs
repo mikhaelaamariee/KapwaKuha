@@ -14,6 +14,7 @@ namespace KapwaKuha.Models
         public string Beneficiary_Name { get; set; } = string.Empty;
         public DateTime Claim_Date { get; set; } = DateTime.Now;
 
+        public string Donor_Name { get; set; } = string.Empty;
         public string Category_Name { get; set; } = string.Empty;
 
         // Maps Claim_Status to the ComboBox human-readable option
