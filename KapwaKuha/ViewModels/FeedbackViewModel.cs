@@ -83,7 +83,9 @@ namespace KapwaKuha.ViewModels
 
             SetStarCommand = new RelayCommand(param =>
             {
-                if (param is int stars) SelectedStars = stars;
+                if (param == null) return;
+                if (int.TryParse(param.ToString(), out int stars))
+                    SelectedStars = stars;
             });
 
             CancelCommand = new RelayCommand(_ => OnSubmitted?.Invoke());

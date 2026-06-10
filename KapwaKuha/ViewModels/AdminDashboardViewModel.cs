@@ -1,5 +1,7 @@
 ﻿// FILE: ViewModels/AdminDashboardViewModel.cs
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using KapwaKuha.Commands;
@@ -26,9 +28,22 @@ namespace KapwaKuha.ViewModels
         public int FulfilledNeeds { get => _fulfilledNeeds; set { _fulfilledNeeds = value; OnPropertyChanged(); } }
         public int ActiveInstBenes { get => _activeInstBenes; set { _activeInstBenes = value; OnPropertyChanged(); } }
         public int ActiveIndepBenes { get => _activeIndepBenes; set { _activeIndepBenes = value; OnPropertyChanged(); } }
-        public int PendingItems { get => _pendingItems; set { _pendingItems = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasPendingItems)); } }
-        public int PendingBeneficiaries { get => _pendingBeneficiaries; set { _pendingBeneficiaries = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasPendingBeneficiaries)); } }
-        public int OpenReports { get => _openReports; set { _openReports = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasOpenReports)); } }
+
+        public int PendingItems
+        {
+            get => _pendingItems;
+            set { _pendingItems = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasPendingItems)); }
+        }
+        public int PendingBeneficiaries
+        {
+            get => _pendingBeneficiaries;
+            set { _pendingBeneficiaries = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasPendingBeneficiaries)); }
+        }
+        public int OpenReports
+        {
+            get => _openReports;
+            set { _openReports = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasOpenReports)); }
+        }
 
         public bool HasPendingItems => PendingItems > 0;
         public bool HasPendingBeneficiaries => PendingBeneficiaries > 0;
@@ -62,6 +77,15 @@ namespace KapwaKuha.ViewModels
         public bool IsLoadingBenes { get => _isLoadingBenes; set { _isLoadingBenes = value; OnPropertyChanged(); } }
         public bool IsLoadingReports { get => _isLoadingReports; set { _isLoadingReports = value; OnPropertyChanged(); } }
         public bool IsLoadingNeedsPosts { get => _isLoadingNeedsPosts; set { _isLoadingNeedsPosts = value; OnPropertyChanged(); } }
+
+        // ── Error state ───────────────────────────────────────────────────────
+        private string _loadError = string.Empty;
+        public string LoadError
+        {
+            get => _loadError;
+            set { _loadError = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasLoadError)); }
+        }
+        public bool HasLoadError => !string.IsNullOrEmpty(LoadError);
 
         // ── Commands ─────────────────────────────────────────────────────────
         public ICommand ApproveItemCommand { get; }
@@ -100,26 +124,46 @@ namespace KapwaKuha.ViewModels
                     await LoadGatekeeperQueuesAsync();
                     await LoadMetricsAsync();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to approve item: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
 
             RejectItemCommand = new AsyncRelayCommand(async param =>
             {
                 if (param is not ItemModel item) return;
+
+                // Ask admin for a rejection reason
+                string reason = Microsoft.VisualBasic.Interaction.InputBox(
+                    $"Enter rejection reason for \"{item.Item_Name}\":\n(The donor will see this and can edit + resubmit.)",
+                    "Rejection Reason",
+                    "Please revise your item post and resubmit.");
+
+                if (reason == null) return; // cancelled
+                if (string.IsNullOrWhiteSpace(reason))
+                    reason = "Your item was rejected. Please edit and resubmit.";
+
                 var r = MessageBox.Show(
-                    $"Reject item \"{item.Item_Name}\"?",
+                    $"Reject \"{item.Item_Name}\"?\n\nReason: {reason}",
                     "Confirm Rejection", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (r != MessageBoxResult.Yes) return;
+
                 try
                 {
-                    await KapwaDataService.RejectItem(item.Item_ID);
+                    await KapwaDataService.RejectItem(item.Item_ID, reason);
                     await KapwaDataService.CreateNotification(
                         item.Donor_ID, "Approval",
-                        $"❌ Your item \"{item.Item_Name}\" was rejected. Please review and resubmit.",
+                        $"❌ Your item \"{item.Item_Name}\" was rejected.\n\nReason: {reason}\n\nPlease edit your listing and resubmit for re-review.",
                         item.Item_ID);
                     await LoadGatekeeperQueuesAsync();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to reject item: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
 
             // ── Beneficiaries ─────────────────────────────────────────────────
@@ -140,7 +184,11 @@ namespace KapwaKuha.ViewModels
                     await LoadGatekeeperQueuesAsync();
                     await LoadMetricsAsync();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to approve beneficiary: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
 
             RejectBeneficiaryCommand = new AsyncRelayCommand(async param =>
@@ -155,7 +203,11 @@ namespace KapwaKuha.ViewModels
                     await KapwaDataService.RejectBeneficiary(bene.Beneficiary_ID);
                     await LoadGatekeeperQueuesAsync();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to reject beneficiary: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
 
             // ── Donors ────────────────────────────────────────────────────────
@@ -175,7 +227,11 @@ namespace KapwaKuha.ViewModels
                         donor.Donor_ID);
                     await LoadGatekeeperQueuesAsync();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to approve donor: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
 
             RejectDonorCommand = new AsyncRelayCommand(async param =>
@@ -190,7 +246,11 @@ namespace KapwaKuha.ViewModels
                     await KapwaDataService.RejectDonor(donor.Donor_ID);
                     await LoadGatekeeperQueuesAsync();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to reject donor: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
 
             // ── Needs Posts ───────────────────────────────────────────────────
@@ -198,8 +258,7 @@ namespace KapwaKuha.ViewModels
             {
                 if (param is not NeedsPostModel post) return;
 
-                // Admin picks urgency at approval time
-                string chosenUrgency = post.Urgency;
+                string chosenUrgency = post.Urgency ?? "Medium";
 
                 var result = MessageBox.Show(
                     $"Approve needs post \"{post.Title}\" from {post.Org_Name}?\n\n" +
@@ -236,26 +295,47 @@ namespace KapwaKuha.ViewModels
                     await LoadGatekeeperQueuesAsync();
                     await LoadMetricsAsync();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to approve needs post: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
 
             RejectNeedsPostCommand = new AsyncRelayCommand(async param =>
             {
                 if (param is not NeedsPostModel post) return;
+
+                // Prompt admin for a rejection reason
+                string reason = Microsoft.VisualBasic.Interaction.InputBox(
+                    $"Enter a rejection reason for \"{post.Title}\":\n(This will be shown to the beneficiary so they know what to fix.)",
+                    "Rejection Reason",
+                    "Please revise your post and resubmit.");
+
+                // Cancelled — don't reject
+                if (reason == null) return;
+                if (string.IsNullOrWhiteSpace(reason))
+                    reason = "Your post was rejected. Please edit and resubmit.";
+
                 var r = MessageBox.Show(
-                    $"Reject needs post \"{post.Title}\"?\nIt will be hidden from donors.",
+                    $"Reject \"{post.Title}\"?\n\nReason: {reason}\n\nThe beneficiary will see this reason and can edit & resubmit.",
                     "Confirm Rejection", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (r != MessageBoxResult.Yes) return;
+
                 try
                 {
-                    await KapwaDataService.RejectNeedsPost(post.NeedsPost_ID);
+                    await KapwaDataService.RejectNeedsPost(post.NeedsPost_ID, reason);
                     await KapwaDataService.CreateNotification(
                         post.Org_ID, "Approval",
-                        $"❌ Your needs post \"{post.Title}\" was not approved. Please revise and resubmit.",
+                        $"❌ Your needs post \"{post.Title}\" was not approved.\n\nReason: {reason}\n\nPlease edit your post and resubmit for re-review.",
                         post.NeedsPost_ID);
                     await LoadGatekeeperQueuesAsync();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to reject needs post: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
 
             // ── Reports ───────────────────────────────────────────────────────
@@ -281,7 +361,11 @@ namespace KapwaKuha.ViewModels
                             report.Report_ID);
                     await LoadGatekeeperQueuesAsync();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to process report: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
 
             AdminBanUserCommand = new AsyncRelayCommand(async param =>
@@ -302,12 +386,17 @@ namespace KapwaKuha.ViewModels
                     await LoadGatekeeperQueuesAsync();
                     await LoadMetricsAsync();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to ban user: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
 
             // ── General ───────────────────────────────────────────────────────
             RefreshCommand = new AsyncRelayCommand(async _ =>
             {
+                LoadError = string.Empty;
                 await LoadMetricsAsync();
                 await LoadGatekeeperQueuesAsync();
             });
@@ -323,15 +412,23 @@ namespace KapwaKuha.ViewModels
                 }
             });
 
-            _ = LoadMetricsAsync();
-            _ = LoadGatekeeperQueuesAsync();
+            // ── Safe deferred load — waits for window to fully render first ───
+            Application.Current.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Loaded,
+                new Action(async () =>
+                {
+                    await LoadMetricsAsync();
+                    await LoadGatekeeperQueuesAsync();
+                }));
         }
 
-        private async System.Threading.Tasks.Task LoadMetricsAsync()
+        // ── Safe metrics load ─────────────────────────────────────────────────
+        private async Task LoadMetricsAsync()
         {
             try
             {
                 var m = await KapwaDataService.GetAdminImpactMetrics();
+                if (Application.Current == null) return;
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     TotalDonated = m.TotalDonated;
@@ -345,20 +442,25 @@ namespace KapwaKuha.ViewModels
                     OpenReports = m.OpenReports;
                 });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                SafeDispatch(() => LoadError = $"Metrics load failed: {ex.Message}");
+            }
         }
 
-        private async System.Threading.Tasks.Task LoadGatekeeperQueuesAsync()
+        private async Task LoadGatekeeperQueuesAsync()
         {
-            IsLoadingItems = IsLoadingBenes = IsLoadingReports = IsLoadingNeedsPosts = true;
+            SafeDispatch(() =>
+                IsLoadingItems = IsLoadingBenes = IsLoadingReports = IsLoadingNeedsPosts = true);
             try
             {
-                var items = await KapwaDataService.GetPendingItems();
-                var benes = await KapwaDataService.GetPendingBeneficiaries();
-                var donors = await KapwaDataService.GetPendingDonors();
-                var needsPosts = await KapwaDataService.GetPendingNeedsPosts();
-                var reports = await KapwaDataService.GetOpenReports();
+                var items = await KapwaDataService.GetPendingItems() ?? new();
+                var benes = await KapwaDataService.GetPendingBeneficiaries() ?? new();
+                var donors = await KapwaDataService.GetPendingDonors() ?? new();
+                var needsPosts = await KapwaDataService.GetPendingNeedsPosts() ?? new();
+                var reports = await KapwaDataService.GetOpenReports() ?? new();
 
+                if (Application.Current == null) return;
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     PendingItemsList.Clear();
@@ -376,15 +478,34 @@ namespace KapwaKuha.ViewModels
                     OpenReportsList.Clear();
                     foreach (var r in reports) OpenReportsList.Add(r);
 
+                    PendingItems = items.Count;
                     PendingDonors = donors.Count;
                     PendingNeedsPosts = needsPosts.Count;
                 });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                SafeDispatch(() => LoadError = $"Queue load failed: {ex.Message}");
+            }
             finally
             {
-                IsLoadingItems = IsLoadingBenes = IsLoadingReports = IsLoadingNeedsPosts = false;
+                SafeDispatch(() =>
+                    IsLoadingItems = IsLoadingBenes = IsLoadingReports = IsLoadingNeedsPosts = false);
             }
+        }
+
+        // ── UI-thread helper ──────────────────────────────────────────────────
+        private static void SafeDispatch(Action action)
+        {
+            try
+            {
+                if (Application.Current == null) return;
+                if (Application.Current.Dispatcher.CheckAccess())
+                    action();
+                else
+                    Application.Current.Dispatcher.Invoke(action);
+            }
+            catch { /* swallow dispatch errors during shutdown */ }
         }
     }
 }

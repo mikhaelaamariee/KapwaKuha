@@ -452,6 +452,27 @@
                                                                    FontSize="11" FontWeight="SemiBold"
                                                                    Foreground="{Binding ApprovalBadgeTextColor}"/>
                                                     </Border>
+                                                    <!-- Rejection reason — visible only when status = Rejected and note exists -->
+                                                    <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1"
+        CornerRadius="7" Padding="10,7" Margin="0,4,0,0">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding HasRejectionNote}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="💬 " FontSize="13"/>
+                                                            <TextBlock FontSize="12" Foreground="#991B1B" TextWrapping="Wrap">
+            <Run Text="Rejection reason: " FontWeight="SemiBold"/>
+            <Run Text="{Binding RejectionNote}"/>
+                                                            </TextBlock>
+                                                        </StackPanel>
+                                                    </Border>
                                                     <!-- Action buttons -->
                                                     <StackPanel Orientation="Horizontal">
                                                         <Button Command="{Binding DataContext.SelectPostCommand,

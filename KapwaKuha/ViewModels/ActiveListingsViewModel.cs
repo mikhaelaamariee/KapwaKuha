@@ -52,11 +52,16 @@ namespace KapwaKuha.ViewModels
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsItemSelected));
                 OnPropertyChanged(nameof(CanEditSelected));
+                OnPropertyChanged(nameof(CanDeleteSelected));
             }
         }
         public bool IsItemSelected => SelectedItem != null;
-        public bool CanEditSelected => SelectedItem?.Item_Status == "Available"
-                              && SelectedItem?.Admin_Approval_Status == "Approved";
+
+        // Edit allowed: Pending OR Rejected (not Approved, not Claimed/Reserved)
+        public bool CanEditSelected => SelectedItem?.CanDonorEdit == true;
+
+        // Delete allowed: Available status (any approval state)
+        public bool CanDeleteSelected => SelectedItem?.Item_Status == "Available";
 
         // ── Edit panel fields ────────────────────────────────────────────────
         private string _editName = string.Empty;
@@ -93,15 +98,10 @@ namespace KapwaKuha.ViewModels
             set { _isEditPanelOpen = value; OnPropertyChanged(); }
         }
 
-        // ── REQUIREMENT 5: Item to pinpoint after load ────────────────────────
-        /// <summary>
-        /// When set, the view scrolls to and selects this Item_ID after data loads.
-        /// The code-behind reads PinpointItemId after LoadItems completes.
-        /// </summary>
         public string PinpointItemId { get; }
 
         // ── Commands ─────────────────────────────────────────────────────────
-        public ICommand BackCommand { get; }   // REQUIREMENT 2: navigates to Dashboard
+        public ICommand BackCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand DeleteItemCommand { get; }
         public ICommand OpenEditPanelCommand { get; }
@@ -110,24 +110,15 @@ namespace KapwaKuha.ViewModels
         public ICommand CancelEditCommand { get; }
         public ICommand EditPostCommand { get; }
 
-        // ── Constructors ─────────────────────────────────────────────────────
-
-        /// <summary>Standard navigation — opens top of list.</summary>
-        public ActiveListingsViewModel(string donorId) : this(donorId, string.Empty) { }
-
         public ObservableCollection<string> Conditions { get; } = new() { "New", "Good", "Fair", "Poor" };
 
-        /// <summary>
-        /// REQUIREMENT 5: Pinpoint navigation.
-        /// Pass a non-empty <paramref name="pinpointItemId"/> to pre-select and
-        /// scroll to that item after the list loads.
-        /// </summary>
+        public ActiveListingsViewModel(string donorId) : this(donorId, string.Empty) { }
+
         public ActiveListingsViewModel(string donorId, string pinpointItemId)
         {
             _donorId = donorId;
             PinpointItemId = pinpointItemId;
 
-            // REQUIREMENT 2: Back now goes to Dashboard instead of a generic Back
             BackCommand = new RelayCommand(_ =>
                 NavigationService.Navigate(new View.DonorDashboardWindow(_donorId)));
 
@@ -196,28 +187,15 @@ namespace KapwaKuha.ViewModels
                     SelectedItem.Item_Description = EditDescription;
                     SelectedItem.Item_Condition = EditCondition;
                     SelectedItem.Item_ImagePath = EditImagePath;
+
                     await KapwaDataService.UpdateItem(SelectedItem);
                     IsEditPanelOpen = false;
-                    // After calling KapwaDataService.UpdateItem(...)
-                    MessageBox.Show(
-                        "✅ Your post has been updated and submitted for admin review.\nIt will reappear in listings once re-approved.",
-                        "Edit Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
-                    await LoadItemsAsync();
 
-                    // Inside SaveEditCommand try block, after UpdateItem call, add:
-                    // If the donor edits an approved item, reset it to Pending for re-review
-                    if (SelectedItem.Admin_Approval_Status == "Approved")
-                    {
-                        await KapwaDataService.ResetItemApproval(SelectedItem.Item_ID);
-                        SelectedItem.Admin_Approval_Status = "Pending";
-                        MessageBox.Show(
-                            "✅ Item updated and sent back for admin review.\nIt will be hidden from beneficiaries until re-approved.",
-                            "Re-submitted", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show("✅ Item updated!", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
+                    MessageBox.Show(
+                        "✅ Your item has been updated and resubmitted for admin review.\n\nIt will reappear in listings once re-approved.",
+                        "Resubmitted for Approval", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    await LoadItemsAsync();
                 }
                 catch { }
                 finally { IsBusy = false; }
@@ -229,7 +207,6 @@ namespace KapwaKuha.ViewModels
         }
 
         // ── Data helpers ──────────────────────────────────────────────────────
-
         private async System.Threading.Tasks.Task LoadItemsAsync()
         {
             IsBusy = true;
@@ -241,7 +218,6 @@ namespace KapwaKuha.ViewModels
                     _allItems = items;
                     ApplyFilter();
 
-                    // REQUIREMENT 5: Auto-select pinpointed item after load
                     if (!string.IsNullOrEmpty(PinpointItemId))
                     {
                         foreach (var item in Items)

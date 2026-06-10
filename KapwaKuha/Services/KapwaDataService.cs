@@ -44,7 +44,7 @@ namespace KapwaKuha.Services
                 if (_cachedConn != null) return _cachedConn;
 
                 // List of all possible strings to try
-                string[] connectionStrings = { _pcConn, _laptopConn, _laptopConn1 , _team1Conn, _team2Conn };
+                string[] connectionStrings = { _pcConn, _laptopConn, _laptopConn1, _team1Conn, _team2Conn };
 
                 foreach (var connectionString in connectionStrings)
                 {
@@ -364,12 +364,13 @@ namespace KapwaKuha.Services
             const string sql = @"
 SELECT i.Item_ID, i.Item_Name, i.Item_Condition, i.Item_Status,
        i.Date_Found, i.Donor_ID, i.Category_ID,
-       ISNULL(p.Post_Type,'GeneralPost')    AS PostType,
-       ISNULL(i.TargetBeneficiary_ID,'')    AS TargetBeneficiary_ID,
-       ISNULL(i.Item_Description,'')         AS Item_Description,
-       ISNULL(i.Item_ImagePath,'')           AS Item_ImagePath,
+       ISNULL(p.Post_Type,'GeneralPost')         AS PostType,
+       ISNULL(i.TargetBeneficiary_ID,'')         AS TargetBeneficiary_ID,
+       ISNULL(i.Item_Description,'')             AS Item_Description,
+       ISNULL(i.Item_ImagePath,'')               AS Item_ImagePath,
        ISNULL(i.Admin_Approval_Status,'Pending') AS Admin_Approval_Status,
-       d.Donor_FullName                      AS Donor_Name,
+       ISNULL(i.RejectionNote,'')               AS RejectionNote,
+       d.Donor_FullName                          AS Donor_Name,
        c.Category_Name
 FROM Items i
 LEFT JOIN Donors   d ON d.Donor_ID    = i.Donor_ID
@@ -403,7 +404,7 @@ JOIN Post     p ON p.Post_ID     = i.Post_ID
 WHERE p.Post_Type = 'DirectTarget'
   AND i.TargetBeneficiary_ID = @bid
   AND i.Admin_Approval_Status = 'Approved'";
-    try
+            try
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
@@ -442,7 +443,7 @@ WHERE p.Post_Type = 'DirectTarget'
                 i.Admin_Approval_Status == "Approved");  // FIX: block unapproved items from browse
         }
 
-        
+
         public static async Task<List<ItemModel>> GetItemsByDonor(string donorId)
         {
             var all = await GetAllItems();
@@ -652,7 +653,8 @@ WHERE p.Post_Type = 'DirectTarget'
             PostType = r["PostType"].ToString() ?? "GeneralPost",
             TargetBeneficiary_ID = r["TargetBeneficiary_ID"].ToString() ?? "",
             Item_ImagePath = r["Item_ImagePath"].ToString() ?? "",
-            Admin_Approval_Status = r["Admin_Approval_Status"].ToString() ?? "Pending"  // ← ADDED
+            Admin_Approval_Status = r["Admin_Approval_Status"].ToString() ?? "Pending",
+            RejectionNote = r["RejectionNote"].ToString() ?? ""
         };
 
         public static async Task<List<TransactionRow>> GetDonorTransactionHistory(string donorId)
@@ -1006,11 +1008,15 @@ WHERE Status = 'Open'
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(@"
 UPDATE NeedsPosts
-SET Title                 = @title,
+SET PreviousTitle         = Title,
+    PreviousDescription   = Description,
+    PreviousUrgency       = Urgency,
+    Title                 = @title,
     Description           = @desc,
     Urgency               = @urg,
     ImagePath             = @img,
-    Admin_Approval_Status = 'Pending'   -- always re-queue on any edit
+    Admin_Approval_Status = 'Pending',
+    RejectionNote         = NULL
 WHERE NeedsPost_ID = @id", conn);
                 cmd.Parameters.AddWithValue("@title", post.Title);
                 cmd.Parameters.AddWithValue("@desc", post.Description);
@@ -1019,8 +1025,7 @@ WHERE NeedsPost_ID = @id", conn);
                 cmd.Parameters.AddWithValue("@id", post.NeedsPost_ID);
                 await cmd.ExecuteNonQueryAsync();
             }
-            catch (Exception ex)
-            { MessageBox.Show("UpdateNeedsPost failed: " + ex.Message); throw; }
+            catch (Exception ex) { MessageBox.Show("UpdateNeedsPost failed: " + ex.Message); throw; }
         }
 
         // Updates only the urgency level of an existing NeedsPost
@@ -1081,9 +1086,10 @@ WHERE NeedsPost_ID = @id", conn);
                 using var cmd = new SqlCommand(@"
 SELECT n.NeedsPost_ID, n.Org_ID, n.Title, n.Description,
        n.Urgency, n.Status, n.Post_Date,
-       ISNULL(n.ImagePath,'')              AS ImagePath,
-       ISNULL(o.Organization_Name,'')      AS Org_Name,
-       n.Admin_Approval_Status
+       ISNULL(n.ImagePath,'')          AS ImagePath,
+       ISNULL(o.Organization_Name,'') AS Org_Name,
+       n.Admin_Approval_Status,
+       ISNULL(n.RejectionNote,'')     AS RejectionNote
 FROM NeedsPosts n
 LEFT JOIN Organization o ON o.Organization_ID = n.Org_ID
 WHERE n.Org_ID = @oid
@@ -1103,7 +1109,8 @@ ORDER BY n.Post_Date DESC", conn);
                         Status = r["Status"].ToString() ?? "Open",
                         Post_Date = Convert.ToDateTime(r["Post_Date"]),
                         ImagePath = r["ImagePath"].ToString() ?? "",
-                        Admin_Approval_Status = r["Admin_Approval_Status"].ToString() ?? "Pending"
+                        Admin_Approval_Status = r["Admin_Approval_Status"].ToString() ?? "Pending",
+                        RejectionNote = r["RejectionNote"].ToString() ?? "",
                     });
             }
             catch (Exception ex) { MessageBox.Show("GetNeedsPostsByOrg failed: " + ex.Message); }
@@ -1118,16 +1125,23 @@ ORDER BY n.Post_Date DESC", conn);
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("sp_UpdateItem", conn);
-                cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@ItemId", item.Item_ID);
-                cmd.Parameters.AddWithValue("@ItemName", item.Item_Name);
-                cmd.Parameters.AddWithValue("@Description", item.Item_Description);
-                cmd.Parameters.AddWithValue("@Condition", item.Item_Condition);
-                cmd.Parameters.AddWithValue("@ImagePath", item.Item_ImagePath);
+                using var cmd = new SqlCommand(@"
+UPDATE Items
+SET Item_Name             = @name,
+    Item_Description      = @desc,
+    Item_Condition        = @cond,
+    Item_ImagePath        = @img,
+    Admin_Approval_Status = 'Pending',
+    RejectionNote         = NULL
+WHERE Item_ID = @id", conn);
+                cmd.Parameters.AddWithValue("@name", item.Item_Name);
+                cmd.Parameters.AddWithValue("@desc", item.Item_Description);
+                cmd.Parameters.AddWithValue("@cond", item.Item_Condition);
+                cmd.Parameters.AddWithValue("@img", item.Item_ImagePath ?? "");
+                cmd.Parameters.AddWithValue("@id", item.Item_ID);
                 await cmd.ExecuteNonQueryAsync();
             }
-            catch (Exception ex) { MessageBox.Show("UpdateItem failed: " + ex.Message); }
+            catch (Exception ex) { MessageBox.Show("UpdateItem failed: " + ex.Message); throw; }
         }
 
         // ══════════════════════════════════════════════════════════════════════
@@ -2373,16 +2387,19 @@ ORDER BY i.Date_Found DESC", conn);
             catch (Exception ex) { System.Windows.MessageBox.Show("ApproveItem failed: " + ex.Message); throw; }
         }
 
-        public static async Task RejectItem(string itemId)
+        public static async Task RejectItem(string itemId, string rejectionNote)
         {
             try
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("sp_RejectItem", conn);
-                cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@ItemId", itemId);
-                cmd.Parameters.AddWithValue("@AdminNotes", "");
+                using var cmd = new SqlCommand(@"
+UPDATE Items
+SET Admin_Approval_Status = 'Rejected',
+    RejectionNote         = @note
+WHERE Item_ID = @id", conn);
+                cmd.Parameters.AddWithValue("@note", rejectionNote.Trim());
+                cmd.Parameters.AddWithValue("@id", itemId);
                 await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex) { System.Windows.MessageBox.Show("RejectItem failed: " + ex.Message); throw; }
@@ -2636,12 +2653,13 @@ WHERE UserID = @id", conn);
                 using var cmd = new SqlCommand(@"
 SELECT n.NeedsPost_ID, n.Org_ID, n.Title, n.Description,
        n.Urgency, n.Status, n.Post_Date,
-       ISNULL(n.ImagePath,'')            AS ImagePath,
-       ISNULL(o.Organization_Name,'')   AS Org_Name,
+       ISNULL(n.ImagePath,'')          AS ImagePath,
+       ISNULL(o.Organization_Name,'') AS Org_Name,
        n.Admin_Approval_Status,
        n.PreviousTitle,
        n.PreviousDescription,
-       n.PreviousUrgency
+       n.PreviousUrgency,
+       ISNULL(n.RejectionNote,'')     AS RejectionNote
 FROM NeedsPosts n
 LEFT JOIN Organization o ON o.Organization_ID = n.Org_ID
 WHERE n.Admin_Approval_Status = 'Pending'
@@ -2662,7 +2680,8 @@ ORDER BY n.Post_Date DESC", conn);
                         Admin_Approval_Status = r["Admin_Approval_Status"].ToString() ?? "Pending",
                         PreviousTitle = r["PreviousTitle"] == DBNull.Value ? null : r["PreviousTitle"].ToString(),
                         PreviousDescription = r["PreviousDescription"] == DBNull.Value ? null : r["PreviousDescription"].ToString(),
-                        PreviousUrgency = r["PreviousUrgency"] == DBNull.Value ? null : r["PreviousUrgency"].ToString()
+                        PreviousUrgency = r["PreviousUrgency"] == DBNull.Value ? null : r["PreviousUrgency"].ToString(),
+                        RejectionNote = r["RejectionNote"].ToString() ?? "",
                     });
             }
             catch (Exception ex) { System.Windows.MessageBox.Show("GetPendingNeedsPosts failed: " + ex.Message); }
@@ -2724,14 +2743,7 @@ ORDER BY n.Post_Date DESC", conn);
             using (var read = new SqlCommand(
                 "SELECT Title, Description, Urgency FROM NeedsPosts WHERE NeedsPost_ID=@Id", conn))
             {
-                read.Parameters.AddWithValue("@Id", post.NeedsPost_ID);
-                using var rdr = await read.ExecuteReaderAsync();
-                if (await rdr.ReadAsync())
-                {
-                    post.PreviousTitle = rdr["Title"].ToString();
-                    post.PreviousDescription = rdr["Description"].ToString();
-                    post.PreviousUrgency = rdr["Urgency"].ToString();
-                }
+               
             }
             using var cmd = new SqlCommand(
                 "UPDATE NeedsPosts SET Title=@T, Description=@D, Urgency=@U, ImagePath=@I, " +
@@ -2742,11 +2754,27 @@ ORDER BY n.Post_Date DESC", conn);
             cmd.Parameters.AddWithValue("@D", post.Description ?? "");
             cmd.Parameters.AddWithValue("@U", post.Urgency);
             cmd.Parameters.AddWithValue("@I", post.ImagePath ?? "");
-            cmd.Parameters.AddWithValue("@PT", (object?)post.PreviousTitle ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@PD", (object?)post.PreviousDescription ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@PU", (object?)post.PreviousUrgency ?? DBNull.Value);
+          
             cmd.Parameters.AddWithValue("@Id", post.NeedsPost_ID);
             await cmd.ExecuteNonQueryAsync();
+        }
+
+        public static async Task RejectNeedsPost(string postId, string rejectionNote)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+UPDATE NeedsPosts
+SET Admin_Approval_Status = 'Rejected',
+    RejectionNote         = @note
+WHERE NeedsPost_ID = @id", conn);
+                cmd.Parameters.AddWithValue("@note", rejectionNote.Trim());
+                cmd.Parameters.AddWithValue("@id", postId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("RejectNeedsPost failed: " + ex.Message); throw; }
         }
     }
 

@@ -17,12 +17,27 @@ namespace KapwaKuha.Models
         public DateTime Post_Date { get; set; } = DateTime.Now;
         public string PostDateDisplay => Post_Date.ToString("MMM dd, yyyy");
 
-        // ── Before/After edit snapshot (null when this is a fresh post) ──────
+        // ── Edit snapshot (null = first submission; populated = re-edit after rejection) ──
         public string? PreviousTitle { get; set; }
         public string? PreviousDescription { get; set; }
         public string? PreviousUrgency { get; set; }
-        /// <summary>True when this pending item is a re-submission of an existing post.</summary>
+
+        // True when this is a re-edit submission — drives the diff panel in admin view
         public bool IsEdit => !string.IsNullOrEmpty(PreviousTitle);
+
+        // ── Rejection note written by admin ──────────────────────────────────
+        private string _rejectionNote = string.Empty;
+        public string RejectionNote
+        {
+            get => _rejectionNote;
+            set
+            {
+                _rejectionNote = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(HasRejectionNote));
+            }
+        }
+        public bool HasRejectionNote => !string.IsNullOrEmpty(RejectionNote);
 
         // ── Urgency ──────────────────────────────────────────────────────────
         private string _urgency = "Medium";
@@ -71,10 +86,13 @@ namespace KapwaKuha.Models
                 OnPropertyChanged(nameof(ApprovalBadgeText));
                 OnPropertyChanged(nameof(ApprovalBadgeTextColor));
                 OnPropertyChanged(nameof(IsApproved));
+                OnPropertyChanged(nameof(IsRejected));
                 OnPropertyChanged(nameof(CanEdit));
             }
         }
         public bool IsApproved => Admin_Approval_Status == "Approved";
+        public bool IsRejected => Admin_Approval_Status == "Rejected";
+        // Beneficiary can edit if not yet Approved
         public bool CanEdit => Admin_Approval_Status != "Approved";
 
         public string ApprovalBadgeBackground => Admin_Approval_Status switch

@@ -20,6 +20,7 @@ namespace KapwaKuha.ViewModels
         // In ChatViewModel, add private field:
         private readonly string _otherName;
 
+
  
 
         // Exposed so XAML can AND with IsSystemDirectTarget to hide buttons from donor
@@ -43,6 +44,8 @@ namespace KapwaKuha.ViewModels
         public ICommand SendImageCommand { get; }
         public ICommand AcceptCommand { get; }
         public ICommand DeclineCommand { get; }
+
+        public ICommand ViewProfileCommand { get; }
 
         public event Action? ScrollToBottom;
 
@@ -135,6 +138,12 @@ namespace KapwaKuha.ViewModels
                     return;
                 }
 
+            });
+
+            ViewProfileCommand = new RelayCommand(_ =>
+            {
+                var profileWindow = new View.UserProfileWindow(_otherId, _myId, _role);
+                profileWindow.ShowDialog();
             });
 
 

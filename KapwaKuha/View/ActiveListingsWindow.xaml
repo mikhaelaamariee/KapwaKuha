@@ -266,13 +266,14 @@
 
                     <StackPanel>
                         <TextBlock Text="⚙️ Manage Selected Item" FontSize="15"
-                                   FontWeight="Bold" Foreground="#03045E" Margin="0,0,0,6"/>
+               FontWeight="Bold" Foreground="#03045E" Margin="0,0,0,6"/>
                         <TextBlock Text="Edit details or remove the item from listings."
-                                   FontSize="11" Foreground="#5E7A8A" Margin="0,0,0,24"/>
+               FontSize="11" Foreground="#5E7A8A" Margin="0,0,0,24"/>
 
+                        <!-- Empty state -->
                         <TextBlock Text="← Select an item to manage it"
-                                   FontSize="13" Foreground="#90A4AE"
-                                   HorizontalAlignment="Center" Margin="0,40,0,0">
+               FontSize="13" Foreground="#90A4AE"
+               HorizontalAlignment="Center" Margin="0,40,0,0">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Visible"/>
@@ -288,30 +289,94 @@
                         <StackPanel Visibility="{Binding IsItemSelected, Converter={StaticResource BoolToVis}}">
 
                             <TextBlock Text="Selected Item" FontSize="13" FontWeight="SemiBold"
-                                       Foreground="#0A2540" Margin="4,0,0,8"/>
+                   Foreground="#0A2540" Margin="4,0,0,8"/>
 
+                            <!-- Item summary card -->
                             <Border CornerRadius="10" BorderBrush="#6600B4D8" BorderThickness="1"
-                                    Padding="16,12" Background="#80FFFFFF" Margin="0,0,0,24">
+                Padding="16,12" Background="#80FFFFFF" Margin="0,0,0,12">
                                 <StackPanel>
-                                    <TextBlock Text="{Binding SelectedItem.Item_Name}" FontSize="15" FontWeight="Bold" Foreground="#03045E" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{Binding SelectedItem.Category_Name}" FontSize="13" Foreground="#0077B6" Margin="0,4,0,8"/>
-
+                                    <TextBlock Text="{Binding SelectedItem.Item_Name}" FontSize="15"
+                           FontWeight="Bold" Foreground="#03045E" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding SelectedItem.Category_Name}" FontSize="13"
+                           Foreground="#0077B6" Margin="0,4,0,8"/>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                         <TextBlock Text="Condition: " FontSize="12" Foreground="#5E7A8A"/>
-                                        <TextBlock Text="{Binding SelectedItem.Item_Condition}" FontSize="12" FontWeight="SemiBold" Foreground="#0A2540"/>
+                                        <TextBlock Text="{Binding SelectedItem.Item_Condition}" FontSize="12"
+                               FontWeight="SemiBold" Foreground="#0A2540"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Status: " FontSize="12" Foreground="#5E7A8A"/>
-                                        <TextBlock Text="{Binding SelectedItem.Item_Status}" FontSize="12" FontWeight="SemiBold" Foreground="{Binding SelectedItem.StatusBadgeColor}"/>
+                                        <TextBlock Text="{Binding SelectedItem.Item_Status}" FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{Binding SelectedItem.StatusBadgeColor}"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
 
+                            <!-- ── Rejection reason card — only shown when item is Rejected ── -->
+                            <Border CornerRadius="10" BorderBrush="#FECACA" BorderThickness="1.5"
+                Padding="14,12" Background="#FEF2F2" Margin="0,0,0,14">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedItem.IsRejected}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                        <TextBlock Text="❌" FontSize="13" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Item Rejected" FontSize="13" FontWeight="Bold"
+                               Foreground="#991B1B"/>
+                                    </StackPanel>
+
+                                    <!-- Rejection note (if admin wrote one) -->
+                                    <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="#7F1D1D"
+                           Margin="0,0,0,8">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedItem.HasRejectionNote}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                    <Run Text="Reason: " FontWeight="SemiBold"/>
+                    <Run Text="{Binding SelectedItem.RejectionNote}"/>
+                                    </TextBlock>
+
+                                    <!-- Fallback if no note was written -->
+                                    <TextBlock Text="No reason provided. Please contact the admin."
+                           FontSize="12" Foreground="#9CA3AF" FontStyle="Italic">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedItem.HasRejectionNote}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Text="👆 Click Edit Details below to fix and resubmit."
+                           FontSize="11" Foreground="#B45309" Margin="0,6,0,0"
+                           FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Edit Details button — enabled for Pending and Rejected items -->
                             <Button Command="{Binding EditPostCommand}"
-                                    IsEnabled="{Binding CanEditSelected}"
-                                    Height="44" FontSize="13" FontWeight="Bold"
-                                    Foreground="White" BorderThickness="0"
-                                    Cursor="Hand" Margin="0,0,0,12">
+                IsEnabled="{Binding CanEditSelected}"
+                Height="44" FontSize="13" FontWeight="Bold"
+                Foreground="White" BorderThickness="0"
+                Cursor="Hand" Margin="0,0,0,12">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border x:Name="EditBorder" CornerRadius="10" Background="#00B4D8">
@@ -327,27 +392,27 @@
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
-                                <Button.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#00B4D8" Offset="0"/>
-                                        <GradientStop Color="#0077B6" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Button.Background>
                                 <TextBlock Text="✏️  Edit Details"/>
                             </Button>
 
+                            <!-- Delete button — enabled for any Available item -->
                             <Button Command="{Binding DeleteItemCommand}"
-                                    Height="44" FontSize="13" FontWeight="Bold"
-                                    Foreground="White" Background="#C0304A"
-                                    BorderThickness="0" Cursor="Hand">
+                IsEnabled="{Binding CanDeleteSelected}"
+                Height="44" FontSize="13" FontWeight="Bold"
+                Foreground="White" Background="#C0304A"
+                BorderThickness="0" Cursor="Hand">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
-                                        <Border CornerRadius="10" Background="{TemplateBinding Background}">
+                                        <Border x:Name="DelBorder" CornerRadius="10"
+                            Background="{TemplateBinding Background}">
                                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Opacity" Value="0.85"/>
+                                                <Setter TargetName="DelBorder" Property="Opacity" Value="0.85"/>
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter TargetName="DelBorder" Property="Background" Value="#B0BEC5"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>

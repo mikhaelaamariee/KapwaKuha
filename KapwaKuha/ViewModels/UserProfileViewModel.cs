@@ -60,6 +60,8 @@ namespace KapwaKuha.ViewModels
         // Donor's available items list
         public ObservableCollection<ItemModel> AvailableItems { get; } = new();
 
+        public ObservableCollection<TransactionRow> ReceivedItems { get; } = new();
+
         // ── Report form state ─────────────────────────────────────────────────
         private string _reportType = "FakeItem";
         private string _reportDescription = string.Empty;
@@ -197,6 +199,13 @@ namespace KapwaKuha.ViewModels
                         OrgAddress = bene.Organization_Address ?? string.Empty;
                         OrgContact = bene.Organization_Contact ?? string.Empty;
                     }
+
+                    var received = await KapwaDataService.GetBeneficiaryTransactionHistory(TargetId);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        ReceivedItems.Clear();
+                        foreach (var t in received) ReceivedItems.Add(t);
+                    });
                 }
                 else if (TargetRole == "IndependentBeneficiary")
                 {
@@ -209,6 +218,12 @@ namespace KapwaKuha.ViewModels
                         SubInfo = $"@{indep.Username}  ·  {indep.Sex}  ·  {indep.Address}";
                         AccountCreated = "Independent Beneficiary";
                     }
+                    var received = await KapwaDataService.GetBeneficiaryTransactionHistory(TargetId);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        ReceivedItems.Clear();
+                        foreach (var t in received) ReceivedItems.Add(t);
+                    });
                 }
             }
             catch { }

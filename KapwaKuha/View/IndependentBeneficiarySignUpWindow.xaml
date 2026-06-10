@@ -192,10 +192,11 @@
                                 <TextBlock Text="Sex" FontSize="13" FontWeight="SemiBold"
                                            Foreground="#03045E" Margin="0,0,0,8"/>
                                 <Border Style="{StaticResource GlassInputBorder}" Height="44">
-                                    <ComboBox SelectedValue="{Binding SelectedSex}"
-                                              Background="Transparent" BorderThickness="0"
-                                              FontSize="14" Padding="10,0" VerticalContentAlignment="Center">
-                                        <ComboBoxItem Content="Male"/>
+                                    <ComboBox SelectedValue="{Binding SelectedSex, Mode=TwoWay}"
+          SelectedValuePath="Content"
+          Background="Transparent" BorderThickness="0"
+          FontSize="14" Padding="10,0" VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="Male" IsSelected="True"/>
                                         <ComboBoxItem Content="Female"/>
                                     </ComboBox>
                                 </Border>
@@ -288,7 +289,7 @@
                                 <TextBlock Text="Security Question" FontSize="13" FontWeight="SemiBold"
                                            Foreground="#03045E" Margin="0,0,0,8"/>
                                 <Border Style="{StaticResource GlassInputBorder}" Height="44">
-                                    <ComboBox SelectedValue="{Binding SecurityQuestion}"
+                                    <ComboBox SelectedValue="{Binding SecurityQuestion}" SelectedValuePath="Content"
                                               Background="Transparent" BorderThickness="0"
                                               FontSize="13" Padding="10,0" VerticalContentAlignment="Center">
                                         <ComboBoxItem Content="What is your pet name?"/>

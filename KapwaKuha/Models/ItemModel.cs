@@ -68,6 +68,24 @@ namespace KapwaKuha.Models
             _ => "#B8860B"
         };
 
+        // ── Rejection note from admin ─────────────────────────────────────────────
+
+        private string _rejectionNote = string.Empty;
+        public string RejectionNote
+        {
+            get => _rejectionNote;
+            set
+            {
+                _rejectionNote = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(HasRejectionNote));
+            }
+        }
+        public bool HasRejectionNote => !string.IsNullOrEmpty(RejectionNote);
+        public bool IsRejected => Admin_Approval_Status == "Rejected";
+        // Donor can edit if Pending OR Rejected — only Approved/Claimed/Reserved lock the form
+        public bool CanDonorEdit => Admin_Approval_Status != "Approved" && Item_Status == "Available";
+
 
 
         public DateTime Date_Found { get; set; } = DateTime.Now;

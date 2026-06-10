@@ -100,7 +100,9 @@ namespace KapwaKuha.ViewModels
         }
 
         // Only allow edit if post is NOT approved (live posts can't be edited without re-review)
-        public bool CanEditSelected => _selectedPost != null && _selectedPost.Admin_Approval_Status != "Approved";
+        // NEW — for new posts (null selection), inputs are always enabled
+        //       for editing, only block if the post is already Approved (live)
+        public bool CanEditSelected => _selectedPost == null || _selectedPost.Admin_Approval_Status != "Approved";
 
         public ICommand BackCommand { get; }
         public ICommand PostNeedCommand { get; }
