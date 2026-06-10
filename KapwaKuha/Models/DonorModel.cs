@@ -36,5 +36,7 @@ namespace KapwaKuha.Models
         public string ProfilePicturePath { get; set; } = string.Empty;
         public string SecurityQuestion { get; set; } = "What is your pet name?";
         public string SecurityAnswer { get; set; } = string.Empty;
+
+        public string Email { get; set; } = string.Empty;
     }
 }

@@ -30,6 +30,8 @@ namespace KapwaKuha.Models
             set { _adminApprovalStatus = value; OnPropertyChanged(); }
         }
 
+        public string Email { get; set; } = string.Empty;
+
         public string DisplayName => $"{FullName} (Independent)";
         public bool HasPicture =>
             !string.IsNullOrEmpty(ProfilePicturePath) &&

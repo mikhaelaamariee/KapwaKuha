@@ -210,34 +210,43 @@ namespace KapwaKuha.Services
         // REGISTRATION (sp_RegisterDonor / sp_RegisterBeneficiary)
         // ══════════════════════════════════════════════════════════════════════
 
+        // GetNextDonorId
         public static async Task<string> GetNextDonorId()
         {
             try
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("SELECT COUNT(*) FROM Donors", conn);
+                using var cmd = new SqlCommand(@"
+SELECT ISNULL(MAX(CAST(SUBSTRING(Donor_ID, 2, LEN(Donor_ID)) AS INT)), 0) + 1
+FROM Donors
+WHERE Donor_ID LIKE 'D[0-9][0-9][0-9]'", conn);
                 int n = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-                return $"D{n + 1:D3}";
+                return $"D{n:D3}";
             }
             catch { return $"D{DateTime.Now.Ticks % 900 + 100:D3}"; }
         }
 
+
+        // GetNextBeneficiaryId
         public static async Task<string> GetNextBeneficiaryId()
         {
             try
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("SELECT COUNT(*) FROM Beneficiaries", conn);
+                using var cmd = new SqlCommand(@"
+SELECT ISNULL(MAX(CAST(SUBSTRING(Beneficiary_ID, 2, LEN(Beneficiary_ID)) AS INT)), 0) + 1
+FROM InstitutionalBeneficiaries
+WHERE Beneficiary_ID LIKE 'B[0-9][0-9][0-9]'", conn);
                 int n = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-                return $"B{n + 1:D3}";
+                return $"B{n:D3}";
             }
             catch { return $"B{DateTime.Now.Ticks % 900 + 100:D3}"; }
         }
 
         public static async Task RegisterDonor(DonorModel donor, string password,
-    string securityQuestion, string securityAnswer)
+     string securityQuestion, string securityAnswer, string email = "")
         {
             try
             {
@@ -254,22 +263,29 @@ namespace KapwaKuha.Services
                 cmd.Parameters.AddWithValue("@SecurityA", securityAnswer);
                 await cmd.ExecuteNonQueryAsync();
 
-                // After registration, immediately persist address + profile pic
-                if (!string.IsNullOrEmpty(donor.ProfilePicturePath) || !string.IsNullOrEmpty(donor.Donor_Address))
+                // Persist email
+                if (!string.IsNullOrWhiteSpace(email))
                 {
+                    using var emailCmd = new SqlCommand(
+                        "UPDATE Users SET Email = @email WHERE UserID = @id", conn);
+                    emailCmd.Parameters.AddWithValue("@email", email);
+                    emailCmd.Parameters.AddWithValue("@id", donor.Donor_ID);
+                    await emailCmd.ExecuteNonQueryAsync();
+                }
+
+                if (!string.IsNullOrEmpty(donor.ProfilePicturePath) || !string.IsNullOrEmpty(donor.Donor_Address))
                     await UpdateDonorProfile(donor.Donor_ID, donor.Donor_Username,
                         donor.ProfilePicturePath ?? "", donor.Donor_Address ?? "");
-                }
             }
             catch (Exception ex) { MessageBox.Show("RegisterDonor failed: " + ex.Message); throw; }
         }
 
-        public static async Task RegisterBeneficiary(BeneficiaryModel bene, string password, string securityQuestion, string securityAnswer)
+        public static async Task RegisterBeneficiary(BeneficiaryModel bene, string password,
+    string securityQuestion, string securityAnswer, string email = "")
         {
             string fullName = string.IsNullOrWhiteSpace(bene.Beneficiary_FullName)
                 ? $"{bene.Beneficiary_FName} {bene.Beneficiary_LName}".Trim()
                 : bene.Beneficiary_FullName;
-
             try
             {
                 using var conn = new SqlConnection(_conn);
@@ -288,6 +304,15 @@ namespace KapwaKuha.Services
                 cmd.Parameters.AddWithValue("@SecurityQ", securityQuestion);
                 cmd.Parameters.AddWithValue("@SecurityA", securityAnswer);
                 await cmd.ExecuteNonQueryAsync();
+
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    using var emailCmd = new SqlCommand(
+                        "UPDATE Users SET Email = @email WHERE UserID = @id", conn);
+                    emailCmd.Parameters.AddWithValue("@email", email);
+                    emailCmd.Parameters.AddWithValue("@id", bene.Beneficiary_ID);
+                    await emailCmd.ExecuteNonQueryAsync();
+                }
 
                 if (!string.IsNullOrEmpty(bene.ProfilePicturePath))
                     await UpdateBeneficiaryProfile(bene.Beneficiary_ID, bene.Beneficiary_Username, bene.ProfilePicturePath);
@@ -585,9 +610,13 @@ WHERE p.Post_Type = 'DirectTarget'
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("SELECT COUNT(*) FROM Items", conn);
+                // Use MAX of the numeric part, not COUNT — safe even after deletions
+                using var cmd = new SqlCommand(@"
+SELECT ISNULL(MAX(CAST(SUBSTRING(Item_ID, 5, LEN(Item_ID)) AS INT)), 0) + 1
+FROM Items
+WHERE Item_ID LIKE 'ITEM[0-9][0-9][0-9]'", conn);
                 int n = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-                return $"ITEM{n + 1:D3}";
+                return $"ITEM{n:D3}";
             }
             catch { return $"ITEM{DateTime.Now.Ticks % 900 + 100:D3}"; }
         }
@@ -970,15 +999,20 @@ WHERE Status = 'Open'
             return list;
         }
 
+
+        // GetNextClaimId
         public static async Task<string> GetNextClaimId()
         {
             try
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("SELECT COUNT(*) FROM Claims", conn);
+                using var cmd = new SqlCommand(@"
+SELECT ISNULL(MAX(CAST(SUBSTRING(Claim_ID, 3, LEN(Claim_ID)) AS INT)), 0) + 1
+FROM Claims
+WHERE Claim_ID LIKE 'CL[0-9][0-9][0-9]'", conn);
                 int n = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-                return $"CL{n + 1:D3}";
+                return $"CL{n:D3}";
             }
             catch { return $"CL{DateTime.Now.Ticks % 900 + 100:D3}"; }
         }
@@ -1434,12 +1468,16 @@ WHERE Item_ID = @id", conn);
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("SELECT COUNT(*) FROM NeedsPosts", conn);
+                using var cmd = new SqlCommand(@"
+SELECT ISNULL(MAX(CAST(SUBSTRING(NeedsPost_ID, 3, LEN(NeedsPost_ID)) AS INT)), 0) + 1
+FROM NeedsPosts
+WHERE NeedsPost_ID LIKE 'NP[0-9][0-9][0-9]'", conn);
                 int n = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-                return $"NP{n + 1:D3}";
+                return $"NP{n:D3}";
             }
             catch { return $"NP{DateTime.Now.Ticks % 900 + 100:D3}"; }
         }
+
 
         private static NeedsPostModel MapNeedsPost(SqlDataReader r) => new()
         {
@@ -1678,8 +1716,12 @@ ORDER BY i.Date_Found DESC", conn);
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(
-                    "SELECT Donor_ID, Donor_FullName, Donor_Username, Donor_Address, " +
-                    "Donor_ContactNumber, ProfilePicturePath FROM Donors WHERE Donor_ID=@id", conn);
+                    @"SELECT d.Donor_ID, d.Donor_FullName, d.Donor_Username, d.Donor_Address,
+                     d.Donor_ContactNumber, d.ProfilePicturePath,
+                     ISNULL(u.Email,'') AS Email
+              FROM Donors d
+              LEFT JOIN Users u ON u.UserID = d.Donor_ID
+              WHERE d.Donor_ID = @id", conn);
                 cmd.Parameters.AddWithValue("@id", donorId);
                 using var r = await cmd.ExecuteReaderAsync();
                 if (await r.ReadAsync())
@@ -1690,7 +1732,8 @@ ORDER BY i.Date_Found DESC", conn);
                         Donor_Username = r["Donor_Username"].ToString() ?? "",
                         Donor_Address = r["Donor_Address"].ToString() ?? "",
                         Donor_ContactNumber = r["Donor_ContactNumber"].ToString() ?? "",
-                        ProfilePicturePath = r["ProfilePicturePath"].ToString() ?? ""
+                        ProfilePicturePath = r["ProfilePicturePath"].ToString() ?? "",
+                        Email = r["Email"].ToString() ?? "",
                     };
             }
             catch (Exception ex) { MessageBox.Show("GetDonorById failed: " + ex.Message); }
@@ -1746,20 +1789,20 @@ ORDER BY i.Date_Found DESC", conn);
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(@"
-            SELECT b.Beneficiary_ID, b.Beneficiary_FullName,
-                   b.Beneficiary_Username, b.Beneficiary_Contact,
-                   b.Beneficiaries_Status, b.Organization_ID,
-                   ISNULL(b.ProfilePicturePath,'') AS ProfilePicturePath,
-                   ISNULL(o.Organization_Name,'') AS Organization_Name, -- <-- COMMA ADDED HERE
-                   ISNULL(o.Organization_Address,'') AS Organization_Address,
-                   ISNULL(o.Organization_Contact,'') AS Organization_Contact
-            FROM Beneficiaries b
-            LEFT JOIN Organization o ON o.Organization_ID = b.Organization_ID
-            WHERE b.Beneficiary_ID = @id", conn);
-
+SELECT b.Beneficiary_ID, b.Beneficiary_FullName,
+       b.Beneficiary_Username, b.Beneficiary_Contact,
+       b.Beneficiaries_Status, b.Organization_ID,
+       ISNULL(b.ProfilePicturePath,'')       AS ProfilePicturePath,
+       ISNULL(o.Organization_Name,'')        AS Organization_Name,
+       ISNULL(o.Organization_Address,'')     AS Organization_Address,
+       ISNULL(o.Organization_Contact,'')     AS Organization_Contact,
+       ISNULL(u.Email,'')                    AS Email
+FROM Beneficiaries b
+LEFT JOIN Organization o ON o.Organization_ID = b.Organization_ID
+LEFT JOIN Users        u ON u.UserID           = b.Beneficiary_ID
+WHERE b.Beneficiary_ID = @id", conn);
                 cmd.Parameters.AddWithValue("@id", beneficiaryId);
                 using var r = await cmd.ExecuteReaderAsync();
-
                 if (await r.ReadAsync())
                     return new BeneficiaryModel
                     {
@@ -1773,13 +1816,13 @@ ORDER BY i.Date_Found DESC", conn);
                         ProfilePicturePath = r["ProfilePicturePath"].ToString() ?? "",
                         Organization_Address = r["Organization_Address"].ToString() ?? "",
                         Organization_Contact = r["Organization_Contact"].ToString() ?? "",
+                        Email = r["Email"].ToString() ?? "",
                     };
             }
             catch (Exception ex)
             {
                 MessageBox.Show("GetBeneficiaryById failed: " + ex.Message);
             }
-
             return null;
         }
         public static async Task DeactivateAccount(string userId)
@@ -1996,8 +2039,8 @@ ORDER BY i.Date_Found DESC", conn);
         }
 
         public static async Task RegisterIndependentBeneficiary(
-            IndependentBeneficiaryModel bene, string password,
-            string securityQuestion, string securityAnswer)
+     IndependentBeneficiaryModel bene, string password,
+     string securityQuestion, string securityAnswer, string email = "")
         {
             try
             {
@@ -2010,14 +2053,22 @@ ORDER BY i.Date_Found DESC", conn);
                 cmd.Parameters.AddWithValue("@Username", bene.Username);
                 cmd.Parameters.AddWithValue("@Sex", bene.Sex);
                 cmd.Parameters.AddWithValue("@Contact", bene.ContactNumber);
-                cmd.Parameters.AddWithValue("@Address",
-                    string.IsNullOrWhiteSpace(bene.Address) ? (object)DBNull.Value : bene.Address);
+                cmd.Parameters.AddWithValue("@Address", string.IsNullOrWhiteSpace(bene.Address) ? (object)DBNull.Value : bene.Address);
                 cmd.Parameters.AddWithValue("@Password", password);
                 cmd.Parameters.AddWithValue("@SecurityQ", securityQuestion);
                 cmd.Parameters.AddWithValue("@SecurityA", securityAnswer);
                 await cmd.ExecuteNonQueryAsync();
+
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    using var emailCmd = new SqlCommand(
+                        "UPDATE Users SET Email = @email WHERE UserID = @id", conn);
+                    emailCmd.Parameters.AddWithValue("@email", email);
+                    emailCmd.Parameters.AddWithValue("@id", bene.IndepBene_ID);
+                    await emailCmd.ExecuteNonQueryAsync();
+                }
             }
-            catch (Exception ex) { System.Windows.MessageBox.Show("RegisterIndependentBeneficiary failed: " + ex.Message); throw; }
+            catch (Exception ex) { MessageBox.Show("RegisterIndependentBeneficiary failed: " + ex.Message); throw; }
         }
 
         // ══════════════════════════════════════════════════════════════════════
@@ -2135,6 +2186,9 @@ ORDER BY i.Date_Found DESC", conn);
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(@"
             SELECT r.Report_ID, r.Reporter_ID, r.Reported_ID,
+                   ISNULL(d2.Donor_FullName,
+                     ISNULL(ib2.Beneficiary_FullName,
+                       ISNULL(ind2.FullName, r.Reporter_ID))) AS Reporter_Name,
                    ISNULL(d.Donor_FullName,
                      ISNULL(ib.Beneficiary_FullName,
                        ISNULL(ind.FullName, r.Reported_ID))) AS Reported_Name,
@@ -2145,6 +2199,9 @@ ORDER BY i.Date_Found DESC", conn);
             LEFT JOIN Donors d ON d.Donor_ID = r.Reported_ID
             LEFT JOIN InstitutionalBeneficiaries ib ON ib.Beneficiary_ID = r.Reported_ID
             LEFT JOIN IndependentBeneficiaries ind ON ind.IndepBene_ID = r.Reported_ID
+            LEFT JOIN Donors d2 ON d2.Donor_ID = r.Reporter_ID
+            LEFT JOIN InstitutionalBeneficiaries ib2 ON ib2.Beneficiary_ID = r.Reporter_ID
+            LEFT JOIN IndependentBeneficiaries ind2 ON ind2.IndepBene_ID = r.Reporter_ID
             WHERE r.Status = 'Open'
             ORDER BY r.Filed_At DESC", conn);
                 using var reader = await cmd.ExecuteReaderAsync();
@@ -2154,6 +2211,7 @@ ORDER BY i.Date_Found DESC", conn);
                         Report_ID = reader["Report_ID"].ToString() ?? "",
                         Reporter_ID = reader["Reporter_ID"].ToString() ?? "",
                         Reported_ID = reader["Reported_ID"].ToString() ?? "",
+                        Reporter_Name = reader["Reporter_Name"].ToString() ?? "",
                         Reported_Name = reader["Reported_Name"].ToString() ?? "",
                         Report_Type = reader["Report_Type"].ToString() ?? "",
                         Description = reader["Description"].ToString() ?? "",
@@ -2379,10 +2437,54 @@ ORDER BY i.Date_Found DESC", conn);
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("sp_ApproveItem", conn);
-                cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@ItemId", itemId);
-                await cmd.ExecuteNonQueryAsync();
+
+                // 1. Approve the item
+                using (var cmd = new SqlCommand("sp_ApproveItem", conn))
+                {
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@ItemId", itemId);
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                // 2. If this is a DirectTarget item, NOW send the actual donation-offer chat
+                string donorId = "", targetBeneId = "", itemName = "", itemCondition = "", categoryName = "";
+                using (var qcmd = new SqlCommand(@"
+SELECT i.Donor_ID, i.TargetBeneficiary_ID, i.Item_Name,
+       i.Item_Condition, c.Category_Name, p.Post_Type
+FROM Items i
+JOIN Category c ON c.Category_ID = i.Category_ID
+JOIN Post     p ON p.Post_ID     = i.Post_ID
+WHERE i.Item_ID = @id", conn))
+                {
+                    qcmd.Parameters.AddWithValue("@id", itemId);
+                    using var qr = await qcmd.ExecuteReaderAsync();
+                    if (await qr.ReadAsync())
+                    {
+                        donorId = qr["Donor_ID"].ToString() ?? "";
+                        targetBeneId = qr["TargetBeneficiary_ID"].ToString() ?? "";
+                        itemName = qr["Item_Name"].ToString() ?? "";
+                        itemCondition = qr["Item_Condition"].ToString() ?? "";
+                        categoryName = qr["Category_Name"].ToString() ?? "";
+                        string postType = qr["Post_Type"].ToString() ?? "";
+                        if (postType != "DirectTarget" || string.IsNullOrEmpty(targetBeneId))
+                            return; // not a direct target — nothing more to do
+                    }
+                }
+
+                // 3. Send the actual "do you want this donation?" message from donor to beneficiary
+                string offerMsg =
+                    $"📦 Hi! I have a donation reserved specifically for you:\n\n" +
+                    $"📋 Item: \"{itemName}\"\n" +
+                    $"🏷 Category: {categoryName}\n" +
+                    $"⭐ Condition: {itemCondition}\n\n" +
+                    $"Would you like to accept this donation? Please reply YES or NO so I can arrange the handoff. 😊";
+
+                using var chatCmd = new SqlCommand("sp_SaveChatMessage", conn);
+                chatCmd.CommandType = System.Data.CommandType.StoredProcedure;
+                chatCmd.Parameters.AddWithValue("@SenderId", donorId);
+                chatCmd.Parameters.AddWithValue("@ReceiverId", targetBeneId);
+                chatCmd.Parameters.AddWithValue("@Message", offerMsg);
+                await chatCmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex) { System.Windows.MessageBox.Show("ApproveItem failed: " + ex.Message); throw; }
         }
@@ -2559,7 +2661,7 @@ WHERE UserID = @id", conn);
                 using var cmd = new SqlCommand(@"
                     SELECT IndepBene_ID, FullName, Username, Sex, ContactNumber,
                            Address, AccountStatus, ProfilePicturePath,
-                           Admin_Approval_Status
+                           Admin_Approval_Status, ISNULL(u.Email,'') AS Email
                     FROM IndependentBeneficiaries
                     WHERE IndepBene_ID = @id", conn);
                 cmd.Parameters.AddWithValue("@id", indepBeneId);
@@ -2574,7 +2676,8 @@ WHERE UserID = @id", conn);
                     ContactNumber = r["ContactNumber"].ToString()!,
                     Address = r["Address"]?.ToString() ?? string.Empty,
                     AccountStatus = r["AccountStatus"].ToString()!,
-                    ProfilePicturePath = r["ProfilePicturePath"]?.ToString() ?? string.Empty
+                    ProfilePicturePath = r["ProfilePicturePath"]?.ToString() ?? string.Empty,
+                       Email = r["Email"].ToString() ?? "",
                 };
             }
             catch { return null; }
@@ -2663,7 +2766,9 @@ SELECT n.NeedsPost_ID, n.Org_ID, n.Title, n.Description,
 FROM NeedsPosts n
 LEFT JOIN Organization o ON o.Organization_ID = n.Org_ID
 WHERE n.Admin_Approval_Status = 'Pending'
-ORDER BY n.Post_Date DESC", conn);
+ORDER BY
+    CASE n.Urgency WHEN 'High' THEN 1 WHEN 'Medium' THEN 2 ELSE 3 END,
+    n.Post_Date DESC", conn);
                 using var r = await cmd.ExecuteReaderAsync();
                 while (await r.ReadAsync())
                     list.Add(new NeedsPostModel

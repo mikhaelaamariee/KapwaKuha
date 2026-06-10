@@ -33,6 +33,8 @@ namespace KapwaKuha.Models
         public string SecurityQuestion { get; set; } = "What is your pet name?";
         public string SecurityAnswer { get; set; } = string.Empty;
 
+        public string Email { get; set; } = string.Empty;
+
         public string DisplayName =>
             $"{(string.IsNullOrWhiteSpace(Beneficiary_FullName)
                 ? $"{Beneficiary_FName} {Beneficiary_LName}".Trim()

@@ -127,6 +127,16 @@ namespace KapwaKuha.ViewModels
             set { _selectedOrgName = value; OnPropertyChanged(); }
         }
 
+        private string _email = string.Empty;
+        public string Email
+        {
+            get => _email;
+            set
+            {
+                _email = value;
+                OnPropertyChanged();
+            }
+        }
         public string ErrorMessage { get => _errorMessage; set { _errorMessage = value; OnPropertyChanged(); } }
         public bool ErrorVisible { get => _errorVisible; set { _errorVisible = value; OnPropertyChanged(); } }
         public bool IsLoading { get => _isLoading; set { _isLoading = value; OnPropertyChanged(); } }
@@ -199,7 +209,7 @@ namespace KapwaKuha.ViewModels
                             Donor_Address = DonorAddress,        // ← NEW: pass address
                             ProfilePicturePath = ProfilePicturePath
                         };
-                        await KapwaDataService.RegisterDonor(donor, Password, SecurityQuestion, SecurityAnswer);
+                        await KapwaDataService.RegisterDonor(donor, Password, SecurityQuestion, SecurityAnswer, Email);
                         MessageBox.Show($"✅ Registered! Your Donor ID: {id}\nLogin with username: {Username}",
                             "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                         NavigationService.Navigate(new View.DonorLoginWindow());
@@ -236,7 +246,7 @@ namespace KapwaKuha.ViewModels
                             Organization_Contact = OrgContact,
                             ProfilePicturePath = ProfilePicturePath
                         };
-                        await KapwaDataService.RegisterBeneficiary(bene, Password, SecurityQuestion, SecurityAnswer);
+                        await KapwaDataService.RegisterBeneficiary(bene, Password, SecurityQuestion, SecurityAnswer, Email);
                         MessageBox.Show($"✅ Registered! Your Beneficiary ID: {id}\nLogin with username: {Username}",
                             "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                         NavigationService.Navigate(new View.BeneficiaryLoginWindow());

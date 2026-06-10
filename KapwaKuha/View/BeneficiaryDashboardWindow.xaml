@@ -812,6 +812,33 @@
                                                                            FontSize="10" Foreground="#5E7A8A"
                                                                            TextTrimming="CharacterEllipsis"
                                                                            Margin="0,0,0,10"/>
+                                                                <!-- Approval status badge -->
+                                                                <Border CornerRadius="8" Padding="8,3" HorizontalAlignment="Left"
+        Margin="0,4,0,8"
+        Background="{Binding ApprovalBadgeBackground}">
+                                                                    <TextBlock Text="{Binding ApprovalBadgeText}"
+               FontSize="10" FontWeight="SemiBold"
+               Foreground="{Binding ApprovalBadgeTextColor}"/>
+                                                                </Border>
+
+                                                                <!-- Rejection reason — only when rejected -->
+                                                                <Border CornerRadius="6" Padding="8,4" Margin="0,0,0,6"
+        Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1">
+                                                                    <Border.Style>
+                                                                        <Style TargetType="Border">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding HasRejectionNote}" Value="True">
+                                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Border.Style>
+                                                                    <TextBlock FontSize="10" Foreground="#991B1B" TextWrapping="Wrap">
+        <Run Text="Reason: " FontWeight="SemiBold"/>
+        <Run Text="{Binding RejectionNote}"/>
+                                                                    </TextBlock>
+                                                                </Border>
 
                                                                 <!-- Edit Needs button — passes the NeedsPostModel as param -->
                                                                 <Button Height="30" BorderThickness="0" Cursor="Hand"

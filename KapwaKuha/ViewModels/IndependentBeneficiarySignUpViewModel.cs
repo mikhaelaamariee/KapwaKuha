@@ -91,6 +91,13 @@ namespace KapwaKuha.ViewModels
         public bool ErrorVisible { get => _errorVisible; set { _errorVisible = value; OnPropertyChanged(); } }
         public bool IsLoading { get => _isLoading; set { _isLoading = value; OnPropertyChanged(); } }
 
+        private string _email = string.Empty;
+        public string Email
+        {
+            get => _email;
+            set { _email = value; OnPropertyChanged(); }
+        }
+
         public ICommand RegisterCommand { get; }
         public ICommand BackCommand { get; }
         public ICommand BrowsePictureCommand { get; }
@@ -148,7 +155,7 @@ namespace KapwaKuha.ViewModels
                         ProfilePicturePath = ProfilePicturePath
                     };
                     await KapwaDataService.RegisterIndependentBeneficiary(
-                        bene, Password, SecurityQuestion, SecurityAnswer);
+                        bene, Password, SecurityQuestion, SecurityAnswer, Email);
 
                     MessageBox.Show(
                         $"✅ Registered! Your ID: {id}\nYour account is pending Admin approval.\nYou will be able to log in once approved.",

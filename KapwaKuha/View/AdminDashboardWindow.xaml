@@ -127,10 +127,7 @@
                         </Border>
                         <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,8"
                                 Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="🧑‍💼 Pending Donors" FontSize="11" Foreground="#92400E"/>
-                                <TextBlock Text="{Binding PendingDonors}" FontSize="26" FontWeight="Bold" Foreground="#D97706"/>
-                            </StackPanel>
+                           
                         </Border>
                         <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,8"
                                 Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1">
@@ -216,20 +213,26 @@
                                                     BorderBrush="#E5E7EB" BorderThickness="1" Padding="14,12">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="88"/>
+                                                        <ColumnDefinition Width="124"/>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <!-- Item image / placeholder -->
-                                                    <Border Grid.Column="0" Width="78" Height="78"
-                                                            CornerRadius="10" ClipToBounds="True"
-                                                            Background="#EBF7FB" VerticalAlignment="Top">
+                                                    <!-- Item image / placeholder — BIGGER & CLICKABLE -->
+                                                    <Border Grid.Column="0" Width="110" Height="110"
+        CornerRadius="10" ClipToBounds="True"
+        Background="#EBF7FB" VerticalAlignment="Top"
+        Cursor="Hand">
+                                                        <Border.ToolTip>
+                                                            <ToolTip>
+                                                                <Image Source="{Binding Item_ImagePath}" MaxWidth="480" MaxHeight="480"
+                   Stretch="Uniform"/>
+                                                            </ToolTip>
+                                                        </Border.ToolTip>
                                                         <Grid>
-                                                            <!-- placeholder icon -->
-                                                            <TextBlock Text="📦" FontSize="30"
-                                                                       HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center" Opacity="0.5">
+                                                            <TextBlock Text="📦" FontSize="38"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center" Opacity="0.5">
                                                                 <TextBlock.Style>
                                                                     <Style TargetType="TextBlock">
                                                                         <Setter Property="Visibility" Value="Visible"/>
@@ -241,7 +244,6 @@
                                                                     </Style>
                                                                 </TextBlock.Style>
                                                             </TextBlock>
-                                                            <!-- actual image -->
                                                             <Image Source="{Binding Item_ImagePath}" Stretch="UniformToFill">
                                                                 <Image.Style>
                                                                     <Style TargetType="Image">
@@ -407,95 +409,7 @@
                         </Grid>
                     </Border>
 
-                    <!-- ── 3. PENDING DONOR APPROVALS ── -->
-                    <Border Style="{StaticResource GlassCard}" CornerRadius="16" Padding="20,16" Margin="0,0,0,16">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
-                                <TextBlock Text="🧑‍💼 Pending Donor Approvals" FontSize="16" FontWeight="Bold"
-                                           Foreground="#0A2540" VerticalAlignment="Center"/>
-                                <Border Background="#FEF3C7" CornerRadius="10" Padding="8,2" Margin="12,0,0,0">
-                                    <TextBlock Text="{Binding PendingDonors}" FontSize="12" FontWeight="Bold" Foreground="#D97706"/>
-                                </Border>
-                            </StackPanel>
-                            <Grid Grid.Row="1">
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <StackPanel.Style>
-                                        <Style TargetType="StackPanel">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HasPendingDonors}" Value="False">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </StackPanel.Style>
-                                    <TextBlock Text="✅" FontSize="32" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="No pending donor accounts — all clear!" FontSize="13"
-                                               Foreground="#6B7280" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                                <ListView ItemsSource="{Binding PendingDonorsList}"
-                                          Background="Transparent" BorderThickness="0"
-                                          ScrollViewer.HorizontalScrollBarVisibility="Disabled" MaxHeight="260">
-                                    <ListView.Style>
-                                        <Style TargetType="ListView">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HasPendingDonors}" Value="False">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ListView.Style>
-                                    <ListView.ItemContainerStyle>
-                                        <Style TargetType="ListViewItem">
-                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="BorderThickness" Value="0"/>
-                                            <Setter Property="Padding" Value="0,4"/>
-                                        </Style>
-                                    </ListView.ItemContainerStyle>
-                                    <ListView.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="White" CornerRadius="10"
-                                                    BorderBrush="#E5E7EB" BorderThickness="1" Padding="14,10">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Donor_FullName}" FontWeight="SemiBold" FontSize="14" Foreground="#0A2540"/>
-                                                        <TextBlock Foreground="#6B7280" FontSize="12" Margin="0,2,0,0">
-                                                            <Run Text="@"/><Run Text="{Binding Donor_Username}"/>
-                                                            <Run Text=" • "/><Run Text="{Binding Donor_ID}"/>
-                                                            <Run Text=" • "/><Run Text="{Binding Donor_ContactNumber}"/>
-                                                        </TextBlock>
-                                                    </StackPanel>
-                                                    <Button Grid.Column="1"
-                                                            Command="{Binding DataContext.ApproveDonorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                            CommandParameter="{Binding}"
-                                                            Content="✅ Approve"
-                                                            Style="{StaticResource GradientButton}"
-                                                            Height="32" Padding="14,0" Margin="0,0,8,0" FontSize="12"/>
-                                                    <Button Grid.Column="2"
-                                                            Command="{Binding DataContext.RejectDonorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                            CommandParameter="{Binding}"
-                                                            Content="❌ Reject"
-                                                            Style="{StaticResource OutlineBtn}"
-                                                            Height="32" Padding="14,0" FontSize="12"/>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ListView.ItemTemplate>
-                                </ListView>
-                            </Grid>
-                        </Grid>
-                    </Border>
+                   
 
                     <!-- ── 4. PENDING NEEDS POSTS ── -->
                     <Border Style="{StaticResource GlassCard}" CornerRadius="16" Padding="20,16" Margin="0,0,0,16">
@@ -600,6 +514,21 @@
                         <Run Text="{Binding Org_Name}"/>
                         <Run Text=" · Urgency: "/>
                         <Run Text="{Binding Urgency}" FontWeight="Bold"/>
+                                                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+    <TextBlock Foreground="#6B7280" FontSize="12">
+        <Run Text="{Binding Org_Name}"/>
+        <Run Text=" · "/>
+        <Run Text="{Binding PostDateDisplay}" Foreground="#9CA3AF"/>
+    </TextBlock>
+    <Border CornerRadius="6" Padding="8,2" Margin="8,0,0,0"
+            Background="{Binding UrgencyColor}">
+        <TextBlock FontSize="11" FontWeight="Bold"
+                   Foreground="{Binding UrgencyTextColor}">
+            <Run Text="{Binding Urgency}"/>
+            <Run Text=" Urgency"/>
+        </TextBlock>
+    </Border>
+</StackPanel>
                         <Run Text=" · "/>
                         <Run Text="{Binding PostDateDisplay}" Foreground="#9CA3AF"/>
                                                             </TextBlock>
@@ -781,10 +710,10 @@
                                                     <StackPanel Grid.Column="1" Orientation="Horizontal"
                                                                 Margin="12,0,4,0" VerticalAlignment="Center">
                                                         <Button Content="⚡ Strike"
-                                                                Command="{Binding DataContext.ProcessReportCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                CommandParameter="{Binding}"
-                                                                Height="30" Margin="0,0,6,0" FontSize="11"
-                                                                Foreground="White" BorderThickness="0" Cursor="Hand">
+        Command="{Binding DataContext.ProcessReportCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+        CommandParameter="{Binding}"
+        Height="30" Margin="0,0,6,0" FontSize="11"
+        Foreground="White" BorderThickness="0" Cursor="Hand">
                                                             <Button.Template>
                                                                 <ControlTemplate TargetType="Button">
                                                                     <Border CornerRadius="6" Background="#F59E0B" x:Name="bg" Padding="10,0">
@@ -793,6 +722,24 @@
                                                                     <ControlTemplate.Triggers>
                                                                         <Trigger Property="IsMouseOver" Value="True">
                                                                             <Setter TargetName="bg" Property="Background" Value="#D97706"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Button.Template>
+                                                        </Button>
+                                                        <Button Content="🚫 Ban"
+        Command="{Binding DataContext.AdminBanUserCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+        CommandParameter="{Binding}"
+        Height="30" FontSize="11"
+        Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                            <Button.Template>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border CornerRadius="6" Background="#DC2626" x:Name="bg" Padding="10,0">
+                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter TargetName="bg" Property="Background" Value="#B91C1C"/>
                                                                         </Trigger>
                                                                     </ControlTemplate.Triggers>
                                                                 </ControlTemplate>

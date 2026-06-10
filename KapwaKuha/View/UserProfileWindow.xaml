@@ -90,6 +90,22 @@
                         <TextBlock Text="{Binding SubInfo}"
                                    FontSize="15" Foreground="#E0F2FE"
                                    Margin="0,6,0,0" TextTrimming="CharacterEllipsis"/>
+                        <!-- Email -->
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasEmail}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="✉️ " FontSize="12" Foreground="White" Opacity="0.8"/>
+                            <TextBlock Text="{Binding Email}" FontSize="12" Foreground="White" Opacity="0.8"/>
+                        </StackPanel>
+                        
                         <TextBlock Text="{Binding AccountCreated}"
                                    FontSize="13" Foreground="#BAE6FD" Margin="0,4,0,0"/>
                     </StackPanel>

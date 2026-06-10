@@ -167,16 +167,16 @@ namespace KapwaKuha.ViewModels
                         Admin_Approval_Status = "Pending"
                     };
                     await KapwaDataService.PostNeedsRequest(post);
-                    MyPosts.Insert(0, post);
 
-                    // Correct message — goes to admin, not live yet
-                    MessageBox.Show(
-                        $"📋 Needs post submitted for admin review!\n\nID: {postId}\n\n" +
-                        "An admin will review and confirm the urgency level before it goes live.",
-                        "Pending Approval", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Re-load so the card immediately shows the ⏳ Awaiting badge from DB
+                    await LoadMyPostsAsync();
 
                     Title = Description = ImagePath = string.Empty;
                     Urgency = "Medium";
+
+                    MessageBox.Show(
+                        "✅ Your needs post has been submitted!\n\nIt will appear publicly once an admin approves it.",
+                        "Submitted for Approval", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch { }
                 finally { IsBusy = false; }
@@ -208,9 +208,8 @@ namespace KapwaKuha.ViewModels
                 if (SelectedPost.Admin_Approval_Status == "Approved")
                 {
                     MessageBox.Show(
-                        "This post is currently live and cannot be edited.\n\n" +
-                        "If you need to make changes, please contact an admin or delete and repost.",
-                        "Cannot Edit Approved Post", MessageBoxButton.OK, MessageBoxImage.Warning);
+    "✅ Changes saved and resubmitted for admin review.\n\nYour post will reappear once re-approved.",
+    "Resubmitted", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 

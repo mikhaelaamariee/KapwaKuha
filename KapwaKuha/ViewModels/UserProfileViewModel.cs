@@ -69,6 +69,14 @@ namespace KapwaKuha.ViewModels
         private string _reportError = string.Empty;
         private bool _reportErrorVisible;
 
+
+        private string _email = string.Empty;
+        public string Email
+        {
+            get => _email;
+            set { _email = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasEmail)); }
+        }
+        public bool HasEmail => !string.IsNullOrEmpty(Email);
         public string ReportType { get => _reportType; set { _reportType = value; OnPropertyChanged(); } }
         public string ReportDescription { get => _reportDescription; set { _reportDescription = value; OnPropertyChanged(); } }
         public bool ReportPanelVisible { get => _reportPanelVisible; set { _reportPanelVisible = value; OnPropertyChanged(); } }
@@ -184,6 +192,9 @@ namespace KapwaKuha.ViewModels
                         AvailableItems.Clear();
                         foreach (var i in items) AvailableItems.Add(i);
                     });
+
+                    // In Donor branch, after loading donor:
+                    Email = donor.Email ?? "";
                 }
                 else if (TargetRole == "InstitutionalBeneficiary")
                 {
@@ -206,6 +217,7 @@ namespace KapwaKuha.ViewModels
                         ReceivedItems.Clear();
                         foreach (var t in received) ReceivedItems.Add(t);
                     });
+                    Email = bene.Email ?? "";
                 }
                 else if (TargetRole == "IndependentBeneficiary")
                 {
@@ -224,7 +236,10 @@ namespace KapwaKuha.ViewModels
                         ReceivedItems.Clear();
                         foreach (var t in received) ReceivedItems.Add(t);
                     });
+                    Email = indep.Email ?? "";
                 }
+
+
             }
             catch { }
             finally { IsLoading = false; }

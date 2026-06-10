@@ -1,4 +1,4 @@
-﻿// FILE: Models/UserReportModel.cs  (NEW — moderation queue)
+﻿// FILE: Models/UserReportModel.cs
 using System;
 using KapwaKuha.ViewModels;
 
@@ -10,6 +10,12 @@ namespace KapwaKuha.Models
         public string Reporter_ID { get; set; } = string.Empty;
         public string Reported_ID { get; set; } = string.Empty;
         public string Reported_Name { get; set; } = string.Empty;
+        public string Reporter_Name { get; set; } = string.Empty;
+
+        // Alias properties for XAML bindings
+        public string ReportedName => Reported_Name;
+        public string ReporterName => Reporter_Name;
+        public string ReportType => Report_Type;
 
         // FakeItem | Fraud | Spam | Inappropriate
         public string Report_Type { get; set; } = string.Empty;

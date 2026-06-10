@@ -1,5 +1,7 @@
-﻿using System;
+﻿// FILE: Commands/AsyncRelayCommand.cs
+using System;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace KapwaKuha.Commands
@@ -25,7 +27,21 @@ namespace KapwaKuha.Commands
             if (!CanExecute(parameter)) return;
             _isExecuting = true;
             CommandManager.InvalidateRequerySuggested();
-            try { await _executeAsync(parameter); }
+            try
+            {
+                await _executeAsync(parameter);
+            }
+            catch (Exception ex)
+            {
+                // Top-level safety net — prevents any async void crash from killing the app
+                try
+                {
+                    MessageBox.Show(
+                        $"An unexpected error occurred:\n\n{ex.Message}",
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                catch { /* swallow if even MessageBox fails */ }
+            }
             finally
             {
                 _isExecuting = false;

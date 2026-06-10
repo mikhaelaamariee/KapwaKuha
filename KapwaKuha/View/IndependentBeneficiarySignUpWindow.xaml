@@ -181,6 +181,23 @@
                             </StackPanel>
                         </Grid>
 
+                        <!-- Email row -->
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Email Address" FontSize="13" FontWeight="SemiBold"
+                   Foreground="#03045E" Margin="0,0,0,8"/>
+                                <Border Style="{StaticResource GlassInputBorder}" Height="44">
+                                    <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
+                     Background="Transparent" BorderThickness="0"
+                     FontSize="14" Padding="12,0" VerticalContentAlignment="Center"
+                     Foreground="#0A2540"/>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
                         <!-- Row 3: Sex + Address -->
                         <Grid Margin="0,0,0,20">
                             <Grid.ColumnDefinitions>
