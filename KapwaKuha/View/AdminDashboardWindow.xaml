@@ -535,10 +535,32 @@
                                                         </StackPanel>
                                                     </Grid>
 
+                                                    <!-- Needs Post image (zoomable) -->
+                                                    <Border Margin="0,8,0,0" CornerRadius="8" ClipToBounds="True"
+        Cursor="Hand" Height="140"
+        Tag="{Binding ImagePath}">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding HasImage}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <Border.InputBindings>
+                                                            <MouseBinding MouseAction="LeftClick"
+                      Command="{Binding DataContext.ZoomImageCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                      CommandParameter="{Binding ImagePath}"/>
+                                                        </Border.InputBindings>
+                                                        <Image Source="{Binding ImagePath}" Stretch="UniformToFill"/>
+                                                    </Border>
+
                                                     <!-- Before / After diff panel -->
                                                     <Border Margin="0,10,0,0" CornerRadius="8"
-                                                            Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1"
-                                                            Padding="12,10">
+        Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1"
+        Padding="12,10">
                                                         <Border.Style>
                                                             <Style TargetType="Border">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -556,45 +578,45 @@
                                                                 <ColumnDefinition Width="*"/>
                                                             </Grid.ColumnDefinitions>
 
-                                                            <!-- BEFORE -->
+                                                            <!-- BEFORE (old snapshot = PreviousTitle/PreviousDescription) -->
                                                             <Border Grid.Column="0" Background="#FEF2F2" CornerRadius="6" Padding="10,8">
                                                                 <StackPanel>
                                                                     <TextBlock Text="BEFORE" FontSize="9" FontWeight="Bold"
-                                                                               Foreground="#EF4444" Margin="0,0,0,5"/>
-                                                                    <TextBlock Text="{Binding Title}"
-                                                                               FontSize="12" FontWeight="SemiBold"
-                                                                               Foreground="#7F1D1D" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding Description}"
-                                                                               FontSize="11" Foreground="#991B1B"
-                                                                               TextWrapping="Wrap" Margin="0,3,0,4"
-                                                                               MaxHeight="50" TextTrimming="CharacterEllipsis"/>
+                           Foreground="#EF4444" Margin="0,0,0,5"/>
+                                                                    <TextBlock Text="{Binding PreviousTitle}"
+                           FontSize="12" FontWeight="SemiBold"
+                           Foreground="#7F1D1D" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding PreviousDescription}"
+                           FontSize="11" Foreground="#991B1B"
+                           TextWrapping="Wrap" Margin="0,3,0,4"
+                           MaxHeight="50" TextTrimming="CharacterEllipsis"/>
                                                                     <TextBlock FontSize="11" Foreground="#B91C1C">
-                                                                        <Run Text="Urgency: "/>
-                                                                        <Run Text="{Binding Urgency, Mode=OneWay}" FontWeight="Bold"/>
+                    <Run Text="Urgency: "/>
+                    <Run Text="{Binding PreviousUrgency, Mode=OneWay}" FontWeight="Bold"/>
                                                                     </TextBlock>
                                                                 </StackPanel>
                                                             </Border>
 
                                                             <!-- Arrow -->
                                                             <TextBlock Grid.Column="1" Text="→" FontSize="18" FontWeight="Bold"
-                                                                       Foreground="#92400E" VerticalAlignment="Center"
-                                                                       HorizontalAlignment="Center"/>
+                   Foreground="#92400E" VerticalAlignment="Center"
+                   HorizontalAlignment="Center"/>
 
-                                                            <!-- AFTER -->
+                                                            <!-- AFTER (new edit = current Title/Description) -->
                                                             <Border Grid.Column="2" Background="#F0FFF4" CornerRadius="6" Padding="10,8">
                                                                 <StackPanel>
                                                                     <TextBlock Text="AFTER" FontSize="9" FontWeight="Bold"
-                                                                               Foreground="#16A34A" Margin="0,0,0,5"/>
-                                                                    <TextBlock Text="{Binding PreviousTitle}"
-                                                                               FontSize="12" FontWeight="SemiBold"
-                                                                               Foreground="#14532D" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding PreviousDescription}"
-                                                                               FontSize="11" Foreground="#166534"
-                                                                               TextWrapping="Wrap" Margin="0,3,0,4"
-                                                                               MaxHeight="50" TextTrimming="CharacterEllipsis"/>
+                           Foreground="#16A34A" Margin="0,0,0,5"/>
+                                                                    <TextBlock Text="{Binding Title}"
+                           FontSize="12" FontWeight="SemiBold"
+                           Foreground="#14532D" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding Description}"
+                           FontSize="11" Foreground="#166534"
+                           TextWrapping="Wrap" Margin="0,3,0,4"
+                           MaxHeight="50" TextTrimming="CharacterEllipsis"/>
                                                                     <TextBlock FontSize="11" Foreground="#15803D">
-                                                                        <Run Text="Urgency: "/>
-                                                                        <Run Text="{Binding PreviousUrgency, Mode=OneWay}" FontWeight="Bold"/>
+                    <Run Text="Urgency: "/>
+                    <Run Text="{Binding Urgency, Mode=OneWay}" FontWeight="Bold"/>
                                                                     </TextBlock>
                                                                 </StackPanel>
                                                             </Border>
@@ -670,10 +692,38 @@
                                                     BorderBrush="#FECACA" BorderThickness="1" Padding="14,10">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+
+                                                    <!-- Proof image thumbnail -->
+                                                    <Border Grid.Column="0" Width="70" Height="70"
+                                                            CornerRadius="8" ClipToBounds="True"
+                                                            Background="#F3F4F6" Margin="0,0,12,0"
+                                                            Cursor="Hand"
+                                                            MouseLeftButtonUp="ReportImage_Click"
+                                                            Tag="{Binding ProofImagePath}">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding HasProofImage}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <Grid>
+                                                            <Image Source="{Binding ProofImagePath}" Stretch="UniformToFill"/>
+                                                            <Border VerticalAlignment="Bottom" Background="#88000000" Padding="4,2">
+                                                                <TextBlock Text="🔍 View" FontSize="9" Foreground="White"
+                                                                           HorizontalAlignment="Center"/>
+                                                            </Border>
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                         <TextBlock Foreground="#0A2540" FontWeight="SemiBold" FontSize="14">
                                                             <Run Text="{Binding ReportType, Mode=OneWay}"/>
                                                             <Run Text=" — "/>
@@ -689,7 +739,7 @@
                                                             <Run Text="{Binding FiledAtDisplay, Mode=OneWay}"/>
                                                         </TextBlock>
                                                     </StackPanel>
-                                                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                    <StackPanel Grid.Column="2" Orientation="Horizontal"
                                                                 Margin="12,0,4,0" VerticalAlignment="Center">
                                                         <Button Content="⚡ Strike"
                                                                 Command="{Binding DataContext.ProcessReportCommand, RelativeSource={RelativeSource AncestorType=Window}}"

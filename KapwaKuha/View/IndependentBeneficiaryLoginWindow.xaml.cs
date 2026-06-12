@@ -24,21 +24,27 @@ namespace KapwaKuha.View
                 vm.PlainPassword = PwBox.Password;
         }
 
-        private void ShowPwCheck_Checked(object sender, RoutedEventArgs e)
+        private bool _pwVisible = false;
+        private void ShowPwBtn_Click(object sender, RoutedEventArgs e)
         {
-            PwTextBox.Text = PwBox.Password;
-            PwTextBox.Visibility = Visibility.Visible;
-            PwBox.Visibility = Visibility.Collapsed;
-            PlaceholderText.Visibility = Visibility.Collapsed;
-        }
-
-        private void ShowPwCheck_Unchecked(object sender, RoutedEventArgs e)
-        {
-            PwBox.Password = PwTextBox.Text;
-            PwBox.Visibility = Visibility.Visible;
-            PwTextBox.Visibility = Visibility.Collapsed;
-            PlaceholderText.Visibility = string.IsNullOrEmpty(PwBox.Password)
-                ? Visibility.Visible : Visibility.Collapsed;
+            _pwVisible = !_pwVisible;
+            if (_pwVisible)
+            {
+                PwTextBox.Text = PwBox.Password;
+                PwTextBox.Visibility = Visibility.Visible;
+                PwBox.Visibility = Visibility.Collapsed;
+                PlaceholderText.Visibility = Visibility.Collapsed;
+                ShowPwIcon.Text = "🙈";
+            }
+            else
+            {
+                PwBox.Password = PwTextBox.Text;
+                PwBox.Visibility = Visibility.Visible;
+                PwTextBox.Visibility = Visibility.Collapsed;
+                PlaceholderText.Visibility = string.IsNullOrEmpty(PwBox.Password)
+                    ? Visibility.Visible : Visibility.Collapsed;
+                ShowPwIcon.Text = "👁";
+            }
         }
 
         private void LoginBtn_Click(object sender, RoutedEventArgs e)

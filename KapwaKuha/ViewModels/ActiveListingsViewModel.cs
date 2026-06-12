@@ -41,6 +41,13 @@ namespace KapwaKuha.ViewModels
             set { _filterStatus = value; OnPropertyChanged(); ApplyFilter(); }
         }
 
+        private string _filterApproval = "All";
+        public string FilterApproval
+        {
+            get => _filterApproval;
+            set { _filterApproval = value; OnPropertyChanged(); ApplyFilter(); }
+        }
+
         // ── Selection ────────────────────────────────────────────────────────
         private ItemModel? _selectedItem;
         public ItemModel? SelectedItem
@@ -247,9 +254,12 @@ namespace KapwaKuha.ViewModels
                                    i.Category_Name.ToLower().Contains(q);
 
                 bool matchStatus = _filterStatus == "All" ||
-                                   i.Item_Status == _filterStatus;
+                                     i.Item_Status == _filterStatus;
 
-                if (matchSearch && matchStatus) Items.Add(i);
+                bool matchApproval = _filterApproval == "All" ||
+                                     i.Admin_Approval_Status == _filterApproval;
+
+                if (matchSearch && matchStatus && matchApproval) Items.Add(i);
             }
             StatusMessage = $"{Items.Count} item(s) shown.";
         }

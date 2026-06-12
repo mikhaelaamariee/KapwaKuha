@@ -407,6 +407,49 @@
                                     </Style>
                                 </StackPanel.Style>
 
+                                <!-- Compact profile picture for beneficiary right panel -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16" VerticalAlignment="Center">
+                                    <Grid Width="52" Height="52" Margin="0,0,14,0">
+                                        <Border CornerRadius="26" Background="#E0F2FE"
+                                                BorderBrush="#90E0EF" BorderThickness="2">
+                                            <TextBlock Text="👤" FontSize="24"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasPicture}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                        <Border CornerRadius="26" ClipToBounds="True">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasPicture}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Border.Background>
+                                                <ImageBrush ImageSource="{Binding ProfilePicture}" Stretch="UniformToFill"/>
+                                            </Border.Background>
+                                        </Border>
+                                    </Grid>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="Bold"
+                                                   Foreground="#0A2540" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding AccountCreated}" FontSize="11"
+                                                   Foreground="#6B7280" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
                                     <TextBlock Text="📦" FontSize="20" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                     <TextBlock Text="Items Received" FontSize="18" FontWeight="Bold"

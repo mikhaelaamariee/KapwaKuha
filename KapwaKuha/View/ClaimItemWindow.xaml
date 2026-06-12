@@ -134,6 +134,19 @@
                                     <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
                                         <Border CornerRadius="6" Padding="8,3" Margin="0,0,6,0"
                                                 Background="#EBF7FB">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Item.Category_Name}" Value="">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Item.Category_Name}" Value="{x:Null}">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
                                             <TextBlock Text="{Binding Item.Category_Name}"
                                                        FontSize="10" Foreground="#0077B6"/>
                                         </Border>
@@ -477,8 +490,6 @@
                                     </TextBlock>
                                     <TextBlock FontSize="12" Foreground="#03045E">
     <Run Text="🏷️ " FontSize="13"/>
-    <Run Text="{Binding Item.Category_Name, Mode=OneWay}"/>
-    <Run Text=" · "/>
     <Run Text="{Binding Item.Item_Condition, Mode=OneWay}"/>
                                     </TextBlock>
                                 </StackPanel>

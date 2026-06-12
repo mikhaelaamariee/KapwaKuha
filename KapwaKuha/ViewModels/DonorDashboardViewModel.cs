@@ -282,14 +282,26 @@ namespace KapwaKuha.ViewModels
                 {
                     MyPosts.Clear();
                     // Available items: latest Date_Found first
-                    var available = items
-                        .Where(i => i.Item_Status == "Available" || i.Item_Status == "Reserved")
-                        .OrderByDescending(i => i.Date_Found);
-                    // Claimed items: at the end
-                    var claimed = items
-                        .Where(i => i.Item_Status == "Claimed")
-                        .OrderByDescending(i => i.Date_Found);
-                    foreach (var item in available.Concat(claimed))
+                    // Sort: Approved/Live first, then Pending, then Rejected, then Claimed
+                    int ApprovalOrder(ItemModel i) => i.Admin_Approval_Status switch
+                    {
+                        "Approved" => 0,
+                        "Pending" => 1,
+                        "Rejected" => 2,
+                        _ => 3
+                    };
+                    int StatusOrder(ItemModel i) => i.Item_Status switch
+                    {
+                        "Available" => 0,
+                        "Reserved" => 1,
+                        "Claimed" => 2,
+                        _ => 3
+                    };
+                    var sorted = items
+                        .OrderBy(StatusOrder)
+                        .ThenBy(ApprovalOrder)
+                        .ThenByDescending(i => i.Date_Found);
+                    foreach (var item in sorted)
                         MyPosts.Add(item);
                 });
             }

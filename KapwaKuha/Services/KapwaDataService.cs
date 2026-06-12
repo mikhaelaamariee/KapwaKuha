@@ -1269,6 +1269,46 @@ WHERE Item_ID = @id", conn);
             return list;
         }
 
+        public static async Task<List<(string Id, string FullName, string Username, string ProfilePic, string Label)>> GetAllUsersForDonorChat()
+        {
+            var list = new List<(string, string, string, string, string)>();
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+            SELECT b.Beneficiary_ID AS UserId,
+                   b.Beneficiary_FullName AS FullName,
+                   b.Beneficiary_Username AS Username,
+                   ISNULL(b.ProfilePicturePath,'') AS ProfilePic,
+                   'Institutional Beneficiary' AS Label
+            FROM InstitutionalBeneficiaries b
+            INNER JOIN Users u ON u.UserID = b.Beneficiary_ID
+            WHERE u.IsActive = 1
+            UNION ALL
+            SELECT i.IndepBene_ID AS UserId,
+                   i.FullName,
+                   i.Username,
+                   ISNULL(i.ProfilePicturePath,'') AS ProfilePic,
+                   'Independent Beneficiary' AS Label
+            FROM IndependentBeneficiaries i
+            INNER JOIN Users u ON u.UserID = i.IndepBene_ID
+            WHERE u.IsActive = 1
+            ORDER BY FullName", conn);
+                using var r = await cmd.ExecuteReaderAsync();
+                while (await r.ReadAsync())
+                    list.Add((
+                        r["UserId"].ToString() ?? "",
+                        r["FullName"].ToString() ?? "",
+                        r["Username"].ToString() ?? "",
+                        r["ProfilePic"].ToString() ?? "",
+                        r["Label"].ToString() ?? ""
+                    ));
+            }
+            catch (Exception ex) { MessageBox.Show("GetAllUsersForDonorChat failed: " + ex.Message); }
+            return list;
+        }
+
         public static async Task<List<DonorModel>> GetAllDonorsForChat()
         {
             var list = new List<DonorModel>();
@@ -1442,16 +1482,46 @@ WHERE Item_ID = @id", conn);
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                // Use the stored procedure so RequesterBeneficiaryId is populated
-                using var cmd = new SqlCommand("sp_GetOpenNeedsPosts", conn);
-                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                using var cmd = new SqlCommand(@"
+SELECT n.NeedsPost_ID, n.Org_ID, n.Title, n.Description,
+       n.Urgency, n.Status, n.Post_Date,
+       n.Admin_Approval_Status,
+       ISNULL(n.ImagePath,'') AS ImagePath,
+       o.Organization_Name   AS Org_Name,
+       (SELECT TOP 1 b.Beneficiary_ID
+        FROM Beneficiaries b
+        WHERE b.Organization_ID = n.Org_ID
+          AND b.Beneficiary_AccountStatus = 'Active'
+        ORDER BY b.Beneficiary_ID) AS RequesterBeneficiaryId
+FROM NeedsPosts n
+JOIN Organization o ON o.Organization_ID = n.Org_ID
+WHERE n.Status = 'Open'
+  AND n.Admin_Approval_Status = 'Approved'
+ORDER BY
+    CASE n.Urgency WHEN 'High' THEN 1 WHEN 'Medium' THEN 2 ELSE 3 END,
+    n.Post_Date DESC", conn);
                 using var r = await cmd.ExecuteReaderAsync();
-                while (await r.ReadAsync()) list.Add(MapNeedsPost(r));
+                while (await r.ReadAsync())
+                {
+                    list.Add(new NeedsPostModel
+                    {
+                        NeedsPost_ID = r["NeedsPost_ID"].ToString() ?? "",
+                        Org_ID = r["Org_ID"].ToString() ?? "",
+                        Org_Name = r["Org_Name"].ToString() ?? "",
+                        Title = r["Title"].ToString() ?? "",
+                        Description = r["Description"].ToString() ?? "",
+                        Urgency = r["Urgency"].ToString() ?? "Medium",
+                        Status = r["Status"].ToString() ?? "Open",
+                        Admin_Approval_Status = r["Admin_Approval_Status"].ToString() ?? "Pending",
+                        Post_Date = Convert.ToDateTime(r["Post_Date"]),
+                        ImagePath = r["ImagePath"].ToString() ?? "",
+                        RequesterBeneficiaryId = r["RequesterBeneficiaryId"]?.ToString() ?? ""
+                    });
+                }
             }
             catch (Exception ex) { MessageBox.Show("GetOpenNeedsPosts failed: " + ex.Message); }
             return list;
         }
-
 
         public static async Task PostNeedsRequest(NeedsPostModel post)
         {
@@ -2206,7 +2276,8 @@ WHERE b.Beneficiary_ID = @id", conn);
                        ISNULL(ind.FullName, r.Reported_ID))) AS Reported_Name,
                    r.Report_Type, r.Description, r.Status,
                    r.Admin_Action_Taken, r.Filed_At,
-                   ISNULL(r.Admin_Notes,'') AS Admin_Notes
+                   ISNULL(r.Admin_Notes,'') AS Admin_Notes,
+                   ISNULL(r.ProofImagePath,'') AS ProofImagePath
             FROM UserReports r
             LEFT JOIN Donors d ON d.Donor_ID = r.Reported_ID
             LEFT JOIN InstitutionalBeneficiaries ib ON ib.Beneficiary_ID = r.Reported_ID
@@ -2230,7 +2301,8 @@ WHERE b.Beneficiary_ID = @id", conn);
                         Status = reader["Status"].ToString() ?? "Open",
                         Admin_Action_Taken = reader["Admin_Action_Taken"].ToString() ?? "None",
                         Filed_At = Convert.ToDateTime(reader["Filed_At"]),
-                        Admin_Notes = reader["Admin_Notes"].ToString() ?? ""
+                        Admin_Notes = reader["Admin_Notes"].ToString() ?? "",
+                        ProofImagePath = reader["ProofImagePath"].ToString() ?? ""
                     });
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine("GetOpenReports: " + ex.Message); }
@@ -2459,8 +2531,8 @@ WHERE b.Beneficiary_ID = @id", conn);
                     await cmd.ExecuteNonQueryAsync();
                 }
 
-                // 2. If this is a DirectTarget item, NOW send the actual donation-offer chat
-                string donorId = "", targetBeneId = "", itemName = "", itemCondition = "", categoryName = "";
+                // 2. If this is a DirectTarget or UrgencyTarget item, send the donation-offer chat
+                string donorId = "", targetBeneId = "", itemName = "", itemCondition = "", categoryName = "", postType = "";
                 using (var qcmd = new SqlCommand(@"
 SELECT i.Donor_ID, i.TargetBeneficiary_ID, i.Item_Name,
        i.Item_Condition, c.Category_Name, p.Post_Type
@@ -2478,15 +2550,17 @@ WHERE i.Item_ID = @id", conn))
                         itemName = qr["Item_Name"].ToString() ?? "";
                         itemCondition = qr["Item_Condition"].ToString() ?? "";
                         categoryName = qr["Category_Name"].ToString() ?? "";
-                        string postType = qr["Post_Type"].ToString() ?? "";
-                        if (postType != "DirectTarget" || string.IsNullOrEmpty(targetBeneId))
-                            return; // not a direct target — nothing more to do
+                        postType = qr["Post_Type"].ToString() ?? "";
                     }
-                }
+                }   // ← reader closed here, connection still open
 
-       // 3. Send the actual "do you want this donation?" message from donor to beneficiary
-                // IMPORTANT: message MUST contain "reserved for you" for IsSystemDirectTarget to fire
-                // and MUST contain 'Item: "NAME"' exactly for the image/item lookup parser
+                // Only send chat for targeted post types with a valid target
+                bool isTargeted = (postType == "DirectTarget" || postType == "UrgencyTarget")
+                                  && !string.IsNullOrEmpty(targetBeneId);
+                if (!isTargeted) return;
+
+                // Send the "reserved for you" offer message — same format for both types
+                // IMPORTANT: must contain "reserved for you" for IsSystemDirectTarget to fire in ChatMessage
                 string offerMsg =
                     $"📦 A donation has been reserved for you! " +
                     $"Item: \"{itemName}\" ({itemCondition}, {categoryName}). " +
@@ -2498,6 +2572,7 @@ WHERE i.Item_ID = @id", conn))
                 chatCmd.Parameters.AddWithValue("@ReceiverId", targetBeneId);
                 chatCmd.Parameters.AddWithValue("@Message", offerMsg);
                 await chatCmd.ExecuteNonQueryAsync();
+
             }
             catch (Exception ex) { System.Windows.MessageBox.Show("ApproveItem failed: " + ex.Message); throw; }
         }

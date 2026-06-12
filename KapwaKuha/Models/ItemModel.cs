@@ -83,8 +83,11 @@ namespace KapwaKuha.Models
         }
         public bool HasRejectionNote => !string.IsNullOrEmpty(RejectionNote);
         public bool IsRejected => Admin_Approval_Status == "Rejected";
-        // Donor can edit if Pending OR Rejected — only Approved/Claimed/Reserved lock the form
-        public bool CanDonorEdit => Admin_Approval_Status != "Approved" && Item_Status == "Available";
+        // Pending: can edit if Available
+        // Rejected: can edit regardless of status (admin rejected it, donor should fix it)
+        public bool CanDonorEdit =>
+            (Admin_Approval_Status == "Pending" && Item_Status == "Available") ||
+            (Admin_Approval_Status == "Rejected");
 
 
 

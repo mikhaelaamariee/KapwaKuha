@@ -255,13 +255,15 @@
                          FontSize="14" Padding="14,0,4,0"
                          VerticalContentAlignment="Center"
                          Visibility="Collapsed"/>
-                                        <CheckBox Grid.Column="1" x:Name="ShowPwCheck"
-                          VerticalAlignment="Center" HorizontalAlignment="Center"
-                          ToolTip="Show password"
-                          Checked="ShowPwCheck_Checked"
-                          Unchecked="ShowPwCheck_Unchecked">
-                                            <TextBlock Text="👁" FontSize="13"/>
-                                        </CheckBox>
+                                        <Button Grid.Column="1" x:Name="ShowPwBtn"
+                                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                Width="32" Height="32"
+                                                Background="Transparent" BorderThickness="0"
+                                                Cursor="Hand" ToolTip="Show/Hide password"
+                                                Click="ShowPwBtn_Click">
+                                            <TextBlock x:Name="ShowPwIcon" Text="👁" FontSize="13"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Button>
                                     </Grid>
                                 </Border>
                             </StackPanel>
@@ -283,13 +285,15 @@
                          FontSize="14" Padding="14,0,4,0"
                          VerticalContentAlignment="Center"
                          Visibility="Collapsed"/>
-                                        <CheckBox Grid.Column="1" x:Name="ShowConfirmPwCheck"
-                          VerticalAlignment="Center" HorizontalAlignment="Center"
-                          ToolTip="Show password"
-                          Checked="ShowConfirmPwCheck_Checked"
-                          Unchecked="ShowConfirmPwCheck_Unchecked">
-                                            <TextBlock Text="👁" FontSize="13"/>
-                                        </CheckBox>
+                                        <Button Grid.Column="1" x:Name="ShowConfirmPwBtn"
+                                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                Width="32" Height="32"
+                                                Background="Transparent" BorderThickness="0"
+                                                Cursor="Hand" ToolTip="Show/Hide password"
+                                                Click="ShowConfirmPwBtn_Click">
+                                            <TextBlock x:Name="ShowConfirmPwIcon" Text="👁" FontSize="13"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Button>
                                     </Grid>
                                 </Border>
                             </StackPanel>

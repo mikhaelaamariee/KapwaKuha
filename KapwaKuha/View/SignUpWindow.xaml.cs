@@ -27,32 +27,44 @@ namespace KapwaKuha.View
             }
         }
 
-        private void ShowPwCheck_Checked(object sender, RoutedEventArgs e)
+        private bool _pwVisible = false;
+        private void ShowPwBtn_Click(object sender, RoutedEventArgs e)
         {
-            PwTextBox.Text = PwBox.Password;
-            PwTextBox.Visibility = Visibility.Visible;
-            PwBox.Visibility = Visibility.Collapsed;
+            _pwVisible = !_pwVisible;
+            if (_pwVisible)
+            {
+                PwTextBox.Text = PwBox.Password;
+                PwTextBox.Visibility = Visibility.Visible;
+                PwBox.Visibility = Visibility.Collapsed;
+                ShowPwIcon.Text = "🙈";
+            }
+            else
+            {
+                PwBox.Password = PwTextBox.Text;
+                PwBox.Visibility = Visibility.Visible;
+                PwTextBox.Visibility = Visibility.Collapsed;
+                ShowPwIcon.Text = "👁";
+            }
         }
 
-        private void ShowPwCheck_Unchecked(object sender, RoutedEventArgs e)
+        private bool _confirmPwVisible = false;
+        private void ShowConfirmPwBtn_Click(object sender, RoutedEventArgs e)
         {
-            PwBox.Password = PwTextBox.Text;
-            PwBox.Visibility = Visibility.Visible;
-            PwTextBox.Visibility = Visibility.Collapsed;
-        }
-
-        private void ShowConfirmPwCheck_Checked(object sender, RoutedEventArgs e)
-        {
-            ConfirmPwTextBox.Text = ConfirmPwBox.Password;
-            ConfirmPwTextBox.Visibility = Visibility.Visible;
-            ConfirmPwBox.Visibility = Visibility.Collapsed;
-        }
-
-        private void ShowConfirmPwCheck_Unchecked(object sender, RoutedEventArgs e)
-        {
-            ConfirmPwBox.Password = ConfirmPwTextBox.Text;
-            ConfirmPwBox.Visibility = Visibility.Visible;
-            ConfirmPwTextBox.Visibility = Visibility.Collapsed;
+            _confirmPwVisible = !_confirmPwVisible;
+            if (_confirmPwVisible)
+            {
+                ConfirmPwTextBox.Text = ConfirmPwBox.Password;
+                ConfirmPwTextBox.Visibility = Visibility.Visible;
+                ConfirmPwBox.Visibility = Visibility.Collapsed;
+                ShowConfirmPwIcon.Text = "🙈";
+            }
+            else
+            {
+                ConfirmPwBox.Password = ConfirmPwTextBox.Text;
+                ConfirmPwBox.Visibility = Visibility.Visible;
+                ConfirmPwTextBox.Visibility = Visibility.Collapsed;
+                ShowConfirmPwIcon.Text = "👁";
+            }
         }
     }
 }

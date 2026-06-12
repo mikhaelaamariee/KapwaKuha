@@ -29,6 +29,7 @@ namespace KapwaKuha.ViewModels
         // ── Identity ──────────────────────────────────────────────────────────
         public string WelcomeText { get; }
         public string UserLabel { get; }
+        public bool IsIndependentBeneficiary { get; }
 
         // ── Profile picture ───────────────────────────────────────────────────
         private string _profilePicturePath = string.Empty;
@@ -99,7 +100,8 @@ namespace KapwaKuha.ViewModels
         {
             _beneficiaryId = beneficiaryId;
             WelcomeText = $"Welcome back, {UserSession.FullName}!";
-            UserLabel = $"Beneficiary: {UserSession.UserId}";
+            UserLabel = $"Beneficiary: {UserSession.Username}";
+            IsIndependentBeneficiary = UserSession.Role == "IndependentBeneficiary";
 
             HamburgerCommand = new RelayCommand(_ => IsSidebarOpen = !IsSidebarOpen);
             NavigateDashboardCommand = new RelayCommand(_ => { });
@@ -236,7 +238,16 @@ namespace KapwaKuha.ViewModels
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     MyNeedsPosts.Clear();
-                    foreach (var p in posts) MyNeedsPosts.Add(p);
+                    // Sort: Approved/Live first → Pending → Rejected
+                    int ApprovalOrder(NeedsPostModel p) => p.Admin_Approval_Status switch
+                    {
+                        "Approved" => 0,
+                        "Pending" => 1,
+                        "Rejected" => 2,
+                        _ => 3
+                    };
+                    var sorted = posts.OrderBy(ApprovalOrder).ThenByDescending(p => p.Post_Date);
+                    foreach (var p in sorted) MyNeedsPosts.Add(p);
                     HasNoNeedsPosts = !MyNeedsPosts.Any();
                 });
             }

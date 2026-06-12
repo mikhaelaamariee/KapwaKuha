@@ -77,20 +77,20 @@ namespace KapwaKuha.ViewModels
         {
             if (_role == "Donor")
             {
-                // Donors see ALL registered beneficiaries
-                var benes = await KapwaDataService.GetAllBeneficiariesForChat();
+                // Donors see ALL beneficiaries — institutional + independent
+                var users = await KapwaDataService.GetAllUsersForDonorChat();
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     _allUsers.Clear();
-                    foreach (var b in benes)
+                    foreach (var (id, name, username, pic, label) in users)
                         _allUsers.Add(new ChatUserRow
                         {
-                            UserId = b.Beneficiary_ID,
-                            DisplayName = b.Beneficiary_FullName,
-                            SubText = $"@{b.Beneficiary_Username}  ·  {b.Organization_Name}",
+                            UserId = id,
+                            DisplayName = name,
+                            SubText = $"@{username}  ·  {label}",
                             LastMessage = "",
                             UnreadCount = 0,
-                            ProfilePicturePath = b.ProfilePicturePath ?? string.Empty
+                            ProfilePicturePath = pic
                         });
                     ApplySearch();
                 });

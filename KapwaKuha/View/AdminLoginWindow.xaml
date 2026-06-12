@@ -86,21 +86,33 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="50"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="44"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="🔒" Foreground="#9CA3AF" FontSize="16"
-                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         <Grid Grid.Column="1">
                             <TextBlock x:Name="PlaceholderText"
-                                       Text="Enter your password"
-                                       VerticalAlignment="Center" Foreground="Gray"
-                                       FontSize="14" Margin="5,0,0,0"
-                                       IsHitTestVisible="False" Visibility="Visible"/>
+                       Text="Enter your password"
+                       VerticalAlignment="Center" Foreground="Gray"
+                       FontSize="14" Margin="5,0,0,0"
+                       IsHitTestVisible="False" Visibility="Visible"/>
                             <PasswordBox x:Name="PwBox"
-                                         PasswordChanged="PwBox_PasswordChanged"
-                                         BorderThickness="0" Background="Transparent"
-                                         VerticalContentAlignment="Center"
-                                         FontSize="14" Padding="0,0,15,0"/>
+                         PasswordChanged="PwBox_PasswordChanged"
+                         BorderThickness="0" Background="Transparent"
+                         VerticalContentAlignment="Center"
+                         FontSize="14" Padding="0,0,15,0"/>
+                            <TextBox x:Name="PwTextBox"
+                     BorderThickness="0" Background="Transparent"
+                     VerticalContentAlignment="Center"
+                     FontSize="14" Padding="0,0,15,0"
+                     Visibility="Collapsed"/>
                         </Grid>
+                        <!-- Show/Hide toggle -->
+                        <Button Grid.Column="2" x:Name="TogglePwBtn"
+                Content="👁" Background="Transparent" BorderThickness="0"
+                FontSize="16" Cursor="Hand" VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Click="TogglePwBtn_Click" ToolTip="Show password"/>
                     </Grid>
                 </Border>
 
@@ -126,8 +138,8 @@
         <Border Grid.Column="1" ClipToBounds="True">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#00A8E8" Offset="0"/>
-                    <GradientStop Color="#0077B6" Offset="0.5"/>
+                    <GradientStop Color="LightSkyBlue" Offset="0"/>
+                    <GradientStop Color="DeepSkyBlue" Offset="0.5"/>
                     <GradientStop Color="#0A2540" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>

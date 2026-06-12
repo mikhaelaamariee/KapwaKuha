@@ -1,5 +1,6 @@
 ﻿// FILE: ViewModels/AdminDashboardViewModel.cs
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -111,6 +112,8 @@ namespace KapwaKuha.ViewModels
         public ICommand RefreshCommand { get; }
         public ICommand LogoutCommand { get; }
 
+        public ICommand ZoomImageCommand { get; }
+
         public AdminDashboardViewModel(string adminId)
         {
             _adminId = adminId;
@@ -121,39 +124,30 @@ namespace KapwaKuha.ViewModels
                 if (param is not KapwaDataService.AdminSupportThread thread) return;
                 var win = new View.AdminSupportChatWindow(thread.UserId, thread.Role, adminMode: true);
                 win.ShowDialog();
-                // Refresh support inbox after admin replies
                 _ = LoadSupportInboxAsync();
             });
 
             // ── Items ─────────────────────────────────────────────────────────
-            ApproveNeedsPostCommand = new AsyncRelayCommand(async param =>
+            ApproveItemCommand = new AsyncRelayCommand(async param =>
             {
-                if (param is not NeedsPostModel post) return;
-
-                var dialog = new View.AdminApproveNeedsPostDialog(post);
-                // Set owner so CenterOwner works
-                dialog.Owner = Application.Current.MainWindow;
-                bool? result = dialog.ShowDialog();
-                if (result != true) return;
-
-                string chosenUrgency = dialog.ChosenUrgency;
-
+                if (param is not ItemModel item) return;
+                var r = MessageBox.Show(
+                    $"Approve item \"{item.Item_Name}\" by {item.Donor_ID}?",
+                    "Confirm Approval", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (r != MessageBoxResult.Yes) return;
                 try
                 {
-                    await KapwaDataService.ApproveNeedsPost(post.NeedsPost_ID, chosenUrgency);
-                    // Get the actual beneficiary ID (Users.UserID), NOT the Org_ID
-                    string beneId = await KapwaDataService.GetActiveBeneficiaryIdByOrg(post.Org_ID);
-                    if (!string.IsNullOrEmpty(beneId))
-                        await KapwaDataService.CreateNotification(
-                            beneId, "Approval",
-                            $"✅ Your needs post \"{post.Title}\" has been approved as {chosenUrgency} urgency and is now visible to donors.",
-                            post.NeedsPost_ID);
+                    await KapwaDataService.ApproveItem(item.Item_ID);
+                    await KapwaDataService.CreateNotification(
+                        item.Donor_ID, "Approval",
+                        $"✅ Your item \"{item.Item_Name}\" has been approved and is now live!",
+                        item.Item_ID);
                     await LoadGatekeeperQueuesAsync();
                     await LoadMetricsAsync();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to approve needs post: {ex.Message}", "Error",
+                    MessageBox.Show($"Failed to approve item: {ex.Message}", "Error",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             });
@@ -275,16 +269,40 @@ namespace KapwaKuha.ViewModels
                 }
             });
 
+            ZoomImageCommand = new RelayCommand(param =>
+            {
+                if (param is not string path || string.IsNullOrEmpty(path)) return;
+                var zoomWin = new Window
+                {
+                    Title = "Image Preview",
+                    Width = 800,
+                    Height = 600,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Background = System.Windows.Media.Brushes.Black,
+                    Content = new System.Windows.Controls.ScrollViewer
+                    {
+                        HorizontalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto,
+                        VerticalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto,
+                        Content = new System.Windows.Controls.Image
+                        {
+                            Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(path)),
+                            Stretch = System.Windows.Media.Stretch.Uniform,
+                            MaxWidth = 1920,
+                            MaxHeight = 1080
+                        }
+                    }
+                };
+                zoomWin.ShowDialog();
+            });
             // ── Needs Posts ───────────────────────────────────────────────────
-            // In AdminDashboardViewModel.cs — replace ApproveNeedsPostCommand with:
             ApproveNeedsPostCommand = new AsyncRelayCommand(async param =>
             {
                 if (param is not NeedsPostModel post) return;
 
-                // Show a proper urgency-picker dialog instead of chained MessageBoxes
                 var dialog = new View.AdminApproveNeedsPostDialog(post);
+                dialog.Owner = Application.Current.MainWindow;
                 bool? result = dialog.ShowDialog();
-                if (result != true) return; // cancelled
+                if (result != true) return;
 
                 string chosenUrgency = dialog.ChosenUrgency;
 
@@ -311,7 +329,6 @@ namespace KapwaKuha.ViewModels
             {
                 if (param is not NeedsPostModel post) return;
 
-                // Use a proper pop-out dialog instead of InputBox
                 var rejectDlg = new View.AdminRejectReasonDialog(
                     $"Reject \"{post.Title}\"",
                     "The beneficiary will see this reason and can edit & resubmit.");
@@ -325,7 +342,6 @@ namespace KapwaKuha.ViewModels
                 try
                 {
                     await KapwaDataService.RejectNeedsPost(post.NeedsPost_ID, reason);
-                    // Get the actual beneficiary UserID, NOT the Org_ID
                     string beneId = await KapwaDataService.GetActiveBeneficiaryIdByOrg(post.Org_ID);
                     if (!string.IsNullOrEmpty(beneId))
                         await KapwaDataService.CreateNotification(
@@ -415,8 +431,7 @@ namespace KapwaKuha.ViewModels
                 }
             });
 
-
-            // ── Safe deferred load — fire-and-forget with full exception guard ────
+            // ── Safe deferred load ────────────────────────────────────────────
             _ = Application.Current.Dispatcher.InvokeAsync(async () =>
             {
                 try
@@ -431,14 +446,12 @@ namespace KapwaKuha.ViewModels
             }, System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
-        // ── Safe metrics load ─────────────────────────────────────────────────
         private async Task LoadMetricsAsync()
         {
             try
             {
                 var m = await KapwaDataService.GetAdminImpactMetrics();
-                // Remove the null check for 'm' since it's a value tuple and cannot be null
-                if (Application.Current == null) return; // Prevents NullReferenceException on UI Thread
+                if (Application.Current == null) return;
 
                 SafeDispatch(() =>
                 {
@@ -458,12 +471,12 @@ namespace KapwaKuha.ViewModels
                 SafeDispatch(() => LoadError = $"Metrics load failed: {ex.Message}");
             }
         }
+
         private async Task LoadGatekeeperQueuesAsync()
         {
             SafeDispatch(() =>
                 IsLoadingItems = IsLoadingBenes = IsLoadingReports = IsLoadingNeedsPosts = true);
 
-            // Load all 5 queues independently — one failure never blocks the others
             List<ItemModel> items = new();
             List<BeneficiaryModel> benes = new();
             List<DonorModel> donors = new();
@@ -506,11 +519,8 @@ namespace KapwaKuha.ViewModels
             });
         }
 
-        // ── UI-thread helper ──────────────────────────────────────────────────
         private static void SafeDispatch(Action action)
         {
-
-            
             try
             {
                 if (Application.Current == null) return;
@@ -518,10 +528,8 @@ namespace KapwaKuha.ViewModels
                     action();
                 else
                     Application.Current.Dispatcher.Invoke(action);
-
-
             }
-            catch { /* swallow dispatch errors during shutdown */ }
+            catch { }
         }
 
         private async Task LoadSupportInboxAsync()

@@ -724,7 +724,7 @@
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Width="220" Margin="0,0,14,0" CornerRadius="16"
+                                                    <Border Width="220" MinHeight="320" Margin="0,0,14,0" CornerRadius="16"
                                                             ClipToBounds="True" BorderThickness="1">
                                                         <Border.BorderBrush>
                                                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -816,6 +816,18 @@
                                                                 <Border CornerRadius="8" Padding="8,3" HorizontalAlignment="Left"
         Margin="0,4,0,8"
         Background="{Binding ApprovalBadgeBackground}">
+                                                                    <Border.Style>
+                                                                        <Style TargetType="Border">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding DataContext.IsIndependentBeneficiary,
+                                                                                    RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                                    Value="True">
+                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Border.Style>
                                                                     <TextBlock Text="{Binding ApprovalBadgeText}"
                FontSize="10" FontWeight="SemiBold"
                Foreground="{Binding ApprovalBadgeTextColor}"/>
@@ -882,7 +894,7 @@
 
                                         <!-- Add Needs button -->
                                         <Button Command="{Binding NeedsWishlistCommand}"
-                                                Width="220" Margin="0,0,0,0"
+                                                Width="220" Height="320" Margin="0,0,0,0"
                                                 Background="Transparent" BorderThickness="0" Cursor="Hand">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">

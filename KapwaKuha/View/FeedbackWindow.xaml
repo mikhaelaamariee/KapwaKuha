@@ -6,6 +6,11 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <Geometry x:Key="StarIcon">M12,17.27 L18.18,21 L16.54,13.97 L22,9.24 L14.81,8.62 L12,2 L9.19,8.62 L2,9.24 L7.45,13.97 L5.82,21 Z</Geometry>
+    </Window.Resources>
+
     <Border CornerRadius="20" Style="{StaticResource GlassCard}" Margin="0">
         <Grid Margin="40,32">
             <Grid.RowDefinitions>
@@ -18,7 +23,6 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header -->
             <TextBlock Grid.Row="0" Text="⭐ Rate This Donation"
                        FontSize="24" FontWeight="Bold" Foreground="#0A2540"
                        HorizontalAlignment="Center" Margin="0,0,0,6"/>
@@ -26,245 +30,264 @@
                        FontSize="13" Foreground="#6B7280"
                        HorizontalAlignment="Center" Margin="0,0,0,28"/>
 
-            <!-- Star selector -->
-            <!-- Star selector — half-star support (10 clickable halves = 5 stars) -->
             <StackPanel Grid.Row="2" Orientation="Horizontal"
-            HorizontalAlignment="Center" Margin="0,0,0,4">
-                <!-- Star 1 -->
-                <Grid Width="36" Height="40">
+                        HorizontalAlignment="Center" Margin="0,0,0,4">
+
+                <Grid Width="36" Height="36" Margin="4,0">
+                    <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Fill="#D1D5DB"/>
                     <Button Command="{Binding SetHalfStarCommand}" CommandParameter="1"
-                Width="18" HorizontalAlignment="Left"
-                Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
+                            Width="18" HorizontalAlignment="Left" ClipToBounds="True"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <ContentPresenter/>
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <TextBlock Text="◐" FontSize="34" Margin="0">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                        <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Width="36" Height="36" HorizontalAlignment="Left">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Half1Filled}" Value="True">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="Fill" Value="#F59E0B"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Path.Style>
+                        </Path>
                     </Button>
                     <Button Command="{Binding SetHalfStarCommand}" CommandParameter="2"
-                Width="18" HorizontalAlignment="Right"
-                Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
+                            Width="18" HorizontalAlignment="Right" ClipToBounds="True"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <ContentPresenter/>
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <TextBlock Text="◑" FontSize="34" Margin="0">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                        <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Width="36" Height="36" HorizontalAlignment="Left" Margin="-18,0,0,0">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Half2Filled}" Value="True">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="Fill" Value="#F59E0B"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Path.Style>
+                        </Path>
                     </Button>
                 </Grid>
-                <!-- Star 2 -->
-                <Grid Width="36" Height="40">
+
+                <Grid Width="36" Height="36" Margin="4,0">
+                    <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Fill="#D1D5DB"/>
                     <Button Command="{Binding SetHalfStarCommand}" CommandParameter="3"
-                Width="18" HorizontalAlignment="Left"
-                Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
+                            Width="18" HorizontalAlignment="Left" ClipToBounds="True"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <ContentPresenter/>
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <TextBlock Text="◐" FontSize="34">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                        <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Width="36" Height="36" HorizontalAlignment="Left">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Half3Filled}" Value="True">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="Fill" Value="#F59E0B"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Path.Style>
+                        </Path>
                     </Button>
                     <Button Command="{Binding SetHalfStarCommand}" CommandParameter="4"
-                Width="18" HorizontalAlignment="Right"
-                Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
+                            Width="18" HorizontalAlignment="Right" ClipToBounds="True"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <ContentPresenter/>
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <TextBlock Text="◑" FontSize="34">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                        <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Width="36" Height="36" HorizontalAlignment="Left" Margin="-18,0,0,0">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Half4Filled}" Value="True">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="Fill" Value="#F59E0B"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Path.Style>
+                        </Path>
                     </Button>
                 </Grid>
-                <!-- Star 3 -->
-                <Grid Width="36" Height="40">
+
+                <Grid Width="36" Height="36" Margin="4,0">
+                    <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Fill="#D1D5DB"/>
                     <Button Command="{Binding SetHalfStarCommand}" CommandParameter="5"
-                Width="18" HorizontalAlignment="Left"
-                Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
+                            Width="18" HorizontalAlignment="Left" ClipToBounds="True"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <ContentPresenter/>
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <TextBlock Text="◐" FontSize="34">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                        <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Width="36" Height="36" HorizontalAlignment="Left">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Half5Filled}" Value="True">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="Fill" Value="#F59E0B"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Path.Style>
+                        </Path>
                     </Button>
                     <Button Command="{Binding SetHalfStarCommand}" CommandParameter="6"
-                Width="18" HorizontalAlignment="Right"
-                Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
+                            Width="18" HorizontalAlignment="Right" ClipToBounds="True"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <ContentPresenter/>
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <TextBlock Text="◑" FontSize="34">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                        <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Width="36" Height="36" HorizontalAlignment="Left" Margin="-18,0,0,0">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Half6Filled}" Value="True">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="Fill" Value="#F59E0B"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Path.Style>
+                        </Path>
                     </Button>
                 </Grid>
-                <!-- Star 4 -->
-                <Grid Width="36" Height="40">
+
+                <Grid Width="36" Height="36" Margin="4,0">
+                    <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Fill="#D1D5DB"/>
                     <Button Command="{Binding SetHalfStarCommand}" CommandParameter="7"
-                Width="18" HorizontalAlignment="Left"
-                Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
+                            Width="18" HorizontalAlignment="Left" ClipToBounds="True"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <ContentPresenter/>
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <TextBlock Text="◐" FontSize="34">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                        <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Width="36" Height="36" HorizontalAlignment="Left">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Half7Filled}" Value="True">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="Fill" Value="#F59E0B"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Path.Style>
+                        </Path>
                     </Button>
                     <Button Command="{Binding SetHalfStarCommand}" CommandParameter="8"
-                Width="18" HorizontalAlignment="Right"
-                Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
+                            Width="18" HorizontalAlignment="Right" ClipToBounds="True"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <ContentPresenter/>
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <TextBlock Text="◑" FontSize="34">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                        <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Width="36" Height="36" HorizontalAlignment="Left" Margin="-18,0,0,0">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Half8Filled}" Value="True">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="Fill" Value="#F59E0B"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Path.Style>
+                        </Path>
                     </Button>
                 </Grid>
-                <!-- Star 5 -->
-                <Grid Width="36" Height="40">
+
+                <Grid Width="36" Height="36" Margin="4,0">
+                    <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Fill="#D1D5DB"/>
                     <Button Command="{Binding SetHalfStarCommand}" CommandParameter="9"
-                Width="18" HorizontalAlignment="Left"
-                Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
+                            Width="18" HorizontalAlignment="Left" ClipToBounds="True"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <ContentPresenter/>
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <TextBlock Text="◐" FontSize="34">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                        <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Width="36" Height="36" HorizontalAlignment="Left">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Half9Filled}" Value="True">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="Fill" Value="#F59E0B"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Path.Style>
+                        </Path>
                     </Button>
                     <Button Command="{Binding SetHalfStarCommand}" CommandParameter="10"
-                Width="18" HorizontalAlignment="Right"
-                Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
+                            Width="18" HorizontalAlignment="Right" ClipToBounds="True"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <ContentPresenter/>
+                                <Border Background="Transparent">
+                                    <ContentPresenter/>
+                                </Border>
                             </ControlTemplate>
                         </Button.Template>
-                        <TextBlock Text="◑" FontSize="34">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                        <Path Data="{StaticResource StarIcon}" Stretch="Uniform" Width="36" Height="36" HorizontalAlignment="Left" Margin="-18,0,0,0">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Half10Filled}" Value="True">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="Fill" Value="#F59E0B"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Path.Style>
+                        </Path>
                     </Button>
                 </Grid>
             </StackPanel>
 
-            <!-- Star label -->
             <TextBlock Grid.Row="3" Text="{Binding StarDisplayLabel}"
-           FontSize="14" FontWeight="SemiBold" Foreground="#F59E0B"
-           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                       FontSize="14" FontWeight="SemiBold" Foreground="#F59E0B"
+                       HorizontalAlignment="Center" Margin="0,0,0,16"/>
 
-
-
-            <!-- Comment box -->
             <TextBlock Grid.Row="4" Text="Leave a comment (optional)"
                        FontSize="13" FontWeight="SemiBold"
                        Foreground="#374151" Margin="0,0,0,8"/>
@@ -277,7 +300,6 @@
                          MinHeight="80"/>
             </Border>
 
-            <!-- Error banner -->
             <Border Grid.Row="5" Background="#FEE2E2" CornerRadius="8" Padding="12,8"
                     VerticalAlignment="Bottom" Margin="0,0,0,0"
                     Visibility="{Binding ErrorVisible, Converter={StaticResource BoolToVis}}">
@@ -285,7 +307,6 @@
                            FontSize="12" TextWrapping="Wrap"/>
             </Border>
 
-            <!-- Action buttons -->
             <Grid Grid.Row="6" Margin="0,20,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

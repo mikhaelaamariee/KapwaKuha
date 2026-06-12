@@ -108,42 +108,57 @@
                         </StackPanel>
 
                         <Border Grid.Row="1" CornerRadius="10" Background="White" Margin="20,0,20,12"
-                                Padding="14,10" BorderBrush="#EBF7FB" BorderThickness="1">
+        Padding="14,10" BorderBrush="#EBF7FB" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="320"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="14"/>
-                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="130"/>
                                 </Grid.ColumnDefinitions>
 
                                 <Border Grid.Column="0" CornerRadius="8" BorderBrush="#90E0EF"
-                                        BorderThickness="1" Background="#F0F8FB" Padding="10,0">
+                BorderThickness="1" Background="#F0F8FB" Padding="10,0" Grid.ColumnSpan="2" Margin="0,0,10,0">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="🔍" FontSize="12"
-                                                   VerticalAlignment="Center" Margin="0,0,6,0"
-                                                   Foreground="#5E7A8A"/>
+                           VerticalAlignment="Center" Margin="0,0,6,0"
+                           Foreground="#5E7A8A"/>
                                         <TextBox Grid.Column="1"
-                                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                                 Height="34" Background="Transparent" BorderThickness="0"
-                                                 Foreground="#03045E" FontSize="12"
-                                                 VerticalContentAlignment="Center"/>
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Height="34" Background="Transparent" BorderThickness="0"
+                         Foreground="#03045E" FontSize="12"
+                         VerticalContentAlignment="Center"/>
                                     </Grid>
                                 </Border>
 
                                 <Border Grid.Column="2" CornerRadius="8" BorderBrush="#90E0EF"
-                                        BorderThickness="1" Background="#F0F8FB">
+                BorderThickness="1" Background="#F0F8FB" Height="34">
                                     <ComboBox SelectedValue="{Binding FilterStatus}"
-                                              SelectedValuePath="Content"
-                                              Height="34" Background="Transparent"
-                                              BorderThickness="0" Padding="10,0" FontSize="12">
+                      SelectedValuePath="Content"
+                      Background="Transparent" BorderThickness="0" Padding="10,0" FontSize="12"
+                      VerticalContentAlignment="Center">
                                         <ComboBoxItem Content="All" IsSelected="True"/>
                                         <ComboBoxItem Content="Available"/>
                                         <ComboBoxItem Content="Reserved"/>
                                         <ComboBoxItem Content="Claimed"/>
+                                    </ComboBox>
+                                </Border>
+
+                                <Border Grid.Column="4" CornerRadius="8" BorderBrush="#90E0EF"
+                BorderThickness="1" Background="#F0F8FB" Height="34">
+                                    <ComboBox SelectedValue="{Binding FilterApproval}"
+                      SelectedValuePath="Content"
+                      Background="Transparent" BorderThickness="0" Padding="10,0" FontSize="12"
+                      VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="All" IsSelected="True"/>
+                                        <ComboBoxItem Content="Approved"/>
+                                        <ComboBoxItem Content="Pending"/>
+                                        <ComboBoxItem Content="Rejected"/>
                                     </ComboBox>
                                 </Border>
                             </Grid>
