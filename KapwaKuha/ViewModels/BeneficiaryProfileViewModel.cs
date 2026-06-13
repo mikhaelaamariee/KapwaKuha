@@ -134,9 +134,7 @@ namespace KapwaKuha.ViewModels
             LoadProfile();
         }
 
-        // FILE: ViewModels/BeneficiaryProfileViewModel.cs
-        // REPLACE the LoadProfile method entirely:
-
+   
         private async void LoadProfile()
         {
             try
@@ -152,22 +150,23 @@ namespace KapwaKuha.ViewModels
                     OrgContact = bene.Organization_Contact;
                     PicturePath = bene.ProfilePicturePath ?? string.Empty;
                     IsInstitutional = true;
+                    // Load email from Users table (institutional bene email source of truth)
+                    var user = await KapwaDataService.GetUserById(_beneficiaryId);
+                    Email = user?.Email ?? bene.Email ?? "";
                 }
                 else
                 {
                     var (fullName, username, contact, address, picPath, _, indepEmail) =
-      await KapwaDataService.GetIndepBeneficiaryById(_beneficiaryId);
+                        await KapwaDataService.GetIndepBeneficiaryById(_beneficiaryId);
                     FullName = fullName;
                     Username = username;
                     Contact = contact;
                     Address = address;
                     PicturePath = picPath;
                     IsInstitutional = false;
-                    Email = indepEmail;  // ← taken directly, skips the extra GetUserById call
+                    // For IndepBene: use the IndependentBeneficiaries.Email directly — no second GetUserById
+                    Email = indepEmail;
                 }
-                // Load email for all bene types
-                var user = await KapwaDataService.GetUserById(_beneficiaryId);
-                Email = user?.Email ?? "";
             }
             catch { }
         }

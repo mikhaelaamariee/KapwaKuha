@@ -142,17 +142,19 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- LEFT PANEL -->
+                    <!-- LEFT PANEL -->
                     <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
+              HorizontalScrollBarVisibility="Disabled">
                         <StackPanel>
 
-                            <!-- DONOR: Trust & Impact with half-star -->
+                            <!-- ══════════════════════════════════════
+             DONOR LEFT PANEL
+             ══════════════════════════════════════ -->
                             <StackPanel Visibility="{Binding IsDonorTarget, Converter={StaticResource BoolToVis}}">
-                                <TextBlock Text="Trust &amp; Impact" FontSize="16" FontWeight="Bold"
-                                           Foreground="#0A2540" Margin="0,0,0,12"/>
+                                <TextBlock Text="Trust &amp; Impact" FontSize="16" FontWeight="Bold" Foreground="#0A2540" Margin="0,0,0,12"/>
 
-                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12"
-                                        BorderBrush="#E5E7EB" BorderThickness="1">
+                                <!-- Rating card -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12" BorderBrush="#E5E7EB" BorderThickness="1">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -161,167 +163,324 @@
                                         <StackPanel>
                                             <TextBlock Text="Community Rating" FontSize="14" Foreground="#6B7280" FontWeight="SemiBold"/>
                                             <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                                                <!-- Star 1 -->
-                                                <Grid Width="26" Height="28">
-                                                    <TextBlock Text="★" FontSize="24" Foreground="{Binding StarFill1}"/>
-                                                    <TextBlock FontSize="24" Foreground="#FFD700"
-                                                               Visibility="{Binding HalfStar1, Converter={StaticResource BoolToVis}}">
-                                                        <TextBlock.Clip>
-                                                            <RectangleGeometry Rect="0,0,13,28"/>
-                                                        </TextBlock.Clip>★</TextBlock>
-                                                </Grid>
-                                                <!-- Star 2 -->
-                                                <Grid Width="26" Height="28">
-                                                    <TextBlock Text="★" FontSize="24" Foreground="{Binding StarFill2}"/>
-                                                    <TextBlock FontSize="24" Foreground="#FFD700"
-                                                               Visibility="{Binding HalfStar2, Converter={StaticResource BoolToVis}}">
-                                                        <TextBlock.Clip>
-                                                            <RectangleGeometry Rect="0,0,13,28"/>
-                                                        </TextBlock.Clip>★</TextBlock>
-                                                </Grid>
-                                                <!-- Star 3 -->
-                                                <Grid Width="26" Height="28">
-                                                    <TextBlock Text="★" FontSize="24" Foreground="{Binding StarFill3}"/>
-                                                    <TextBlock FontSize="24" Foreground="#FFD700"
-                                                               Visibility="{Binding HalfStar3, Converter={StaticResource BoolToVis}}">
-                                                        <TextBlock.Clip>
-                                                            <RectangleGeometry Rect="0,0,13,28"/>
-                                                        </TextBlock.Clip>★</TextBlock>
-                                                </Grid>
-                                                <!-- Star 4 -->
-                                                <Grid Width="26" Height="28">
-                                                    <TextBlock Text="★" FontSize="24" Foreground="{Binding StarFill4}"/>
-                                                    <TextBlock FontSize="24" Foreground="#FFD700"
-                                                               Visibility="{Binding HalfStar4, Converter={StaticResource BoolToVis}}">
-                                                        <TextBlock.Clip>
-                                                            <RectangleGeometry Rect="0,0,13,28"/>
-                                                        </TextBlock.Clip>★</TextBlock>
-                                                </Grid>
-                                                <!-- Star 5 -->
-                                                <Grid Width="26" Height="28">
-                                                    <TextBlock Text="★" FontSize="24" Foreground="{Binding StarFill5}"/>
-                                                    <TextBlock FontSize="24" Foreground="#FFD700"
-                                                               Visibility="{Binding HalfStar5, Converter={StaticResource BoolToVis}}">
-                                                        <TextBlock.Clip>
-                                                            <RectangleGeometry Rect="0,0,13,28"/>
-                                                        </TextBlock.Clip>★</TextBlock>
-                                                </Grid>
+                                                <TextBlock Text="★" FontSize="28" Margin="0,0,2,0">
+                                                    <TextBlock.Foreground>
+                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                            <GradientStop Color="#FFD700" Offset="{Binding Star1Offset}" />
+                                                            <GradientStop Color="#E5E7EB" Offset="{Binding Star1Offset}" />
+                                                        </LinearGradientBrush>
+                                                    </TextBlock.Foreground>
+                                                </TextBlock>
+                                                <TextBlock Text="★" FontSize="28" Margin="0,0,2,0">
+                                                    <TextBlock.Foreground>
+                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                            <GradientStop Color="#FFD700" Offset="{Binding Star2Offset}" />
+                                                            <GradientStop Color="#E5E7EB" Offset="{Binding Star2Offset}" />
+                                                        </LinearGradientBrush>
+                                                    </TextBlock.Foreground>
+                                                </TextBlock>
+                                                <TextBlock Text="★" FontSize="28" Margin="0,0,2,0">
+                                                    <TextBlock.Foreground>
+                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                            <GradientStop Color="#FFD700" Offset="{Binding Star3Offset}" />
+                                                            <GradientStop Color="#E5E7EB" Offset="{Binding Star3Offset}" />
+                                                        </LinearGradientBrush>
+                                                    </TextBlock.Foreground>
+                                                </TextBlock>
+                                                <TextBlock Text="★" FontSize="28" Margin="0,0,2,0">
+                                                    <TextBlock.Foreground>
+                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                            <GradientStop Color="#FFD700" Offset="{Binding Star4Offset}" />
+                                                            <GradientStop Color="#E5E7EB" Offset="{Binding Star4Offset}" />
+                                                        </LinearGradientBrush>
+                                                    </TextBlock.Foreground>
+                                                </TextBlock>
+                                                <TextBlock Text="★" FontSize="28" Margin="0,0,2,0">
+                                                    <TextBlock.Foreground>
+                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                            <GradientStop Color="#FFD700" Offset="{Binding Star5Offset}" />
+                                                            <GradientStop Color="#E5E7EB" Offset="{Binding Star5Offset}" />
+                                                        </LinearGradientBrush>
+                                                    </TextBlock.Foreground>
+                                                </TextBlock>
                                             </StackPanel>
                                         </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{Binding StarDisplay}"
-                                                   FontSize="28" FontWeight="Bold" Foreground="#F59E0B"
-                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding StarDisplay}" FontSize="28" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
 
-                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,24"
-                                        BorderBrush="#E5E7EB" BorderThickness="1">
+                                <!-- Total hand-offs card -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12" BorderBrush="#E5E7EB" BorderThickness="1">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Text="Total Successful Hand-offs" FontSize="14" Foreground="#6B7280"
-                                                   FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding TotalDonations, StringFormat='{}{0} Items'}"
-                                                   FontSize="22" FontWeight="Bold" Foreground="#0077B6"/>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Total Successful" FontSize="13" Foreground="#6B7280" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Hand-offs" FontSize="13" Foreground="#6B7280" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding TotalDonations, StringFormat='{}{0} Items'}" FontSize="22" FontWeight="Bold" Foreground="#0077B6" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
+
+                                <!-- Role badge card -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,24" BorderBrush="#E5E7EB" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Account Role" FontSize="13" Foreground="#6B7280" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Background="#DBEAFE" CornerRadius="8" Padding="10,4">
+                                            <TextBlock Text="🤝 Donor" FontSize="13" FontWeight="Bold" Foreground="#1D4ED8"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Report / Ban buttons -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" Command="{Binding ToggleReportCommand}" Height="44" Cursor="Hand">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border CornerRadius="8" Background="White" BorderBrush="#FECACA" BorderThickness="1.5" x:Name="bg">
+                                                    <TextBlock x:Name="txt" TextAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="#DC2626"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bg" Property="Background" Value="#FEF2F2"/>
+                                                    </Trigger>
+                                                    <DataTrigger Binding="{Binding ReportPanelVisible}" Value="False">
+                                                        <Setter TargetName="txt" Property="Text" Value="🚩 Report User"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ReportPanelVisible}" Value="True">
+                                                        <Setter TargetName="txt" Property="Text" Value="✕ Cancel Report"/>
+                                                    </DataTrigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                    <Button Grid.Column="2" Command="{Binding BanUserCommand}" Height="44" Cursor="Hand"
+                        Visibility="{Binding ViewerIsAdmin, Converter={StaticResource BoolToVis}}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border CornerRadius="8" Background="#DC2626" x:Name="bg">
+                                                    <TextBlock Text="🚫 Ban Account" Foreground="White" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bg" Property="Background" Value="#B91C1C"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
                             </StackPanel>
 
-                            <!-- INSTITUTIONAL BENE: Organization Details -->
-                            <StackPanel Visibility="{Binding IsInstBeneTarget, Converter={StaticResource BoolToVis}}">
-                                <TextBlock Text="Organization Details" FontSize="16" FontWeight="Bold"
-                                           Foreground="#0A2540" Margin="0,0,0,12"/>
-                                <Border Background="White" CornerRadius="12" Padding="20,18" Margin="0,0,0,24"
-                                        BorderBrush="#E5E7EB" BorderThickness="1">
+                            <!-- ══════════════════════════════════════
+             INDEPENDENT BENEFICIARY LEFT PANEL
+             ══════════════════════════════════════ -->
+                            <StackPanel Visibility="{Binding IsIndepBeneTarget, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="Account Details" FontSize="16" FontWeight="Bold" Foreground="#0A2540" Margin="0,0,0,12"/>
+
+                                <!-- Identity type -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12" BorderBrush="#E5E7EB" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Account Role" FontSize="13" Foreground="#6B7280" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Background="#F3E8FF" CornerRadius="8" Padding="10,4">
+                                            <TextBlock Text="🙋 Independent Bene." FontSize="12" FontWeight="Bold" Foreground="#7C3AED"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Address card -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12" BorderBrush="#E5E7EB" BorderThickness="1">
                                     <StackPanel>
-                                        <TextBlock Text="Entity Name" FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,4"/>
-                                        <TextBlock Text="{Binding OrgName}" FontSize="16" FontWeight="SemiBold" Foreground="#0A2540" Margin="0,0,0,16"/>
-                                        <TextBlock Text="Registered Address" FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,4"/>
-                                        <TextBlock Text="{Binding OrgAddress}" FontSize="14" Foreground="#374151" TextWrapping="Wrap" Margin="0,0,0,16"/>
-                                        <TextBlock Text="Primary Contact" FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,4"/>
+                                        <TextBlock Text="📍 Address" FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,6"/>
+                                        <TextBlock Text="{Binding IndepAddress}" FontSize="14" Foreground="#374151" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Stats card: total items received -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,24" BorderBrush="#E5E7EB" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Items Received" FontSize="13" Foreground="#6B7280" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding ReceivedItems.Count}" FontSize="22" FontWeight="Bold" Foreground="#0077B6"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Report / Ban buttons -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" Command="{Binding ToggleReportCommand}" Height="44" Cursor="Hand">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border CornerRadius="8" Background="White" BorderBrush="#FECACA" BorderThickness="1.5" x:Name="bg">
+                                                    <TextBlock x:Name="txt" TextAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="#DC2626"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bg" Property="Background" Value="#FEF2F2"/>
+                                                    </Trigger>
+                                                    <DataTrigger Binding="{Binding ReportPanelVisible}" Value="False">
+                                                        <Setter TargetName="txt" Property="Text" Value="🚩 Report User"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ReportPanelVisible}" Value="True">
+                                                        <Setter TargetName="txt" Property="Text" Value="✕ Cancel Report"/>
+                                                    </DataTrigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                    <Button Grid.Column="2" Command="{Binding BanUserCommand}" Height="44" Cursor="Hand"
+                        Visibility="{Binding ViewerIsAdmin, Converter={StaticResource BoolToVis}}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border CornerRadius="8" Background="#DC2626" x:Name="bg">
+                                                    <TextBlock Text="🚫 Ban Account" Foreground="White" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bg" Property="Background" Value="#B91C1C"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- ══════════════════════════════════════
+             INSTITUTIONAL BENEFICIARY LEFT PANEL
+             ══════════════════════════════════════ -->
+                            <StackPanel Visibility="{Binding IsInstBeneTarget, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="Organization Info" FontSize="16" FontWeight="Bold" Foreground="#0A2540" Margin="0,0,0,12"/>
+
+                                <!-- Role badge -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12" BorderBrush="#E5E7EB" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Account Role" FontSize="13" Foreground="#6B7280" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Background="#FEF3C7" CornerRadius="8" Padding="10,4">
+                                            <TextBlock Text="🏢 Institutional Bene." FontSize="12" FontWeight="Bold" Foreground="#92400E"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Org name card -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12" BorderBrush="#E5E7EB" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="🏛 Organization" FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,6"/>
+                                        <TextBlock Text="{Binding OrgName}" FontSize="14" FontWeight="SemiBold" Foreground="#0A2540" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Org address card -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12" BorderBrush="#E5E7EB" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="📍 Address" FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,6"/>
+                                        <TextBlock Text="{Binding OrgAddress}" FontSize="14" Foreground="#374151" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Org contact card -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12" BorderBrush="#E5E7EB" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="📞 Contact" FontSize="12" Foreground="#9CA3AF" Margin="0,0,0,6"/>
                                         <TextBlock Text="{Binding OrgContact}" FontSize="14" Foreground="#374151"/>
                                     </StackPanel>
                                 </Border>
-                            </StackPanel>
 
-                            <!-- INDEPENDENT BENE: Verification Status -->
-                            <StackPanel Visibility="{Binding IsIndepBeneTarget, Converter={StaticResource BoolToVis}}">
-                                <TextBlock Text="Verification Status" FontSize="16" FontWeight="Bold"
-                                           Foreground="#0A2540" Margin="0,0,0,12"/>
-                                <Border Background="White" CornerRadius="12" Padding="20,18" Margin="0,0,0,24"
-                                        BorderBrush="#E5E7EB" BorderThickness="1">
-                                    <StackPanel>
-                                        <TextBlock Text="✅ Identity Verified" FontSize="16" FontWeight="Bold" Foreground="#059669"/>
-                                        <TextBlock Text="This user has passed local community credential checks."
-                                                   FontSize="13" Foreground="#6B7280" Margin="0,8,0,0" TextWrapping="Wrap"/>
-                                    </StackPanel>
+                                <!-- Stats card: total items received -->
+                                <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,24" BorderBrush="#E5E7EB" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Items Received" FontSize="13" Foreground="#6B7280" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding ReceivedItems.Count}" FontSize="22" FontWeight="Bold" Foreground="#0077B6"/>
+                                    </Grid>
                                 </Border>
+
+                                <!-- Report / Ban buttons -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" Command="{Binding ToggleReportCommand}" Height="44" Cursor="Hand">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border CornerRadius="8" Background="White" BorderBrush="#FECACA" BorderThickness="1.5" x:Name="bg">
+                                                    <TextBlock x:Name="txt" TextAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="#DC2626"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bg" Property="Background" Value="#FEF2F2"/>
+                                                    </Trigger>
+                                                    <DataTrigger Binding="{Binding ReportPanelVisible}" Value="False">
+                                                        <Setter TargetName="txt" Property="Text" Value="🚩 Report User"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ReportPanelVisible}" Value="True">
+                                                        <Setter TargetName="txt" Property="Text" Value="✕ Cancel Report"/>
+                                                    </DataTrigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                    <Button Grid.Column="2" Command="{Binding BanUserCommand}" Height="44" Cursor="Hand"
+                        Visibility="{Binding ViewerIsAdmin, Converter={StaticResource BoolToVis}}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border CornerRadius="8" Background="#DC2626" x:Name="bg">
+                                                    <TextBlock Text="🚫 Ban Account" Foreground="White" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bg" Property="Background" Value="#B91C1C"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
                             </StackPanel>
 
-                            <!-- Report / Ban buttons -->
-                            <Grid Margin="0,16,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="12"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Button Grid.Column="0" Command="{Binding ToggleReportCommand}"
-                                        Height="44" Cursor="Hand">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border CornerRadius="8" Background="White"
-                                                    BorderBrush="#FECACA" BorderThickness="1.5" x:Name="bg">
-                                                <TextBlock x:Name="txt" TextAlignment="Center" VerticalAlignment="Center"
-                                                           FontSize="14" FontWeight="SemiBold" Foreground="#DC2626"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="bg" Property="Background" Value="#FEF2F2"/>
-                                                </Trigger>
-                                                <DataTrigger Binding="{Binding ReportPanelVisible}" Value="False">
-                                                    <Setter TargetName="txt" Property="Text" Value="🚩 Report User"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding ReportPanelVisible}" Value="True">
-                                                    <Setter TargetName="txt" Property="Text" Value="✕ Cancel Report"/>
-                                                </DataTrigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
-
-                                <Button Grid.Column="2" Command="{Binding BanUserCommand}"
-                                        Height="44" Cursor="Hand"
-                                        Visibility="{Binding ViewerIsAdmin, Converter={StaticResource BoolToVis}}">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border CornerRadius="8" Background="#DC2626" x:Name="bg">
-                                                <TextBlock Text="🚫 Ban Account" Foreground="White" FontSize="14" FontWeight="SemiBold"
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="bg" Property="Background" Value="#B91C1C"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
-                            </Grid>
-
-                            <!-- Report panel -->
+                            <!-- Report panel (shared — shows below whichever role is active) -->
                             <Border Background="#FEF2F2" CornerRadius="12" Padding="20,16" Margin="0,16,0,0"
-                                    BorderBrush="#FECACA" BorderThickness="1"
-                                    Visibility="{Binding ReportPanelVisible, Converter={StaticResource BoolToVis}}">
+                BorderBrush="#FECACA" BorderThickness="1"
+                Visibility="{Binding ReportPanelVisible, Converter={StaticResource BoolToVis}}">
                                 <StackPanel>
                                     <TextBlock Text="File a formal report" FontSize="14" FontWeight="Bold" Foreground="#991B1B" Margin="0,0,0,12"/>
                                     <TextBlock Text="Infraction Category" FontSize="12" Foreground="#7F1D1D" Margin="0,0,0,4"/>
                                     <ComboBox SelectedValue="{Binding ReportType, Mode=TwoWay}"
-                                              SelectedValuePath="Tag"
-                                              Height="38" FontSize="13" Margin="0,0,0,12">
+                          SelectedValuePath="Tag"
+                          Height="38" FontSize="13" Margin="0,0,0,12">
                                         <ComboBoxItem Tag="FakeItem" Content="Fake/Fraudulent Item" IsSelected="True"/>
                                         <ComboBoxItem Tag="Fraud" Content="Scam/Phishing Attempt"/>
                                         <ComboBoxItem Tag="Spam" Content="Spam Activity"/>
@@ -330,19 +489,19 @@
                                     <TextBlock Text="Details (Required)" FontSize="12" Foreground="#7F1D1D" Margin="0,0,0,4"/>
                                     <Border Background="White" CornerRadius="8" BorderBrush="#FCA5A5" BorderThickness="1">
                                         <TextBox Text="{Binding ReportDescription, UpdateSourceTrigger=PropertyChanged}"
-                                                 Height="80" Background="Transparent" BorderThickness="0"
-                                                 Padding="12,10" FontSize="13" TextWrapping="Wrap"
-                                                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                             Height="80" Background="Transparent" BorderThickness="0"
+                             Padding="12,10" FontSize="13" TextWrapping="Wrap"
+                             AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
                                     </Border>
                                     <TextBlock Text="{Binding ReportError}" Foreground="#DC2626" FontSize="12" Margin="0,8,0,0"
-                                               Visibility="{Binding ReportErrorVisible, Converter={StaticResource BoolToVis}}"/>
+                           Visibility="{Binding ReportErrorVisible, Converter={StaticResource BoolToVis}}"/>
                                     <Button Content="Submit to Admins" Command="{Binding SubmitReportCommand}"
-                                            Height="40" Margin="0,16,0,0" Cursor="Hand">
+                        Height="40" Margin="0,16,0,0" Cursor="Hand">
                                         <Button.Template>
                                             <ControlTemplate TargetType="Button">
                                                 <Border CornerRadius="8" Background="#B91C1C" x:Name="bg">
                                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                      TextBlock.Foreground="White" TextBlock.FontWeight="Bold"/>
+                                                  TextBlock.Foreground="White" TextBlock.FontWeight="Bold"/>
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
@@ -475,61 +634,7 @@
                                 </StackPanel.Style>
 
                                 <!-- Profile pic box for beneficiary right panel -->
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16" VerticalAlignment="Center">
-                                    <Grid Width="56" Height="56" Margin="0,0,14,0">
-                                        <Border CornerRadius="28" Background="#E0F2FE"
-                                                BorderBrush="#90E0EF" BorderThickness="2">
-                                            <TextBlock Text="👤" FontSize="26"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasPicture}" Value="True">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </Border>
-                                        <Border CornerRadius="28" ClipToBounds="True">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding HasPicture}" Value="True">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <Border.Background>
-                                                <ImageBrush ImageSource="{Binding ProfilePicture}" Stretch="UniformToFill"/>
-                                            </Border.Background>
-                                        </Border>
-                                    </Grid>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="Bold"
-                                                   Foreground="#0A2540" TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Text="{Binding AccountCreated}" FontSize="11"
-                                                   Foreground="#6B7280" Margin="0,2,0,0"/>
-                                        <!-- Email in right panel box for bene -->
-                                        <TextBlock FontSize="11" Foreground="#9CA3AF" Margin="0,2,0,0">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding HasEmail}" Value="True">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                            <Run Text="✉ "/><Run Text="{Binding Email}"/>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </StackPanel>
+                               
 
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
                                     <TextBlock Text="📦" FontSize="20" Margin="0,0,8,0" VerticalAlignment="Center"/>

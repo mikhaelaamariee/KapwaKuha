@@ -181,9 +181,9 @@
                     <Border.Effect>
                         <DropShadowEffect Color="Black" BlurRadius="30" Opacity="0.25" ShadowDepth="10"/>
                     </Border.Effect>
-                    <Border CornerRadius="20" Margin="-58,-36,-58,0" Height="584" VerticalAlignment="Top">
+                    <Border CornerRadius="20" Margin="-78,-76,-70,0" Height="624" VerticalAlignment="Top">
                         <Border.Background>
-                            <ImageBrush ImageSource="https://i.imgur.com/DKZIr3s.png" Stretch="UniformToFill"/>
+                            <ImageBrush ImageSource="https://i.imgur.com/7LKmCaG.png" Stretch="UniformToFill"/>
                         </Border.Background>
                     </Border>
                 </Border>

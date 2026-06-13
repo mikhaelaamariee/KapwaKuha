@@ -154,7 +154,7 @@
                                  BorderThickness="0" FontSize="13"
                                  VerticalContentAlignment="Center" Height="40"
                                  KeyDown="InputBox_KeyDown"
-                                 Text="Message KapwaKuha Support..."/>
+                                 />
                     </Border>
                     <Button Grid.Column="1" x:Name="SendBtn"
                             Width="44" Height="44" BorderThickness="0"

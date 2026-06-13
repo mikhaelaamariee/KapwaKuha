@@ -1,4 +1,4 @@
-﻿// FILE: ViewModels/IndependentBeneficiarySignUpViewModel.cs  (NEW)
+﻿// FILE: ViewModels/IndependentBeneficiarySignUpViewModel.cs
 using System;
 using System.Linq;
 using System.Windows;
@@ -105,7 +105,7 @@ namespace KapwaKuha.ViewModels
         public IndependentBeneficiarySignUpViewModel()
         {
             BackCommand = new RelayCommand(_ =>
-    NavigationService.Navigate(new View.ChooseRoleWindow()));
+                NavigationService.Navigate(new View.ChooseRoleWindow()));
 
             BrowsePictureCommand = new RelayCommand(_ =>
             {
@@ -134,6 +134,10 @@ namespace KapwaKuha.ViewModels
                 { ShowError("Passwords do not match."); return; }
                 if (string.IsNullOrWhiteSpace(SecurityAnswer))
                 { ShowError("Security answer is required."); return; }
+
+                // EMAIL VALIDATION added here
+                var (emailOk, emailErr) = ValidateEmail(Email, "IndependentBeneficiary");
+                if (!emailOk) { ShowError(emailErr); return; }
 
                 var confirm = MessageBox.Show(
                     $"Register as Independent Beneficiary?\n\nName: {FName} {LName}\nUsername: {Username}\nContact: {Contact}",
@@ -166,6 +170,24 @@ namespace KapwaKuha.ViewModels
                 catch { }
                 finally { IsLoading = false; }
             });
+        }
+
+        // Email validation helper method moved outside the constructor
+        private static (bool Valid, string Error) ValidateEmail(string email, string role)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return (false, "Email is required.");
+
+            var atIndex = email.IndexOf('@');
+            if (atIndex <= 0 || atIndex != email.LastIndexOf('@') || atIndex == email.Length - 1)
+                return (false, "Enter a valid email address (e.g. juan@gmail.com).");
+
+            var domain = email[(atIndex + 1)..].ToLowerInvariant();
+            var dotIdx = domain.LastIndexOf('.');
+            if (dotIdx <= 0 || dotIdx == domain.Length - 1)
+                return (false, "Email domain is invalid (e.g. @gmail.com).");
+
+            return (true, string.Empty);
         }
 
         private void ShowError(string msg) { ErrorMessage = msg; ErrorVisible = true; }

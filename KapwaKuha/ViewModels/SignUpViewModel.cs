@@ -189,6 +189,10 @@ namespace KapwaKuha.ViewModels
                 if (string.IsNullOrWhiteSpace(SecurityAnswer))
                 { ShowError("Security answer is required."); return; }
 
+                // EMAIL VALIDATION (shared)
+                var (emailOk, emailErr) = ValidateEmail(Email, _role);
+                if (!emailOk) { ShowError(emailErr); return; }
+
                 if (_role == "Donor")
                 {
                     if (string.IsNullOrWhiteSpace(Username))
@@ -271,6 +275,32 @@ namespace KapwaKuha.ViewModels
 
             if (_role == "Beneficiary")
                 LoadOrganizations();
+        }
+
+        // MOVED OUTSIDE THE CONSTRUCTOR
+        private static (bool Valid, string Error) ValidateEmail(string email, string role)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return (false, "Email is required.");
+
+            var atIndex = email.IndexOf('@');
+            if (atIndex <= 0 || atIndex != email.LastIndexOf('@') || atIndex == email.Length - 1)
+                return (false, "Enter a valid email address (e.g. juan@gmail.com).");
+
+            var domain = email[(atIndex + 1)..].ToLowerInvariant();
+            var dotIdx = domain.LastIndexOf('.');
+            if (dotIdx <= 0 || dotIdx == domain.Length - 1)
+                return (false, "Email domain is invalid (e.g. @gmail.com).");
+
+            if (role == "InstitutionalBeneficiary")
+            {
+                var allowedOrgTlds = new[] { "org", "edu", "gov", "ngo", "int", "mil", "ac", "sch", "ph" };
+                bool isOrgDomain = allowedOrgTlds.Any(t => domain.EndsWith("." + t));
+                if (!isOrgDomain)
+                    return (false, "Institutional Beneficiaries must use an org email (e.g. @org.ph, @school.edu.ph, @barangay.gov.ph).");
+            }
+
+            return (true, string.Empty);
         }
 
         private async void LoadOrganizations()

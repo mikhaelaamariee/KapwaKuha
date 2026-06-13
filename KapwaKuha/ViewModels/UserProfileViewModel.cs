@@ -5,6 +5,7 @@ using System.Windows.Input;
 using KapwaKuha.Commands;
 using KapwaKuha.Models;
 using KapwaKuha.Services;
+using System.Linq; // Added for .Contains()
 
 namespace KapwaKuha.ViewModels
 {
@@ -31,10 +32,18 @@ namespace KapwaKuha.ViewModels
         private bool _isIndepBeneTarget;
         private string _email = string.Empty;
 
+        private string _indepAddress = string.Empty;
+        public string IndepAddress
+        {
+            get => _indepAddress;
+            set { _indepAddress = value; OnPropertyChanged(); }
+        }
+
         public string DisplayName { get => _displayName; set { _displayName = value; OnPropertyChanged(); } }
         public string ProfilePicture { get => _profilePicture; set { _profilePicture = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasPicture)); } }
         public string AccountCreated { get => _accountCreated; set { _accountCreated = value; OnPropertyChanged(); } }
         public string SubInfo { get => _subInfo; set { _subInfo = value; OnPropertyChanged(); } }
+
         public double AverageRating
         {
             get => _averageRating;
@@ -43,14 +52,15 @@ namespace KapwaKuha.ViewModels
                 _averageRating = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(StarDisplay));
-                OnPropertyChanged(nameof(StarFill1));
-                OnPropertyChanged(nameof(StarFill2));
-                OnPropertyChanged(nameof(StarFill3));
-                OnPropertyChanged(nameof(StarFill4));
-                OnPropertyChanged(nameof(StarFill5));
-                OnPropertyChanged(nameof(HalfStarVisible));
+                // Update bindings for the new proportional offsets
+                OnPropertyChanged(nameof(Star1Offset));
+                OnPropertyChanged(nameof(Star2Offset));
+                OnPropertyChanged(nameof(Star3Offset));
+                OnPropertyChanged(nameof(Star4Offset));
+                OnPropertyChanged(nameof(Star5Offset));
             }
         }
+
         public int TotalDonations { get => _totalDonations; set { _totalDonations = value; OnPropertyChanged(); } }
         public string OrgName { get => _orgName; set { _orgName = value; OnPropertyChanged(); } }
         public string OrgAddress { get => _orgAddress; set { _orgAddress = value; OnPropertyChanged(); } }
@@ -68,34 +78,24 @@ namespace KapwaKuha.ViewModels
         public bool HasEmail => !string.IsNullOrEmpty(_email);
         public bool HasPicture => !string.IsNullOrEmpty(ProfilePicture);
 
-        // ── Star helpers (with half-star support) ─────────────────────────
+        // ── Star helpers (Realistic Proportional Fill) ─────────────────────────
         public string StarDisplay => $"{AverageRating:F1} / 5.0";
 
-        // Returns full/half/empty for each star slot
-        // 0=empty, 1=half, 2=full
-        private int StarValue(int slot)
+        // Calculates exact fill percentage (0.0 to 1.0)
+        private double GetStarFillPercentage(int slot)
         {
             double val = AverageRating - (slot - 1);
-            if (val >= 1.0) return 2;       // full
-            if (val >= 0.3) return 1;       // half (≥0.3 shows half)
-            return 0;                       // empty
+            if (val >= 1.0) return 1.0;
+            if (val <= 0.0) return 0.0;
+            return val;
         }
 
-        public string StarFill1 => StarValue(1) == 2 ? "#FFD700" : "#E0E0E0";
-        public string StarFill2 => StarValue(2) == 2 ? "#FFD700" : "#E0E0E0";
-        public string StarFill3 => StarValue(3) == 2 ? "#FFD700" : "#E0E0E0";
-        public string StarFill4 => StarValue(4) == 2 ? "#FFD700" : "#E0E0E0";
-        public string StarFill5 => StarValue(5) == 2 ? "#FFD700" : "#E0E0E0";
-
-        // Half overlay visibility per slot
-        public bool HalfStar1 => StarValue(1) == 1;
-        public bool HalfStar2 => StarValue(2) == 1;
-        public bool HalfStar3 => StarValue(3) == 1;
-        public bool HalfStar4 => StarValue(4) == 1;
-        public bool HalfStar5 => StarValue(5) == 1;
-
-        // Kept for XAML that only checks "any half visible"
-        public bool HalfStarVisible => HalfStar1 || HalfStar2 || HalfStar3 || HalfStar4 || HalfStar5;
+        // Bind these to your LinearGradientBrush Offsets in XAML
+        public double Star1Offset => GetStarFillPercentage(1);
+        public double Star2Offset => GetStarFillPercentage(2);
+        public double Star3Offset => GetStarFillPercentage(3);
+        public double Star4Offset => GetStarFillPercentage(4);
+        public double Star5Offset => GetStarFillPercentage(5);
 
         public ObservableCollection<ItemModel> AvailableItems { get; } = new();
         public ObservableCollection<TransactionRow> ReceivedItems { get; } = new();
@@ -132,48 +132,35 @@ namespace KapwaKuha.ViewModels
 
             SubmitReportCommand = new AsyncRelayCommand(async _ =>
             {
-                string reportType = Microsoft.VisualBasic.Interaction.InputBox(
-                    "Report type (FakeItem / Fraud / Spam / Inappropriate):",
-                    "Report User", "Spam");
-                if (string.IsNullOrWhiteSpace(reportType)) return;
-                if (!new[] { "FakeItem", "Fraud", "Spam", "Inappropriate" }.Contains(reportType))
-                { MessageBox.Show("Invalid report type."); return; }
-
-                string description = Microsoft.VisualBasic.Interaction.InputBox(
-                    "Describe the issue (required):", "Report Details", "");
-                if (string.IsNullOrWhiteSpace(description)) return;
-
-                string proofPath = string.Empty;
-                var attachResult = MessageBox.Show(
-                    "Attach a proof image?\n\nClick YES to attach.",
-                    "Attach Proof", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (attachResult == MessageBoxResult.Yes)
+                // Validate using the UI-bound properties directly — no InputBox needed
+                if (string.IsNullOrWhiteSpace(ReportDescription))
                 {
-                    var dlg = new Microsoft.Win32.OpenFileDialog
-                    {
-                        Filter = "Images (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp",
-                        Title = "Select Proof Image"
-                    };
-                    if (dlg.ShowDialog() == true) proofPath = dlg.FileName;
+                    ReportError = "Please describe the issue before submitting.";
+                    ReportErrorVisible = true;
+                    return;
                 }
-
-                var confirm = MessageBox.Show(
-                    $"Report this user for {reportType}?\n\nDescription: {description}",
-                    "Confirm Report", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (confirm != MessageBoxResult.Yes) return;
+                ReportErrorVisible = false;
+                ReportError = string.Empty;
 
                 try
                 {
                     string reportId = await KapwaDataService.GetNextReportId();
                     await KapwaDataService.FileUserReport(
                         reportId, _viewerId, TargetId,
-                        reportType, description, proofPath);
+                        ReportType, ReportDescription, string.Empty);
+
                     MessageBox.Show("✅ Report submitted. Our team will review it shortly.",
                         "Reported", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // Reset and close the panel
+                    ReportDescription = string.Empty;
+                    ReportType = "FakeItem";
+                    ReportPanelVisible = false;
                 }
-                catch (Exception ex)
+                catch (System.Exception ex)
                 {
-                    MessageBox.Show("Failed to submit report: " + ex.Message);
+                    ReportError = "Failed to submit: " + ex.Message;
+                    ReportErrorVisible = true;
                 }
             });
 
@@ -216,8 +203,7 @@ namespace KapwaKuha.ViewModels
                     {
                         DisplayName = donor.Donor_FullName;
                         ProfilePicture = donor.ProfilePicturePath ?? string.Empty;
-                        SubInfo = $"{(string.IsNullOrEmpty(donor.Email) ? "@" + donor.Donor_Username : donor.Email)}  ·  {donor.Donor_ContactNumber}";
-
+                        SubInfo = $"@{donor.Donor_Username}  ·  {donor.Donor_ContactNumber}";
                         AccountCreated = "Active Donor";
                         Email = donor.Email ?? "";
                     }
@@ -239,12 +225,13 @@ namespace KapwaKuha.ViewModels
                     {
                         DisplayName = bene.Beneficiary_FullName;
                         ProfilePicture = bene.ProfilePicturePath ?? string.Empty;
-                        SubInfo = $"{(string.IsNullOrEmpty(bene.Email) ? "@" + bene.Beneficiary_Username : bene.Email)}  ·  {bene.Beneficiary_Sex}";
+                        SubInfo = $"@{bene.Beneficiary_Username}  ·  {bene.Beneficiary_Sex}";
                         AccountCreated = "Institutional Beneficiary";
                         OrgName = bene.Organization_Name ?? string.Empty;
                         OrgAddress = bene.Organization_Address ?? string.Empty;
                         OrgContact = bene.Organization_Contact ?? string.Empty;
                         Email = bene.Email ?? "";
+
                     }
                     var received = await KapwaDataService.GetBeneficiaryTransactionHistory(TargetId);
                     Application.Current.Dispatcher.Invoke(() =>
@@ -261,9 +248,10 @@ namespace KapwaKuha.ViewModels
                     {
                         DisplayName = indep.FullName;
                         ProfilePicture = indep.ProfilePicturePath ?? string.Empty;
-                        SubInfo = $"{(string.IsNullOrEmpty(indep.Email) ? "@" + indep.Username : indep.Email)}  ·  {indep.Sex}  ·  {indep.Address}";
+                        SubInfo = $"@{indep.Username}  ·  {indep.Sex}  ·  {indep.Address}";
                         AccountCreated = "Independent Beneficiary";
                         Email = indep.Email ?? "";
+                        IndepAddress = indep.Address ?? string.Empty;
                     }
                     var received = await KapwaDataService.GetBeneficiaryTransactionHistory(TargetId);
                     Application.Current.Dispatcher.Invoke(() =>

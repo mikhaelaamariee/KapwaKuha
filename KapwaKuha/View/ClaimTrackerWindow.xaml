@@ -278,8 +278,7 @@
                                         <Button Height="34" Margin="6,4"
                                                 Background="Transparent" BorderThickness="0"
                                                 Cursor="Hand" ToolTip="View beneficiary profile"
-                                                Command="{Binding DataContext.ViewBeneficiaryProfileCommand,
-                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               
                                                 CommandParameter="{Binding}">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">

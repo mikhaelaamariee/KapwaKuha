@@ -270,11 +270,12 @@ WHERE Beneficiary_ID LIKE 'B[0-9][0-9][0-9]'", conn);
                 cmd.Parameters.AddWithValue("@SecurityA", securityAnswer);
                 await cmd.ExecuteNonQueryAsync();
 
-                // Persist email
+                // In RegisterDonor, REPLACE the email persist block:
                 if (!string.IsNullOrWhiteSpace(email))
                 {
                     using var emailCmd = new SqlCommand(
-                        "UPDATE Users SET Email = @email WHERE UserID = @id", conn);
+                        "UPDATE Users SET Email = @email WHERE UserID = @id; " +
+                        "UPDATE Donors SET Email = @email WHERE Donor_ID = @id", conn);
                     emailCmd.Parameters.AddWithValue("@email", email);
                     emailCmd.Parameters.AddWithValue("@id", donor.Donor_ID);
                     await emailCmd.ExecuteNonQueryAsync();
@@ -315,7 +316,8 @@ WHERE Beneficiary_ID LIKE 'B[0-9][0-9][0-9]'", conn);
                 if (!string.IsNullOrWhiteSpace(email))
                 {
                     using var emailCmd = new SqlCommand(
-                        "UPDATE Users SET Email = @email WHERE UserID = @id", conn);
+                        "UPDATE Users SET Email = @email WHERE UserID = @id; " +
+                        "UPDATE InstitutionalBeneficiaries SET Email = @email WHERE Beneficiary_ID = @id", conn);
                     emailCmd.Parameters.AddWithValue("@email", email);
                     emailCmd.Parameters.AddWithValue("@id", bene.Beneficiary_ID);
                     await emailCmd.ExecuteNonQueryAsync();
@@ -2239,9 +2241,10 @@ WHERE b.Beneficiary_ID = @id", conn);
                 if (!string.IsNullOrWhiteSpace(email))
                 {
                     using var emailCmd = new SqlCommand(
-                        "UPDATE Users SET Email = @email WHERE UserID = @id", conn);
+                        "UPDATE Users SET Email = @email WHERE UserID = @id; " +
+                        "UPDATE IndependentBeneficiaries SET Email = @email WHERE IndepBene_ID = @id", conn);
                     emailCmd.Parameters.AddWithValue("@email", email);
-                    emailCmd.Parameters.AddWithValue("@id", bene.IndepBene_ID);
+                    emailCmd.Parameters.AddWithValue("@id", bene.IndepBene_ID);  // check actual field name
                     await emailCmd.ExecuteNonQueryAsync();
                 }
             }
