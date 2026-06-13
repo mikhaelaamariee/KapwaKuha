@@ -905,7 +905,7 @@
 
                                         <StackPanel Orientation="Horizontal">
 
-                                            <ItemsControl ItemsSource="{Binding MyPosts}">
+                                            <ItemsControl ItemsSource="{Binding FilteredMyPosts}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
                                                         <StackPanel Orientation="Horizontal"/>
@@ -1048,7 +1048,7 @@
                                             </ItemsControl>
 
                                             <Button Command="{Binding PostItemCommand}"
-                Width="220" Height="230" Background="Transparent" BorderThickness="0" Cursor="Hand">
+                Width="220" Height="250" Background="Transparent" BorderThickness="0" Cursor="Hand">
                                                 <Button.Template>
                                                     <ControlTemplate TargetType="Button">
                                                         <Border CornerRadius="16" Background="#18CAF0F8" BorderBrush="#7090E0EF" BorderThickness="2">

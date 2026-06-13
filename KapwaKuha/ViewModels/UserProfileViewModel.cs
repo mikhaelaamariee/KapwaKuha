@@ -216,7 +216,8 @@ namespace KapwaKuha.ViewModels
                     {
                         DisplayName = donor.Donor_FullName;
                         ProfilePicture = donor.ProfilePicturePath ?? string.Empty;
-                        SubInfo = $"@{donor.Donor_Username}  ·  {donor.Donor_ContactNumber}";
+                        SubInfo = $"{(string.IsNullOrEmpty(donor.Email) ? "@" + donor.Donor_Username : donor.Email)}  ·  {donor.Donor_ContactNumber}";
+
                         AccountCreated = "Active Donor";
                         Email = donor.Email ?? "";
                     }
@@ -238,7 +239,7 @@ namespace KapwaKuha.ViewModels
                     {
                         DisplayName = bene.Beneficiary_FullName;
                         ProfilePicture = bene.ProfilePicturePath ?? string.Empty;
-                        SubInfo = $"@{bene.Beneficiary_Username}  ·  {bene.Beneficiary_Sex}";
+                        SubInfo = $"{(string.IsNullOrEmpty(bene.Email) ? "@" + bene.Beneficiary_Username : bene.Email)}  ·  {bene.Beneficiary_Sex}";
                         AccountCreated = "Institutional Beneficiary";
                         OrgName = bene.Organization_Name ?? string.Empty;
                         OrgAddress = bene.Organization_Address ?? string.Empty;
@@ -260,7 +261,7 @@ namespace KapwaKuha.ViewModels
                     {
                         DisplayName = indep.FullName;
                         ProfilePicture = indep.ProfilePicturePath ?? string.Empty;
-                        SubInfo = $"@{indep.Username}  ·  {indep.Sex}  ·  {indep.Address}";
+                        SubInfo = $"{(string.IsNullOrEmpty(indep.Email) ? "@" + indep.Username : indep.Email)}  ·  {indep.Sex}  ·  {indep.Address}";
                         AccountCreated = "Independent Beneficiary";
                         Email = indep.Email ?? "";
                     }

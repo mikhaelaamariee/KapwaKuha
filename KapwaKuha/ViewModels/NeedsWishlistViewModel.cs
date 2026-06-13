@@ -22,6 +22,9 @@ namespace KapwaKuha.ViewModels
         private string _errorMessage = string.Empty;
         private bool _errorVisible;
 
+        private bool _isIndependentBene = false;
+        public bool CanPostNeeds => !_isIndependentBene;
+
         private NeedsPostModel? _selectedPost;
 
         public string Title
@@ -298,8 +301,9 @@ namespace KapwaKuha.ViewModels
                 }
                 else
                 {
-                    // Independent beneficiary — use their own ID as the org/poster identifier
-                    _orgId = _beneficiaryId;
+                    // Independent — resolve or auto-create their personal org via the SP;
+                    // store the resolved ORG### back so repeated posts reuse the same row
+                    _orgId = await KapwaDataService.GetOrCreateIndepBeneOrg(_beneficiaryId);
                     _isIndependent = true;
                 }
                 await LoadMyPostsAsync();

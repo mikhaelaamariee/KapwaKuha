@@ -575,13 +575,9 @@
                                                                         <Style.Triggers>
                                                                             <!-- Show this note only when it's an edit AND only the image was changed
                              (PreviousTitle equals Title = text unchanged = photo-only update) -->
-                                                                            <MultiDataTrigger>
-                                                                                <MultiDataTrigger.Conditions>
-                                                                                    <Condition Binding="{Binding IsEdit}" Value="True"/>
-                                                                                    <Condition Binding="{Binding PreviousTitle}" Value="{Binding Title}"/>
-                                                                                </MultiDataTrigger.Conditions>
+                                                                            <DataTrigger Binding="{Binding IsEdit}" Value="True">
                                                                                 <Setter Property="Visibility" Value="Visible"/>
-                                                                            </MultiDataTrigger>
+                                                                            </DataTrigger>
                                                                         </Style.Triggers>
                                                                     </Style>
                                                                 </TextBlock.Style>

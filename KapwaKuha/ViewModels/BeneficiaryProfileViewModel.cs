@@ -155,14 +155,15 @@ namespace KapwaKuha.ViewModels
                 }
                 else
                 {
-                    var (fullName, username, contact, address, picPath, _) =
-                        await KapwaDataService.GetIndepBeneficiaryById(_beneficiaryId);
+                    var (fullName, username, contact, address, picPath, _, indepEmail) =
+      await KapwaDataService.GetIndepBeneficiaryById(_beneficiaryId);
                     FullName = fullName;
                     Username = username;
                     Contact = contact;
                     Address = address;
                     PicturePath = picPath;
                     IsInstitutional = false;
+                    Email = indepEmail;  // ← taken directly, skips the extra GetUserById call
                 }
                 // Load email for all bene types
                 var user = await KapwaDataService.GetUserById(_beneficiaryId);

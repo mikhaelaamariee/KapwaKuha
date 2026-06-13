@@ -138,9 +138,9 @@
         <Border Grid.Column="1" ClipToBounds="True">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="LightSkyBlue" Offset="0"/>
-                    <GradientStop Color="DeepSkyBlue" Offset="0.5"/>
-                    <GradientStop Color="#0A2540" Offset="1"/>
+                    <GradientStop Color="#B390E0EF" Offset="0"/>
+                    <GradientStop Color="#1E90FF" Offset="0.5"/>
+                    <GradientStop Color="#191970" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
             <Grid>

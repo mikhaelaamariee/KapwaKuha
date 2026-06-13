@@ -38,13 +38,25 @@ namespace KapwaKuha.Models
             }
         }
 
-       
-        public bool IsIndependent => string.IsNullOrEmpty(Org_ID) || Org_ID.StartsWith("IB") == false;
-        public string BeneTypeBadge => string.IsNullOrEmpty(Org_ID) || Org_ID == RequesterBeneficiaryId
-            ? "Independent"
-            : "Institutional";
+
+        // FILE: Models/NeedsPostModel.cs
+        // Replace the computed BeneTypeBadge property (and remove IsIndependent) with a settable backing field:
+
+        private string _beneTypeBadge = "Institutional";
+        public string BeneTypeBadge
+        {
+            get => _beneTypeBadge;
+            set
+            {
+                _beneTypeBadge = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(BeneTypeBadgeColor));
+                OnPropertyChanged(nameof(BeneTypeBadgeTextColor));
+            }
+        }
         public string BeneTypeBadgeColor => BeneTypeBadge == "Institutional" ? "#EFF6FF" : "#F0FDF4";
         public string BeneTypeBadgeTextColor => BeneTypeBadge == "Institutional" ? "#1D4ED8" : "#15803D";
+
         public bool HasRejectionNote => !string.IsNullOrEmpty(RejectionNote);
 
         // ── Urgency ──────────────────────────────────────────────────────────

@@ -245,9 +245,23 @@ namespace KapwaKuha.ViewModels
         {
             try
             {
-                var bene = await KapwaDataService.GetBeneficiaryById(_beneficiaryId);
-                if (bene != null)
-                    ProfilePicturePath = bene.ProfilePicturePath ?? string.Empty;
+                string path = string.Empty;
+
+                if (IsIndependentBeneficiary)
+                {
+                    var indep = await KapwaDataService.GetIndependentBeneficiaryById(_beneficiaryId);
+                    if (indep != null)
+                        path = indep.ProfilePicturePath ?? string.Empty;
+                }
+                else
+                {
+                    var bene = await KapwaDataService.GetBeneficiaryById(_beneficiaryId);
+                    if (bene != null)
+                        path = bene.ProfilePicturePath ?? string.Empty;
+                }
+
+                // Must set on UI thread so HasPicture notifies correctly
+                Application.Current.Dispatcher.Invoke(() => ProfilePicturePath = path);
             }
             catch { }
         }
@@ -274,13 +288,23 @@ namespace KapwaKuha.ViewModels
         {
             try
             {
-                var bene = await KapwaDataService.GetBeneficiaryById(_beneficiaryId);
-                if (bene == null) return;
-                var posts = await KapwaDataService.GetNeedsPostsByOrg(bene.Organization_ID);
+                string orgId;
+                if (IsIndependentBeneficiary)
+                {
+                    // Resolve their personal ORG### (same logic as NeedsWishlistViewModel)
+                    orgId = await KapwaDataService.GetOrCreateIndepBeneOrg(_beneficiaryId);
+                }
+                else
+                {
+                    var bene = await KapwaDataService.GetBeneficiaryById(_beneficiaryId);
+                    if (bene == null) return;
+                    orgId = bene.Organization_ID;
+                }
+
+                var posts = await KapwaDataService.GetNeedsPostsByOrg(orgId);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     MyNeedsPosts.Clear();
-                    // Sort: Approved/Live first → Pending → Rejected
                     int ApprovalOrder(NeedsPostModel p) => p.Admin_Approval_Status switch
                     {
                         "Approved" => 0,

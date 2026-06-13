@@ -142,8 +142,7 @@ namespace KapwaKuha.ViewModels
                 Address = donor.Donor_Address ?? "";
                 PicturePath = donor.ProfilePicturePath ?? "";
                 DonorStatus = donor.Donor_AccountStatus ?? "Active";
-                var user = await KapwaDataService.GetUserById(_donorId);
-                Email = user?.Email ?? "";
+                Email = donor.Email ?? "";
             }
             catch { }
         }

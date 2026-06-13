@@ -22,8 +22,13 @@ namespace KapwaKuha.Models
         public string Donor_FullName { get; set; } = string.Empty;
 
         public string ClaimDateDisplay => Claim_Date.ToString("MMM dd, yyyy  HH:mm");
+
+        // Used by DonorProfileWindow / donor-side UserProfile
         public bool HasImage =>
             !string.IsNullOrEmpty(Item_ImagePath) &&
             System.IO.File.Exists(Item_ImagePath);
+
+        // Used by UserProfileWindow bene "Items Received" list (XAML binds HasItem)
+        public bool HasItem => HasImage;
     }
 }

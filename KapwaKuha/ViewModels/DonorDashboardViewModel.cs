@@ -318,6 +318,7 @@ namespace KapwaKuha.ViewModels
             catch { }
         }
 
+
         private async void LoadMyPostsAsync()
         {
             try
@@ -326,8 +327,6 @@ namespace KapwaKuha.ViewModels
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     MyPosts.Clear();
-                    // Available items: latest Date_Found first
-                    // Sort: Approved/Live first, then Pending, then Rejected, then Claimed
                     int ApprovalOrder(ItemModel i) => i.Admin_Approval_Status switch
                     {
                         "Approved" => 0,
@@ -348,6 +347,8 @@ namespace KapwaKuha.ViewModels
                         .ThenByDescending(i => i.Date_Found);
                     foreach (var item in sorted)
                         MyPosts.Add(item);
+
+                    RefreshFilteredPosts(); // ← THIS was missing
                 });
             }
             catch { }
@@ -393,7 +394,7 @@ namespace KapwaKuha.ViewModels
                         ? $"{Transactions.Count} completed donation(s)"
                         : "No transactions yet";
               
-                    Application.Current.Dispatcher.Invoke(() => RefreshFilteredPosts());
+                 
                 });
             }
             catch { HasNoTransactions = true; }

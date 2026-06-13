@@ -731,216 +731,370 @@
 
                                 <!-- Carousel scroll host — named for code-behind wiring -->
                                 <ScrollViewer Grid.Column="1"
-                                              x:Name="NeedsCarouselScroller"
-                                              HorizontalScrollBarVisibility="Hidden"
-                                              VerticalScrollBarVisibility="Disabled">
-                                    <StackPanel Orientation="Horizontal">
+              x:Name="NeedsCarouselScroller"
+              HorizontalScrollBarVisibility="Hidden"
+              VerticalScrollBarVisibility="Disabled">
+                                    <StackPanel Orientation="Vertical">
 
-                                        <ItemsControl ItemsSource="{Binding MyNeedsPosts}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal"/>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border  Width="220"  Height="300" Margin="0,0,14,0" CornerRadius="16"
-                                                            ClipToBounds="True" BorderThickness="1">
-                                                        <Border.BorderBrush>
-                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                                <GradientStop Color="White" Offset="0"/>
-                                                                <GradientStop Color="#33FFFF" Offset="1"/>
-                                                            </LinearGradientBrush>
-                                                        </Border.BorderBrush>
-                                                        <Border.Background>
-                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                                <GradientStop Color="#CCFFFFFF" Offset="0"/>
-                                                                <GradientStop Color="#AAFFFFFF" Offset="1"/>
-                                                            </LinearGradientBrush>
-                                                        </Border.Background>
-                                                        <Border.Effect>
-                                                            <DropShadowEffect Color="#00B4D8" BlurRadius="12" ShadowDepth="0" Opacity="0.12"/>
-                                                        </Border.Effect>
-                                                        <StackPanel>
-                                                            <!-- Image area -->
-                                                            <Border Height="140" ClipToBounds="True">
-                                                                <Grid>
-                                                                    <Border Background="#EBF7FB"/>
-                                                                    <TextBlock Text="📝" FontSize="40"
-                                                                               HorizontalAlignment="Center"
-                                                                               VerticalAlignment="Center" Opacity="0.5">
-                                                                        <TextBlock.Style>
-                                                                            <Style TargetType="TextBlock">
-                                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                                                <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding HasImage}" Value="True">
-                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                    </DataTrigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </TextBlock.Style>
-                                                                    </TextBlock>
-                                                                    <Image Source="{Binding ImagePath}" Stretch="UniformToFill">
-                                                                        <Image.Style>
-                                                                            <Style TargetType="Image">
-                                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding HasImage}" Value="True">
+                                        <WrapPanel Margin="0,0,0,10">
+                                            <WrapPanel.Resources>
+                                                <Style x:Key="PillButtonStyle" TargetType="Button">
+                                                    <Setter Property="Height" Value="30"/>
+                                                    <Setter Property="Padding" Value="16,0"/>
+                                                    <Setter Property="Margin" Value="0,0,8,0"/>
+                                                    <Setter Property="Cursor" Value="Hand"/>
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="15">
+                                                                    <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center" 
+                                                                  Margin="{TemplateBinding Padding}"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </WrapPanel.Resources>
+
+                                            <Button Content="All" Command="{Binding SetNeedsPostFilterCommand}" CommandParameter="All">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource PillButtonStyle}">
+                                                        <Setter Property="Background" Value="White"/>
+                                                        <Setter Property="Foreground" Value="#374151"/>
+                                                        <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                                                        <Setter Property="BorderThickness" Value="1"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding NeedsFilterAll}" Value="True">
+                                                                <Setter Property="Background" Value="#0A2540"/>
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                                <Setter Property="BorderBrush" Value="#0A2540"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+
+                                            <Button Content="Live" Command="{Binding SetNeedsPostFilterCommand}" CommandParameter="Live">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource PillButtonStyle}">
+                                                        <Setter Property="Background" Value="White"/>
+                                                        <Setter Property="Foreground" Value="#374151"/>
+                                                        <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                                                        <Setter Property="BorderThickness" Value="1"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding NeedsFilterLive}" Value="True">
+                                                                <Setter Property="Background" Value="#059669"/>
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                                <Setter Property="BorderBrush" Value="#059669"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+
+                                            <Button Content="Pending" Command="{Binding SetNeedsPostFilterCommand}" CommandParameter="Pending">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource PillButtonStyle}">
+                                                        <Setter Property="Background" Value="White"/>
+                                                        <Setter Property="Foreground" Value="#374151"/>
+                                                        <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                                                        <Setter Property="BorderThickness" Value="1"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding NeedsFilterPending}" Value="True">
+                                                                <Setter Property="Background" Value="#D97706"/>
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                                <Setter Property="BorderBrush" Value="#D97706"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+
+                                            <Button Content="Rejected" Command="{Binding SetNeedsPostFilterCommand}" CommandParameter="Rejected">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource PillButtonStyle}">
+                                                        <Setter Property="Background" Value="White"/>
+                                                        <Setter Property="Foreground" Value="#374151"/>
+                                                        <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                                                        <Setter Property="BorderThickness" Value="1"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding NeedsFilterRejected}" Value="True">
+                                                                <Setter Property="Background" Value="#DC2626"/>
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                                <Setter Property="BorderBrush" Value="#DC2626"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+
+                                            <Button Content="🔴 High" Command="{Binding SetNeedsPostFilterCommand}" CommandParameter="High">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource PillButtonStyle}">
+                                                        <Setter Property="Background" Value="White"/>
+                                                        <Setter Property="Foreground" Value="#DC2626"/>
+                                                        <Setter Property="BorderBrush" Value="#FECACA"/>
+                                                        <Setter Property="BorderThickness" Value="1"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding NeedsFilterHigh}" Value="True">
+                                                                <Setter Property="Background" Value="#FEF2F2"/>
+                                                                <Setter Property="BorderBrush" Value="#DC2626"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+
+                                            <Button Content="🟡 Medium" Command="{Binding SetNeedsPostFilterCommand}" CommandParameter="Medium">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource PillButtonStyle}">
+                                                        <Setter Property="Background" Value="White"/>
+                                                        <Setter Property="Foreground" Value="#D97706"/>
+                                                        <Setter Property="BorderBrush" Value="#FDE68A"/>
+                                                        <Setter Property="BorderThickness" Value="1"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding NeedsFilterMedium}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFBEB"/>
+                                                                <Setter Property="BorderBrush" Value="#D97706"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+
+                                            <Button Content="🟢 Low" Command="{Binding SetNeedsPostFilterCommand}" CommandParameter="Low">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource PillButtonStyle}">
+                                                        <Setter Property="Background" Value="White"/>
+                                                        <Setter Property="Foreground" Value="#059669"/>
+                                                        <Setter Property="BorderBrush" Value="#BBF7D0"/>
+                                                        <Setter Property="BorderThickness" Value="1"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding NeedsFilterLow}" Value="True">
+                                                                <Setter Property="Background" Value="#F0FDF4"/>
+                                                                <Setter Property="BorderBrush" Value="#059669"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+
+                                        </WrapPanel>
+
+                                        <!-- Cards row — scrolls horizontally -->
+                                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled">
+                                            <StackPanel Orientation="Horizontal">
+
+                                                <ItemsControl ItemsSource="{Binding FilteredNeedsPosts}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Width="220" Height="300" Margin="0,0,14,0" CornerRadius="16"
+                                    ClipToBounds="True" BorderThickness="1">
+                                                                <Border.BorderBrush>
+                                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                                        <GradientStop Color="White" Offset="0"/>
+                                                                        <GradientStop Color="#33FFFF" Offset="1"/>
+                                                                    </LinearGradientBrush>
+                                                                </Border.BorderBrush>
+                                                                <Border.Background>
+                                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                                        <GradientStop Color="#CCFFFFFF" Offset="0"/>
+                                                                        <GradientStop Color="#AAFFFFFF" Offset="1"/>
+                                                                    </LinearGradientBrush>
+                                                                </Border.Background>
+                                                                <Border.Effect>
+                                                                    <DropShadowEffect Color="#00B4D8" BlurRadius="12" ShadowDepth="0" Opacity="0.12"/>
+                                                                </Border.Effect>
+                                                                <StackPanel>
+                                                                    <!-- Image area -->
+                                                                    <Border Height="140" ClipToBounds="True">
+                                                                        <Grid>
+                                                                            <Border Background="#EBF7FB"/>
+                                                                            <TextBlock Text="📝" FontSize="40"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" Opacity="0.5">
+                                                                                <TextBlock.Style>
+                                                                                    <Style TargetType="TextBlock">
                                                                                         <Setter Property="Visibility" Value="Visible"/>
-                                                                                    </DataTrigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </Image.Style>
-                                                                    </Image>
-                                                                    <!-- Urgency badge -->
-                                                                    <Border HorizontalAlignment="Right" VerticalAlignment="Top"
-                                                                            Margin="0,8,8,0" CornerRadius="8" Padding="8,3">
-                                                                        <Border.Style>
-                                                                            <Style TargetType="Border">
-                                                                                <Setter Property="Background" Value="#0077B6"/>
-                                                                                <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding Urgency}" Value="High">
-                                                                                        <Setter Property="Background" Value="#C0304A"/>
-                                                                                    </DataTrigger>
-                                                                                    <DataTrigger Binding="{Binding Urgency}" Value="Medium">
-                                                                                        <Setter Property="Background" Value="#B8860B"/>
-                                                                                    </DataTrigger>
-                                                                                    <DataTrigger Binding="{Binding Urgency}" Value="Low">
-                                                                                        <Setter Property="Background" Value="#185FA5"/>
-                                                                                    </DataTrigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </Border.Style>
-                                                                        <TextBlock Text="{Binding Urgency}"
-                                                                                   FontSize="10" FontWeight="SemiBold" Foreground="White"/>
-                                                                    </Border>
-                                                                </Grid>
-                                                            </Border>
-
-                                                            <!-- Card info -->
-                                                            <StackPanel Margin="10,8,10,10">
-                                                                <TextBlock Text="{Binding Title}"
-                                                                           FontSize="12" FontWeight="Bold"
-                                                                           Foreground="#03045E"
-                                                                           TextTrimming="CharacterEllipsis"
-                                                                           Margin="0,0,0,2"/>
-                                                                <TextBlock Text="{Binding Org_Name}"
-                                                                           FontSize="10" Foreground="#0077B6"
-                                                                           TextTrimming="CharacterEllipsis"
-                                                                           Margin="0,0,0,2"/>
-                                                                <TextBlock Text="{Binding Description}"
-                                                                           FontSize="10" Foreground="#5E7A8A"
-                                                                           TextTrimming="CharacterEllipsis"
-                                                                           Margin="0,0,0,10"/>
-                                                                <!-- Approval status badge -->
-                                                                <Border CornerRadius="8" Padding="8,3" HorizontalAlignment="Left"
-        Margin="0,4,0,8"
-        Background="{Binding ApprovalBadgeBackground}">
-                                                                    <Border.Style>
-                                                                        <Style TargetType="Border">
-                                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding DataContext.IsIndependentBeneficiary,
-                                                                                    RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                                    Value="True">
-                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </Border.Style>
-                                                                    <TextBlock Text="{Binding ApprovalBadgeText}"
-               FontSize="10" FontWeight="SemiBold"
-               Foreground="{Binding ApprovalBadgeTextColor}"/>
-                                                                </Border>
-
-                                                                <!-- Rejection reason — only when rejected -->
-                                                                <!-- Replace the rejection reason Border in BeneficiaryDashboardWindow.xaml -->
-                                                                <Border CornerRadius="6" Padding="8,4" Margin="0,0,0,6"
-        Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1">
-                                                                    <Border.Style>
-                                                                        <Style TargetType="Border">
-                                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                                            <Style.Triggers>
-                                                                                <!-- Only show if rejected AND has a rejection note -->
-                                                                                <MultiDataTrigger>
-                                                                                    <MultiDataTrigger.Conditions>
-                                                                                        <Condition Binding="{Binding HasRejectionNote}" Value="True"/>
-                                                                                        <Condition Binding="{Binding IsApproved}" Value="False"/>
-                                                                                    </MultiDataTrigger.Conditions>
-                                                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                                                </MultiDataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </Border.Style>
-                                                                    <TextBlock FontSize="10" Foreground="#991B1B" TextWrapping="Wrap">
-        <Run Text="Reason: " FontWeight="SemiBold"/>
-        <Run Text="{Binding RejectionNote}"/>
-                                                                    </TextBlock>
-                                                                </Border>
-
-                                                                <!-- Edit Needs button — passes the NeedsPostModel as param -->
-                                                                <Button Height="30" BorderThickness="0" Cursor="Hand"
-                                                                        Command="{Binding DataContext.EditNeedsPostCommand,
-                                                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                        CommandParameter="{Binding}">
-                                                                    <Button.Template>
-                                                                        <ControlTemplate TargetType="Button">
-                                                                            <Border x:Name="Bd" CornerRadius="8">
-                                                                                <Border.Background>
-                                                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                                                                        <GradientStop Color="#00A8E8" Offset="0"/>
-                                                                                        <GradientStop Color="#0077B6" Offset="1"/>
-                                                                                    </LinearGradientBrush>
-                                                                                </Border.Background>
-                                                                                <ContentPresenter HorizontalAlignment="Center"
-                                                                                                  VerticalAlignment="Center"/>
+                                                                                        <Style.Triggers>
+                                                                                            <DataTrigger Binding="{Binding HasImage}" Value="True">
+                                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                            </DataTrigger>
+                                                                                        </Style.Triggers>
+                                                                                    </Style>
+                                                                                </TextBlock.Style>
+                                                                            </TextBlock>
+                                                                            <Image Source="{Binding ImagePath}" Stretch="UniformToFill">
+                                                                                <Image.Style>
+                                                                                    <Style TargetType="Image">
+                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                        <Style.Triggers>
+                                                                                            <DataTrigger Binding="{Binding HasImage}" Value="True">
+                                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                                            </DataTrigger>
+                                                                                        </Style.Triggers>
+                                                                                    </Style>
+                                                                                </Image.Style>
+                                                                            </Image>
+                                                                            <!-- Urgency badge -->
+                                                                            <Border HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                    Margin="0,8,8,0" CornerRadius="8" Padding="8,3">
+                                                                                <Border.Style>
+                                                                                    <Style TargetType="Border">
+                                                                                        <Setter Property="Background" Value="#0077B6"/>
+                                                                                        <Style.Triggers>
+                                                                                            <DataTrigger Binding="{Binding Urgency}" Value="High">
+                                                                                                <Setter Property="Background" Value="#C0304A"/>
+                                                                                            </DataTrigger>
+                                                                                            <DataTrigger Binding="{Binding Urgency}" Value="Medium">
+                                                                                                <Setter Property="Background" Value="#B8860B"/>
+                                                                                            </DataTrigger>
+                                                                                            <DataTrigger Binding="{Binding Urgency}" Value="Low">
+                                                                                                <Setter Property="Background" Value="#185FA5"/>
+                                                                                            </DataTrigger>
+                                                                                        </Style.Triggers>
+                                                                                    </Style>
+                                                                                </Border.Style>
+                                                                                <TextBlock Text="{Binding Urgency}"
+                                                           FontSize="10" FontWeight="SemiBold" Foreground="White"/>
                                                                             </Border>
-                                                                            <ControlTemplate.Triggers>
-                                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                                    <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
-                                                                                </Trigger>
-                                                                            </ControlTemplate.Triggers>
-                                                                        </ControlTemplate>
-                                                                    </Button.Template>
-                                                                    <TextBlock Text="✏️ Edit Needs"
-                                                                               FontSize="11" FontWeight="SemiBold" Foreground="White"/>
-                                                                </Button>
-                                                            </StackPanel>
-                                                        </StackPanel>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
+                                                                        </Grid>
+                                                                    </Border>
 
-                                        <!-- Add Needs button -->
-                                        <Button Command="{Binding NeedsWishlistCommand}"
-                                                Width="220" Height="320" Margin="0,0,0,0"
-                                                Background="Transparent" BorderThickness="0" Cursor="Hand">
-                                            <Button.Template>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border CornerRadius="16" Background="#18CAF0F8"
-                                                            BorderBrush="#7090E0EF" BorderThickness="2">
-                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Opacity" Value="0.9"/>
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Button.Template>
-                                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <TextBlock Text="+" FontSize="42" FontWeight="Light"
-                                                           Foreground="#0077B6" HorizontalAlignment="Center" Opacity="0.7"/>
-                                                <TextBlock Text="Add Needs Post" FontSize="12" FontWeight="SemiBold"
-                                                           Foreground="#0077B6" HorizontalAlignment="Center"
-                                                           Opacity="0.8" Margin="0,4,0,0"/>
+                                                                    <!-- Card info -->
+                                                                    <StackPanel Margin="10,8,10,10">
+                                                                        <TextBlock Text="{Binding Title}"
+                                                   FontSize="12" FontWeight="Bold"
+                                                   Foreground="#03045E"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,0,0,2"/>
+                                                                        <TextBlock Text="{Binding Org_Name}"
+                                                   FontSize="10" Foreground="#0077B6"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,0,0,2"/>
+                                                                        <TextBlock Text="{Binding Description}"
+                                                   FontSize="10" Foreground="#5E7A8A"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,0,0,10"/>
+                                                                        <!-- Approval status badge -->
+                                                                        <Border CornerRadius="8" Padding="8,3" HorizontalAlignment="Left"
+                                                Margin="0,4,0,8"
+                                                Background="{Binding ApprovalBadgeBackground}">
+                                                                            <Border.Style>
+                                                                                <Style TargetType="Border">
+                                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                                    <Style.Triggers>
+                                                                                        <DataTrigger Binding="{Binding DataContext.IsIndependentBeneficiary,
+                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            Value="True">
+                                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                        </DataTrigger>
+                                                                                    </Style.Triggers>
+                                                                                </Style>
+                                                                            </Border.Style>
+                                                                            <TextBlock Text="{Binding ApprovalBadgeText}"
+                                                       FontSize="10" FontWeight="SemiBold"
+                                                       Foreground="{Binding ApprovalBadgeTextColor}"/>
+                                                                        </Border>
+
+                                                                        <!-- Rejection reason -->
+                                                                        <Border CornerRadius="6" Padding="8,4" Margin="0,0,0,6"
+                                                Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1">
+                                                                            <Border.Style>
+                                                                                <Style TargetType="Border">
+                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                    <Style.Triggers>
+                                                                                        <MultiDataTrigger>
+                                                                                            <MultiDataTrigger.Conditions>
+                                                                                                <Condition Binding="{Binding HasRejectionNote}" Value="True"/>
+                                                                                                <Condition Binding="{Binding IsApproved}" Value="False"/>
+                                                                                            </MultiDataTrigger.Conditions>
+                                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                                        </MultiDataTrigger>
+                                                                                    </Style.Triggers>
+                                                                                </Style>
+                                                                            </Border.Style>
+                                                                            <TextBlock FontSize="10" Foreground="#991B1B" TextWrapping="Wrap">
+                                                <Run Text="Reason: " FontWeight="SemiBold"/>
+                                                <Run Text="{Binding RejectionNote}"/>
+                                                                            </TextBlock>
+                                                                        </Border>
+
+                                                                        <!-- Edit Needs button -->
+                                                                        <Button Height="30" BorderThickness="0" Cursor="Hand"
+                                                Command="{Binding DataContext.EditNeedsPostCommand,
+                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}">
+                                                                            <Button.Template>
+                                                                                <ControlTemplate TargetType="Button">
+                                                                                    <Border x:Name="Bd" CornerRadius="8">
+                                                                                        <Border.Background>
+                                                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                                                                <GradientStop Color="#00A8E8" Offset="0"/>
+                                                                                                <GradientStop Color="#0077B6" Offset="1"/>
+                                                                                            </LinearGradientBrush>
+                                                                                        </Border.Background>
+                                                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                                                    </Border>
+                                                                                    <ControlTemplate.Triggers>
+                                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                                            <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                                                                                        </Trigger>
+                                                                                    </ControlTemplate.Triggers>
+                                                                                </ControlTemplate>
+                                                                            </Button.Template>
+                                                                            <TextBlock Text="✏️ Edit Needs"
+                                                       FontSize="11" FontWeight="SemiBold" Foreground="White"/>
+                                                                        </Button>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <!-- Add Needs button -->
+                                                <Button Command="{Binding NeedsWishlistCommand}"
+                        Width="220" Height="320" Margin="0,0,0,0"
+                        Background="Transparent" BorderThickness="0" Cursor="Hand">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border CornerRadius="16" Background="#18CAF0F8"
+                                    BorderBrush="#7090E0EF" BorderThickness="2">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Opacity" Value="0.9"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <TextBlock Text="+" FontSize="42" FontWeight="Light"
+                                   Foreground="#0077B6" HorizontalAlignment="Center" Opacity="0.7"/>
+                                                        <TextBlock Text="Add Needs Post" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="#0077B6" HorizontalAlignment="Center"
+                                   Opacity="0.8" Margin="0,4,0,0"/>
+                                                    </StackPanel>
+                                                </Button>
+
                                             </StackPanel>
-                                        </Button>
+                                        </ScrollViewer>
 
                                     </StackPanel>
                                 </ScrollViewer>
-
                                 <!-- Right arrow -->
                                 <Button Grid.Column="2"
                                         Command="{Binding CarouselRightCommand}"

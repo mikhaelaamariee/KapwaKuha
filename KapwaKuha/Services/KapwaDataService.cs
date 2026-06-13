@@ -1510,7 +1510,8 @@ WHERE Item_ID = @id", conn);
                         Post_Date = Convert.ToDateTime(r["Post_Date"]),
                         ImagePath = r["ImagePath"].ToString() ?? "",
                         RejectionNote = r["RejectionNote"].ToString() ?? "",
-                        RequesterBeneficiaryId = r["RequesterBeneficiaryId"]?.ToString() ?? ""
+                        RequesterBeneficiaryId = r["RequesterBeneficiaryId"]?.ToString() ?? "",
+                        BeneTypeBadge = r["BeneType"]?.ToString() ?? "Institutional",
                     });
                 }
             }
@@ -1821,11 +1822,10 @@ ORDER BY i.Date_Found DESC", conn);
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(
                     @"SELECT d.Donor_ID, d.Donor_FullName, d.Donor_Username, d.Donor_Address,
-                     d.Donor_ContactNumber, d.ProfilePicturePath,
-                     ISNULL(u.Email,'') AS Email
-              FROM Donors d
-              LEFT JOIN Users u ON u.UserID = d.Donor_ID
-              WHERE d.Donor_ID = @id", conn);
+         d.Donor_ContactNumber, d.ProfilePicturePath,
+         ISNULL(d.Email,'') AS Email
+  FROM Donors d
+  WHERE d.Donor_ID = @id", conn);
                 cmd.Parameters.AddWithValue("@id", donorId);
                 using var r = await cmd.ExecuteReaderAsync();
                 if (await r.ReadAsync())
@@ -1892,18 +1892,16 @@ ORDER BY i.Date_Found DESC", conn);
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand(@"
-SELECT b.Beneficiary_ID, b.Beneficiary_FullName,
+                using var cmd = new SqlCommand(@"SELECT b.Beneficiary_ID, b.Beneficiary_FullName,
        b.Beneficiary_Username, b.Beneficiary_Contact,
        b.Beneficiaries_Status, b.Organization_ID,
        ISNULL(b.ProfilePicturePath,'')       AS ProfilePicturePath,
        ISNULL(o.Organization_Name,'')        AS Organization_Name,
        ISNULL(o.Organization_Address,'')     AS Organization_Address,
        ISNULL(o.Organization_Contact,'')     AS Organization_Contact,
-       ISNULL(u.Email,'')                    AS Email
-FROM Beneficiaries b
+       ISNULL(b.Email,'')                    AS Email
+FROM InstitutionalBeneficiaries b
 LEFT JOIN Organization o ON o.Organization_ID = b.Organization_ID
-LEFT JOIN Users        u ON u.UserID           = b.Beneficiary_ID
 WHERE b.Beneficiary_ID = @id", conn);
                 cmd.Parameters.AddWithValue("@id", beneficiaryId);
                 using var r = await cmd.ExecuteReaderAsync();
@@ -2326,17 +2324,21 @@ WHERE b.Beneficiary_ID = @id", conn);
             catch (Exception ex) { MessageBox.Show("UpsertFeedback failed: " + ex.Message); }
         }
 
+        // FILE: Services/KapwaDataService.cs
+        // Find GetIndepBeneficiaryById — update the SQL and return tuple to include Email
+
         public static async Task<(string FullName, string Username, string Contact,
-    string Address, string ProfilePicturePath, string AccountStatus)> GetIndepBeneficiaryById(string id)
+            string Address, string ProfilePicturePath, string AccountStatus, string Email)> GetIndepBeneficiaryById(string id)
         {
             try
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(@"
-            SELECT FullName, Username, ContactNumber, ISNULL(Address,'') AS Address,
-                   ISNULL(ProfilePicturePath,'') AS ProfilePicturePath, AccountStatus
-            FROM IndependentBeneficiaries WHERE IndepBene_ID = @id", conn);
+    SELECT FullName, Username, ContactNumber, ISNULL(Address,'') AS Address,
+           ISNULL(ProfilePicturePath,'') AS ProfilePicturePath, AccountStatus,
+           ISNULL(Email,'') AS Email
+    FROM IndependentBeneficiaries WHERE IndepBene_ID = @id", conn);
                 cmd.Parameters.AddWithValue("@id", id);
                 using var r = await cmd.ExecuteReaderAsync();
                 if (await r.ReadAsync())
@@ -2345,10 +2347,11 @@ WHERE b.Beneficiary_ID = @id", conn);
                             r["ContactNumber"].ToString() ?? "",
                             r["Address"].ToString() ?? "",
                             r["ProfilePicturePath"].ToString() ?? "",
-                            r["AccountStatus"].ToString() ?? "Active");
+                            r["AccountStatus"].ToString() ?? "Active",
+                            r["Email"].ToString() ?? "");
             }
             catch (Exception ex) { MessageBox.Show("GetIndepBeneficiaryById: " + ex.Message); }
-            return ("", "", "", "", "", "Active");
+            return ("", "", "", "", "", "Active", "");
         }
 
         public static async Task UpdateIndepBeneficiaryProfile(string id, string username,
@@ -2914,12 +2917,11 @@ WHERE UserID = @id", conn);
             {
                 using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand(@"
-                    SELECT IndepBene_ID, FullName, Username, Sex, ContactNumber,
-                           Address, AccountStatus, ProfilePicturePath,
-                           Admin_Approval_Status, ISNULL(u.Email,'') AS Email
-                    FROM IndependentBeneficiaries
-                    WHERE IndepBene_ID = @id", conn);
+                using var cmd = new SqlCommand(@"SELECT IndepBene_ID, FullName, Username, Sex, ContactNumber,
+           Address, AccountStatus, ProfilePicturePath,
+           Admin_Approval_Status, ISNULL(Email,'') AS Email
+    FROM IndependentBeneficiaries
+    WHERE IndepBene_ID = @id", conn);
                 cmd.Parameters.AddWithValue("@id", indepBeneId);
                 using var r = await cmd.ExecuteReaderAsync();
                 if (!await r.ReadAsync()) return null;
@@ -2973,6 +2975,37 @@ WHERE UserID = @id", conn);
                 System.Windows.MessageBox.Show("ProcessUserReport failed: " + ex.Message);
                 throw;
             }
+        }
+
+        public static async Task<string> GetOrCreateIndepBeneOrg(string indepBeneId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+
+                // Check if a personal org already exists for this independent bene
+                using var check = new SqlCommand(@"
+            SELECT Organization_ID FROM Organization
+            WHERE Organization_Name = @name", conn);
+                check.Parameters.AddWithValue("@name", "Personal — " + indepBeneId);
+                var existing = await check.ExecuteScalarAsync();
+                if (existing != null) return existing.ToString()!;
+
+                // Create a new sequential ORG### for them
+                using var create = new SqlCommand(@"
+            DECLARE @n INT;
+            SELECT @n = ISNULL(MAX(CAST(SUBSTRING(Organization_ID,4,LEN(Organization_ID)) AS INT)),0)+1
+            FROM Organization WHERE Organization_ID LIKE 'ORG[0-9][0-9][0-9]';
+            DECLARE @id NVARCHAR(10) = 'ORG' + RIGHT('000' + CAST(@n AS NVARCHAR(10)), 3);
+            INSERT INTO Organization (Organization_ID, Organization_Name)
+            VALUES (@id, @name);
+            SELECT @id;", conn);
+                create.Parameters.AddWithValue("@name", "Personal — " + indepBeneId);
+                var newId = await create.ExecuteScalarAsync();
+                return newId?.ToString() ?? indepBeneId;
+            }
+            catch { return indepBeneId; }
         }
 
         public static async Task AdminBanUser(string userId)
