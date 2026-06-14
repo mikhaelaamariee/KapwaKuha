@@ -253,7 +253,7 @@ WHERE Beneficiary_ID LIKE 'B[0-9][0-9][0-9]'", conn);
         }
 
         public static async Task RegisterDonor(DonorModel donor, string password,
-     string securityQuestion, string securityAnswer, string email = "")
+            string securityQuestion, string securityAnswer, string email = "")
         {
             try
             {
@@ -266,16 +266,16 @@ WHERE Beneficiary_ID LIKE 'B[0-9][0-9][0-9]'", conn);
                 cmd.Parameters.AddWithValue("@Username", donor.Donor_Username);
                 cmd.Parameters.AddWithValue("@Password", password);
                 cmd.Parameters.AddWithValue("@Contact", donor.Donor_ContactNumber);
+                cmd.Parameters.AddWithValue("@Email", (object)email ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@SecurityQ", securityQuestion);
                 cmd.Parameters.AddWithValue("@SecurityA", securityAnswer);
                 await cmd.ExecuteNonQueryAsync();
 
-                // In RegisterDonor, REPLACE the email persist block:
+                // Save email to Users table
                 if (!string.IsNullOrWhiteSpace(email))
                 {
                     using var emailCmd = new SqlCommand(
-                        "UPDATE Users SET Email = @email WHERE UserID = @id; " +
-                        "UPDATE Donors SET Email = @email WHERE Donor_ID = @id", conn);
+                        "UPDATE Users SET Email = @email WHERE UserID = @id", conn);
                     emailCmd.Parameters.AddWithValue("@email", email);
                     emailCmd.Parameters.AddWithValue("@id", donor.Donor_ID);
                     await emailCmd.ExecuteNonQueryAsync();
@@ -309,15 +309,16 @@ WHERE Beneficiary_ID LIKE 'B[0-9][0-9][0-9]'", conn);
                 cmd.Parameters.AddWithValue("@OrgAddress", string.IsNullOrWhiteSpace(bene.Organization_Address) ? (object)DBNull.Value : bene.Organization_Address);
                 cmd.Parameters.AddWithValue("@OrgContact", string.IsNullOrWhiteSpace(bene.Organization_Contact) ? (object)DBNull.Value : bene.Organization_Contact);
                 cmd.Parameters.AddWithValue("@Password", password);
+                cmd.Parameters.AddWithValue("@Email", (object)email ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@SecurityQ", securityQuestion);
                 cmd.Parameters.AddWithValue("@SecurityA", securityAnswer);
                 await cmd.ExecuteNonQueryAsync();
 
+                // Save email to Users table
                 if (!string.IsNullOrWhiteSpace(email))
                 {
                     using var emailCmd = new SqlCommand(
-                        "UPDATE Users SET Email = @email WHERE UserID = @id; " +
-                        "UPDATE InstitutionalBeneficiaries SET Email = @email WHERE Beneficiary_ID = @id", conn);
+                        "UPDATE Users SET Email = @email WHERE UserID = @id", conn);
                     emailCmd.Parameters.AddWithValue("@email", email);
                     emailCmd.Parameters.AddWithValue("@id", bene.Beneficiary_ID);
                     await emailCmd.ExecuteNonQueryAsync();
@@ -1615,9 +1616,15 @@ WHERE NeedsPost_ID LIKE 'NP[0-9][0-9][0-9]'", conn);
                 cmd.Parameters.AddWithValue("@SenderId", senderId);
                 cmd.Parameters.AddWithValue("@ReceiverId", receiverId);
                 cmd.Parameters.AddWithValue("@Message", message);
-                await cmd.ExecuteNonQueryAsync();
+                int result = await cmd.ExecuteNonQueryAsync();
+                if (result <= 0)
+                    System.Diagnostics.Debug.WriteLine($"Warning: SaveChatMessage returned {result} rows affected");
             }
-            catch (Exception ex) { MessageBox.Show("SaveChatMessage failed: " + ex.Message); }
+            catch (Exception ex) 
+            { 
+                MessageBox.Show("SaveChatMessage failed: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine($"SaveChatMessage error: {ex}");
+            }
         }
 
         public static async Task<List<ChatMessage>> GetChatMessages(string userId1, string userId2)
@@ -2234,17 +2241,18 @@ WHERE b.Beneficiary_ID = @id", conn);
                 cmd.Parameters.AddWithValue("@Contact", bene.ContactNumber);
                 cmd.Parameters.AddWithValue("@Address", string.IsNullOrWhiteSpace(bene.Address) ? (object)DBNull.Value : bene.Address);
                 cmd.Parameters.AddWithValue("@Password", password);
+                cmd.Parameters.AddWithValue("@Email", (object)email ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@SecurityQ", securityQuestion);
                 cmd.Parameters.AddWithValue("@SecurityA", securityAnswer);
                 await cmd.ExecuteNonQueryAsync();
 
+                // Save email to Users table
                 if (!string.IsNullOrWhiteSpace(email))
                 {
                     using var emailCmd = new SqlCommand(
-                        "UPDATE Users SET Email = @email WHERE UserID = @id; " +
-                        "UPDATE IndependentBeneficiaries SET Email = @email WHERE IndepBene_ID = @id", conn);
+                        "UPDATE Users SET Email = @email WHERE UserID = @id", conn);
                     emailCmd.Parameters.AddWithValue("@email", email);
-                    emailCmd.Parameters.AddWithValue("@id", bene.IndepBene_ID);  // check actual field name
+                    emailCmd.Parameters.AddWithValue("@id", bene.IndepBene_ID);
                     await emailCmd.ExecuteNonQueryAsync();
                 }
             }
@@ -3254,8 +3262,13 @@ WHERE NeedsPost_ID = @Id", conn);
                         IsFromUser = senderId == userId
                     });
                 }
+                System.Diagnostics.Debug.WriteLine($"GetAdminSupportMessages: Loaded {list.Count} messages for user {userId}");
             }
-            catch (Exception ex) { MessageBox.Show("GetAdminSupportMessages failed: " + ex.Message); }
+            catch (Exception ex) 
+            { 
+                MessageBox.Show("GetAdminSupportMessages failed: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine($"GetAdminSupportMessages error: {ex}");
+            }
             return list;
         }
 

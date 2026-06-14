@@ -131,11 +131,11 @@ namespace KapwaKuha.ViewModels
 
             MyBAccountCommand = new RelayCommand(_ => { });
 
-            LoadProfile();
+            _ = LoadProfile();
         }
+        
 
-   
-        private async void LoadProfile()
+        private async Task LoadProfile()
         {
             try
             {
@@ -152,7 +152,7 @@ namespace KapwaKuha.ViewModels
                     IsInstitutional = true;
                     // Load email from Users table (institutional bene email source of truth)
                     var user = await KapwaDataService.GetUserById(_beneficiaryId);
-                    Email = user?.Email ?? bene.Email ?? "";
+                    Email = !string.IsNullOrEmpty(user?.Email) ? user.Email : bene.Email;
                 }
                 else
                 {
@@ -168,7 +168,10 @@ namespace KapwaKuha.ViewModels
                     Email = indepEmail;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"LoadProfile error: {ex.Message}\n{ex.StackTrace}");
+            }
         }
     }
 }

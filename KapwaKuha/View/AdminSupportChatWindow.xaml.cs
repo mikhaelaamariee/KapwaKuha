@@ -104,7 +104,9 @@ namespace KapwaKuha.View
             string senderId = _adminMode ? "A001" : _userId;
             string receiverId = _adminMode ? _userId : "A001";
 
+            // Save the user/admin message
             await KapwaDataService.SaveChatMessage(senderId, receiverId, text);
+            System.Diagnostics.Debug.WriteLine($"Saved message from {senderId} to {receiverId}: {text}");
 
             // Auto-reply only when a user (not admin) sends
             if (!_adminMode)
@@ -112,12 +114,18 @@ namespace KapwaKuha.View
                 string? autoReply = GetAutoReply(text);
                 if (autoReply != null)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Auto-reply triggered: {autoReply}");
+
                     // Small delay so reply feels natural
-                    await Task.Delay(600);
+                    await Task.Delay(1000);
+
+                    // Save and await the auto-reply before loading messages
                     await KapwaDataService.SaveChatMessage("A001", _userId, autoReply);
+                    System.Diagnostics.Debug.WriteLine($"Saved auto-reply from A001 to {_userId}");
                 }
             }
 
+            // Load and display all messages
             await LoadMessages();
         }
 

@@ -1,4 +1,5 @@
 ﻿// FILE: ViewModels/LoginViewModel.cs
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -130,6 +131,10 @@ namespace KapwaKuha.ViewModels
                             UserSession.Username = username;
                             UserSession.FullName = fullName;
                             UserSession.Role = "Donor";
+
+                            // Check for strikes and notify user
+                            await CheckAndNotifyStrikes(userId);
+
                             NavigationService.Navigate(new View.DonorDashboardWindow(userId));
                         }
                         else { ErrorMessage = "Invalid username or password."; ErrorVisible = true; }
@@ -147,6 +152,10 @@ namespace KapwaKuha.ViewModels
                             UserSession.Username = username;
                             UserSession.FullName = fullName;
                             UserSession.Role = "InstitutionalBeneficiary";
+
+                            // Check for strikes and notify user
+                            await CheckAndNotifyStrikes(userId);
+
                             NavigationService.Navigate(new View.BeneficiaryDashboardWindow(userId));
                         }
                         else { ErrorMessage = "Invalid username or password."; ErrorVisible = true; }
@@ -155,8 +164,6 @@ namespace KapwaKuha.ViewModels
 
                 case "IndependentBeneficiary":
                     {
-                        // Low-barrier: same LoginIndependentBeneficiary call, but no
-                        // extra front-end gating beyond non-empty username/password
                         var (ok, userId, fullName, username) =
                             await KapwaDataService.LoginIndependentBeneficiary(
                                 CurrentUser.UserID, CurrentUser.Password);
@@ -167,12 +174,35 @@ namespace KapwaKuha.ViewModels
                             UserSession.Username = username;
                             UserSession.FullName = fullName;
                             UserSession.Role = "IndependentBeneficiary";
+
+                            // Check for strikes and notify user
+                            await CheckAndNotifyStrikes(userId);
+
                             NavigationService.Navigate(new View.BeneficiaryDashboardWindow(userId));
                         }
                         else { ErrorMessage = "Username or password not recognized."; ErrorVisible = true; }
                         break;
                     }
             }
+        }
+
+        private async Task CheckAndNotifyStrikes(string userId)
+        {
+            try
+            {
+                var (strikes, _) = await KapwaDataService.GetUserStrikesAndBanInfo(userId);
+                if (strikes > 0 && strikes < 3)
+                {
+                    MessageBox.Show(
+                        $"⚠️ Warning: You have {strikes} strike(s) on your account.\n\n" +
+                        $"Receiving 3 strikes will result in permanent ban.\n\n" +
+                        $"Please follow community guidelines to avoid further violations.",
+                        "Account Strike Warning",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
+            }
+            catch { }
         }
     }
 }

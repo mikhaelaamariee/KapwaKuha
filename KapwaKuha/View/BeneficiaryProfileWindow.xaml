@@ -155,7 +155,6 @@
                         <TextBlock Text="Beneficiary Information" FontSize="22" FontWeight="Bold"
                Foreground="#0F172A" Margin="0,0,0,30"/>
 
-                        <!-- Row 1: Full Name + Contact -->
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -166,37 +165,47 @@
                                 <TextBlock Text="Full Name" Style="{StaticResource HCILabel}"/>
                                 <Border Style="{StaticResource HCIReadOnlyInput}">
                                     <TextBox Text="{Binding FullName}" Height="42" Background="Transparent"
-                         BorderThickness="0" FontSize="14" IsReadOnly="True"
-                         Foreground="#64748B" VerticalContentAlignment="Center"/>
+                     BorderThickness="0" FontSize="14" IsReadOnly="True"
+                     Foreground="#64748B" VerticalContentAlignment="Center"/>
                                 </Border>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="Contact Number" Style="{StaticResource HCILabel}"/>
                                 <Border Style="{StaticResource HCIReadOnlyInput}">
                                     <TextBox Text="{Binding Contact}" Height="42" Background="Transparent"
-                         BorderThickness="0" FontSize="14" IsReadOnly="True"
-                         Foreground="#64748B" VerticalContentAlignment="Center"/>
+                     BorderThickness="0" FontSize="14" IsReadOnly="True"
+                     Foreground="#64748B" VerticalContentAlignment="Center"/>
                                 </Border>
                             </StackPanel>
                         </Grid>
 
-                        <!-- Row 2: Email (always shown, read-only) -->
                         <Grid Margin="0,16,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="16"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
+
                             <StackPanel Grid.Column="0">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Grid.ColumnSpan" Value="1"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsIndependent}" Value="True">
+                                                <Setter Property="Grid.ColumnSpan" Value="3"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
                                 <TextBlock Text="Email" Style="{StaticResource HCILabel}"/>
                                 <Border Style="{StaticResource HCIReadOnlyInput}">
                                     <TextBox Text="{Binding Email}" Height="42" Background="Transparent"
-                         BorderThickness="0" FontSize="14" IsReadOnly="True"
-                         Foreground="#64748B" VerticalContentAlignment="Center"
-                         ToolTip="Email cannot be changed here."/>
+                     BorderThickness="0" FontSize="14" IsReadOnly="True"
+                     Foreground="#64748B" VerticalContentAlignment="Center"
+                     ToolTip="Email cannot be changed here."/>
                                 </Border>
                             </StackPanel>
-                            <!-- Organization Name — shown for Institutional only -->
+
                             <StackPanel Grid.Column="2">
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
@@ -211,13 +220,12 @@
                                 <TextBlock Text="Organization Name" Style="{StaticResource HCILabel}"/>
                                 <Border Style="{StaticResource HCIReadOnlyInput}">
                                     <TextBox Text="{Binding OrganizationName, Mode=OneWay}" Height="42"
-                 Background="Transparent" BorderThickness="0" FontSize="14"
-                 IsReadOnly="True" Foreground="#64748B" VerticalContentAlignment="Center"/>
+                     Background="Transparent" BorderThickness="0" FontSize="14"
+                     IsReadOnly="True" Foreground="#64748B" VerticalContentAlignment="Center"/>
                                 </Border>
                             </StackPanel>
                         </Grid>
 
-                        <!-- Row 3: Username + (Institutional: OrgName readonly | Independent: Address editable) -->
                         <Grid Margin="0,16,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -228,26 +236,11 @@
                                 <TextBlock Text="Username" Style="{StaticResource HCILabel}"/>
                                 <Border Style="{StaticResource HCIInput}">
                                     <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
-                         Height="42" Background="Transparent" BorderThickness="0"
-                         FontSize="14" Foreground="#0F172A" VerticalContentAlignment="Center"/>
+                     Height="42" Background="Transparent" BorderThickness="0"
+                     FontSize="14" Foreground="#0F172A" VerticalContentAlignment="Center"/>
                                 </Border>
                             </StackPanel>
 
-                            <!-- Institutional: show OrgName (read-only) -->
-                            <StackPanel Grid.Column="2">
-                                <StackPanel.Style>
-                                    <Style TargetType="StackPanel">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsIndependent}" Value="True">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </StackPanel.Style>
-                            </StackPanel>
-
-                            <!-- Independent: show Address (editable) -->
                             <StackPanel Grid.Column="2">
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
@@ -262,12 +255,11 @@
                                 <TextBlock Text="Address" Style="{StaticResource HCILabel}"/>
                                 <Border Style="{StaticResource HCIInput}">
                                     <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"
-                         Height="42" Background="Transparent" BorderThickness="0"
-                         FontSize="14" Foreground="#0F172A" VerticalContentAlignment="Center"/>
+                     Height="42" Background="Transparent" BorderThickness="0"
+                     FontSize="14" Foreground="#0F172A" VerticalContentAlignment="Center"/>
                                 </Border>
                             </StackPanel>
                         </Grid>
-
                         <Button Command="{Binding SaveCommand}" Height="48" Margin="0,20,0,0"
             FontSize="15" FontWeight="Bold" Foreground="White"
             BorderThickness="0" Cursor="Hand" Width="220" HorizontalAlignment="Right">

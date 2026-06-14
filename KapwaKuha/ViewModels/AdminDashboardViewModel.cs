@@ -329,6 +329,13 @@ namespace KapwaKuha.ViewModels
                             beneId, "Approval",
                             $"✅ Your needs post \"{post.Title}\" has been approved as {chosenUrgency} urgency and is now visible to donors.",
                             post.NeedsPost_ID);
+
+                    MessageBox.Show(
+                        $"✅ Needs post \"{post.Title}\" has been approved successfully!",
+                        "Approval Success",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
                     await LoadGatekeeperQueuesAsync();
                     await LoadMetricsAsync();
                 }
@@ -364,6 +371,13 @@ namespace KapwaKuha.ViewModels
                             beneId, "Approval",
                             $"❌ Your needs post \"{post.Title}\" was not approved.\n\nReason: {reason}\n\nPlease edit your post and resubmit for re-review.",
                             post.NeedsPost_ID);
+
+                    MessageBox.Show(
+                        $"❌ Needs post \"{post.Title}\" has been rejected.",
+                        "Rejection Complete",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
                     await LoadGatekeeperQueuesAsync();
                 }
                 catch (Exception ex)
@@ -390,10 +404,27 @@ namespace KapwaKuha.ViewModels
                         report.Report_ID, report.Reported_ID,
                         "Reviewed", "Reviewed by Admin.", action);
                     if (action == "Strike")
+                    {
                         await KapwaDataService.CreateNotification(
                             report.Reported_ID, "AccountAlert",
                             "⚠️ A strike has been applied to your account for a policy violation.",
                             report.Report_ID);
+
+                        MessageBox.Show(
+                            $"✅ Strike has been applied to {report.Reported_Name}.",
+                            "Strike Applied",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            $"✅ Report marked as reviewed. No action taken.",
+                            "Report Processed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+
                     await LoadGatekeeperQueuesAsync();
                 }
                 catch (Exception ex)
@@ -418,6 +449,13 @@ namespace KapwaKuha.ViewModels
                         report.Reported_ID, "AccountAlert",
                         "⚠️ Your account has been permanently banned due to repeated violations.",
                         report.Report_ID);
+
+                    MessageBox.Show(
+                        $"✅ User {report.Reported_Name} has been permanently banned.",
+                        "Ban Applied",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
                     await LoadGatekeeperQueuesAsync();
                     await LoadMetricsAsync();
                 }

@@ -281,9 +281,8 @@
                                                 <!-- Live star rating -->
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
                     Margin="6,0">
-                                                    <TextBlock Text="★" FontSize="11" Foreground="#F59E0B" VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding DonorRatingDisplay}" FontSize="10"
-                       Foreground="#6B7280" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                       Foreground="DarkGoldenrod" VerticalAlignment="Center" Margin="2,0,0,0"/>
                                                 </StackPanel>
 
                                                 <!-- Message icon -->

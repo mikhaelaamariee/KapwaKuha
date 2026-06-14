@@ -898,7 +898,7 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border Width="220" Height="300" Margin="0,0,14,0" CornerRadius="16"
+                                                            <Border Width="220" MaxHeight="340" Margin="0,0,14,0" CornerRadius="16"
                                     ClipToBounds="True" BorderThickness="1">
                                                                 <Border.BorderBrush>
                                                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">

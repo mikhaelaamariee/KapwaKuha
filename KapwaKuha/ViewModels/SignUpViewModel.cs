@@ -24,6 +24,7 @@ namespace KapwaKuha.ViewModels
         private bool _errorVisible = false;
         private bool _isLoading = false;
 
+
         public bool IsIndependentBeneficiary => _role == "IndependentBeneficiary";
         public bool ShowAdminReviewNote => _role != "IndependentBeneficiary";
 
