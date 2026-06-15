@@ -3394,6 +3394,151 @@ WHERE NeedsPost_ID = @id", conn);
                 throw;
             }
         }
+
+        //API 
+        // ── GOOGLE SIGN-IN: EMAIL-BASED LOGIN ────────────────────────────────
+
+        public static async Task<(bool OK, string UserId, string FullName, string Username)>
+        LoginDonorByEmail(string email)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+    SELECT d.Donor_ID, d.Donor_FullName, d.Donor_Username,
+           u.IsActive, u.IsBlacklisted
+    FROM Donors d
+    INNER JOIN Users u ON u.UserID = d.Donor_ID
+    WHERE d.Email = @email AND u.Admin_Approval_Status = 'Approved'", conn);
+                cmd.Parameters.AddWithValue("@email", email);
+                using var r = await cmd.ExecuteReaderAsync();
+                if (await r.ReadAsync())
+                {
+                    string userId = r["Donor_ID"].ToString() ?? "";
+                    string fullName = r["Donor_FullName"].ToString() ?? "";
+                    string uname = r["Donor_Username"].ToString() ?? "";
+                    bool isBlacklist = Convert.ToBoolean(r["IsBlacklisted"]);
+                    bool isActive = Convert.ToBoolean(r["IsActive"]);
+                    r.Close();
+                    if (isBlacklist)
+                    {
+                        var (strikes, banReason) = await GetUserStrikesAndBanInfo(userId);
+                        string reason = string.IsNullOrWhiteSpace(banReason)
+                            ? "Repeated policy violations." : banReason;
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            var banWin = new View.BannedAccountWindow(reason, strikes);
+                            banWin.ShowDialog();
+                        });
+                        return (false, "", "", "");
+                    }
+                    if (!isActive)
+                    {
+                        var reactivate = System.Windows.MessageBox.Show(
+                            "Your account is currently deactivated.\n\nWould you like to reactivate it?",
+                            "Account Deactivated",
+                            System.Windows.MessageBoxButton.YesNo,
+                            System.Windows.MessageBoxImage.Question);
+                        if (reactivate != System.Windows.MessageBoxResult.Yes)
+                            return (false, "", "", "");
+                        using var c1 = new SqlCommand(
+                            "UPDATE Users SET IsActive = 1 WHERE UserID = @id", conn);
+                        c1.Parameters.AddWithValue("@id", userId);
+                        await c1.ExecuteNonQueryAsync();
+                        using var c2 = new SqlCommand(
+                            "UPDATE Donors SET Donor_AccountStatus = 'Active' WHERE Donor_ID = @id", conn);
+                        c2.Parameters.AddWithValue("@id", userId);
+                        await c2.ExecuteNonQueryAsync();
+                    }
+                    return (true, userId, fullName, uname);
+                }
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("LoginDonorByEmail failed: " + ex.Message); }
+            return (false, "", "", "");
+        }
+
+        public static async Task<(bool OK, string UserId, string FullName, string Username)>
+        LoginBeneficiaryByEmail(string email)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+    SELECT b.Beneficiary_ID, b.Beneficiary_FullName, b.Beneficiary_Username,
+           u.IsActive, u.IsBlacklisted
+    FROM InstitutionalBeneficiaries b
+    INNER JOIN Users u ON u.UserID = b.Beneficiary_ID
+    WHERE b.Email = @email AND b.Admin_Approval_Status = 'Approved'", conn);
+                cmd.Parameters.AddWithValue("@email", email);
+                using var r = await cmd.ExecuteReaderAsync();
+                if (await r.ReadAsync())
+                {
+                    string userId = r["Beneficiary_ID"].ToString() ?? "";
+                    string fullName = r["Beneficiary_FullName"].ToString() ?? "";
+                    string uname = r["Beneficiary_Username"].ToString() ?? "";
+                    bool isBlacklist = Convert.ToBoolean(r["IsBlacklisted"]);
+                    r.Close();
+                    if (isBlacklist)
+                    {
+                        var (strikes, banReason) = await GetUserStrikesAndBanInfo(userId);
+                        string reason = string.IsNullOrWhiteSpace(banReason)
+                            ? "Repeated policy violations." : banReason;
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            var banWin = new View.BannedAccountWindow(reason, strikes);
+                            banWin.ShowDialog();
+                        });
+                        return (false, "", "", "");
+                    }
+                    return (true, userId, fullName, uname);
+                }
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("LoginBeneficiaryByEmail failed: " + ex.Message); }
+            return (false, "", "", "");
+        }
+
+        public static async Task<(bool OK, string UserId, string FullName, string Username)>
+        LoginIndependentBeneficiaryByEmail(string email)
+        {
+            try
+            {
+                using var conn = new SqlConnection(_conn);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(@"
+    SELECT i.IndepBene_ID, i.FullName, i.Username,
+           u.IsActive, u.IsBlacklisted
+    FROM IndependentBeneficiaries i
+    INNER JOIN Users u ON u.UserID = i.IndepBene_ID
+    WHERE i.Email = @email AND i.Admin_Approval_Status = 'Approved'", conn);
+                cmd.Parameters.AddWithValue("@email", email);
+                using var r = await cmd.ExecuteReaderAsync();
+                if (await r.ReadAsync())
+                {
+                    string userId = r["IndepBene_ID"].ToString() ?? "";
+                    string fullName = r["FullName"].ToString() ?? "";
+                    string uname = r["Username"].ToString() ?? "";
+                    bool isBlacklist = Convert.ToBoolean(r["IsBlacklisted"]);
+                    r.Close();
+                    if (isBlacklist)
+                    {
+                        var (strikes, banReason) = await GetUserStrikesAndBanInfo(userId);
+                        string reason = string.IsNullOrWhiteSpace(banReason)
+                            ? "Repeated policy violations." : banReason;
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            var banWin = new View.BannedAccountWindow(reason, strikes);
+                            banWin.ShowDialog();
+                        });
+                        return (false, "", "", "");
+                    }
+                    return (true, userId, fullName, uname);
+                }
+            }
+            catch (Exception ex) { System.Windows.MessageBox.Show("LoginIndependentBeneficiaryByEmail failed: " + ex.Message); }
+            return (false, "", "", "");
+        }
     }
 
 }

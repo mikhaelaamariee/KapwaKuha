@@ -1,5 +1,6 @@
 ﻿// FILE: ViewModels/LoginViewModel.cs
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -17,6 +18,7 @@ namespace KapwaKuha.ViewModels
         public ICommand BackCommand { get; }
         public ICommand ForgotPasswordCommand { get; }
         public ICommand SignUpCommand { get; }
+        public ICommand GoogleLoginCommand { get; }
 
         private bool _errorVisible;
         public bool ErrorVisible
@@ -32,7 +34,6 @@ namespace KapwaKuha.ViewModels
             set { _errorMessage = value; OnPropertyChanged(); }
         }
 
-        // Exposed so IndependentBeneficiaryLoginWindow can sync show-pw TextBox
         private string _plainPassword = string.Empty;
         public string PlainPassword
         {
@@ -82,11 +83,98 @@ namespace KapwaKuha.ViewModels
                 else
                     NavigationService.Navigate(new View.IndependentBeneficiarySignUpWindow());
             });
+
+            GoogleLoginCommand = new RelayCommand(_ => _ = ExecuteGoogleLogin());
         }
+
+        // ── GOOGLE LOGIN ──────────────────────────────────────────────────────
+
+        private async Task ExecuteGoogleLogin()
+        {
+            ErrorVisible = false;
+            try
+            {
+                var (email, _) = await GoogleAuthService.GoogleLoginAsync();
+
+                switch (CurrentUser.Role)
+                {
+                    case "Donor":
+                        {
+                            var (ok, userId, fullName, username) =
+                                await KapwaDataService.LoginDonorByEmail(email);
+                            if (ok)
+                            {
+                                UserSession.UserId = userId;
+                                UserSession.Username = username;
+                                UserSession.FullName = fullName;
+                                UserSession.Role = "Donor";
+                                await CheckAndNotifyStrikes(userId);
+                                NavigationService.Navigate(new View.DonorDashboardWindow(userId));
+                            }
+                            else
+                            {
+                                ErrorMessage = $"No Donor account is linked to {email}.\nPlease log in with username/password instead.";
+                                ErrorVisible = true;
+                            }
+                            break;
+                        }
+                    case "InstitutionalBeneficiary":
+                        {
+                            var (ok, userId, fullName, username) =
+                                await KapwaDataService.LoginBeneficiaryByEmail(email);
+                            if (ok)
+                            {
+                                UserSession.UserId = userId;
+                                UserSession.Username = username;
+                                UserSession.FullName = fullName;
+                                UserSession.Role = "InstitutionalBeneficiary";
+                                await CheckAndNotifyStrikes(userId);
+                                NavigationService.Navigate(new View.BeneficiaryDashboardWindow(userId));
+                            }
+                            else
+                            {
+                                ErrorMessage = $"No Institutional Beneficiary account is linked to {email}.";
+                                ErrorVisible = true;
+                            }
+                            break;
+                        }
+                    case "IndependentBeneficiary":
+                        {
+                            var (ok, userId, fullName, username) =
+                                await KapwaDataService.LoginIndependentBeneficiaryByEmail(email);
+                            if (ok)
+                            {
+                                UserSession.UserId = userId;
+                                UserSession.Username = username;
+                                UserSession.FullName = fullName;
+                                UserSession.Role = "IndependentBeneficiary";
+                                await CheckAndNotifyStrikes(userId);
+                                NavigationService.Navigate(new View.BeneficiaryDashboardWindow(userId));
+                            }
+                            else
+                            {
+                                ErrorMessage = $"No Independent Beneficiary account is linked to {email}.";
+                                ErrorVisible = true;
+                            }
+                            break;
+                        }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // User closed the browser — silently ignore
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Google sign-in error: {ex.Message}";
+                ErrorVisible = true;
+            }
+        }
+
+        // ── USERNAME / PASSWORD LOGIN ─────────────────────────────────────────
 
         private async void ExecuteLogin(object? parameter)
         {
-            // Accept PasswordBox OR plain string (from show-password TextBox)
             if (parameter is PasswordBox pb)
                 CurrentUser.Password = pb.Password;
             else if (parameter is string s)
@@ -101,8 +189,6 @@ namespace KapwaKuha.ViewModels
                 return;
             }
 
-            // Institutional and Donor: strict no-spaces rule on UserID
-            // Independent: relaxed — just needs non-empty username (low-barrier model)
             if (CurrentUser.Role != "IndependentBeneficiary" &&
                 CurrentUser.UserID.Contains(" "))
             {
@@ -131,16 +217,12 @@ namespace KapwaKuha.ViewModels
                             UserSession.Username = username;
                             UserSession.FullName = fullName;
                             UserSession.Role = "Donor";
-
-                            // Check for strikes and notify user
                             await CheckAndNotifyStrikes(userId);
-
                             NavigationService.Navigate(new View.DonorDashboardWindow(userId));
                         }
                         else { ErrorMessage = "Invalid username or password."; ErrorVisible = true; }
                         break;
                     }
-
                 case "InstitutionalBeneficiary":
                     {
                         var (ok, userId, fullName, username) =
@@ -152,16 +234,12 @@ namespace KapwaKuha.ViewModels
                             UserSession.Username = username;
                             UserSession.FullName = fullName;
                             UserSession.Role = "InstitutionalBeneficiary";
-
-                            // Check for strikes and notify user
                             await CheckAndNotifyStrikes(userId);
-
                             NavigationService.Navigate(new View.BeneficiaryDashboardWindow(userId));
                         }
                         else { ErrorMessage = "Invalid username or password."; ErrorVisible = true; }
                         break;
                     }
-
                 case "IndependentBeneficiary":
                     {
                         var (ok, userId, fullName, username) =
@@ -174,10 +252,7 @@ namespace KapwaKuha.ViewModels
                             UserSession.Username = username;
                             UserSession.FullName = fullName;
                             UserSession.Role = "IndependentBeneficiary";
-
-                            // Check for strikes and notify user
                             await CheckAndNotifyStrikes(userId);
-
                             NavigationService.Navigate(new View.BeneficiaryDashboardWindow(userId));
                         }
                         else { ErrorMessage = "Username or password not recognized."; ErrorVisible = true; }

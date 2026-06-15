@@ -185,6 +185,7 @@ namespace KapwaKuha.ViewModels
                 if (r == MessageBoxResult.Yes)
                 {
                     UserSession.Clear();
+                    _ = GoogleAuthService.SignOut();
                     NavigationService.Navigate(new View.ChooseRoleWindow());
                 }
             });

@@ -149,6 +149,64 @@
                     </Button>
                 </Grid>
 
+                <!-- OR divider -->
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Separator Grid.Column="0" Background="#E5E7EB" Margin="0,12,12,0"/>
+                    <TextBlock Grid.Column="1" Text="or" FontSize="12" Margin=" 0,12,1,0"
+       Foreground="#9CA3AF" VerticalAlignment="Center"/>
+                    <Separator Grid.Column="2" Background="#E5E7EB" Margin="10,12,0,0"/>
+                </Grid>
+
+                <!-- Google Sign-In button -->
+                <Button Command="{Binding GoogleLoginCommand}"
+Height="50" Margin="0,0,0,24"
+Background="White" BorderBrush="#DADCE0" BorderThickness="1"
+Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="12">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#F8F9FA"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter Property="Background" Value="#E8EAED"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Viewbox Width="20" Height="20" Margin="0,0,12,0">
+                            <Canvas Width="48" Height="48">
+                                <Path Fill="#4285F4" Data="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.8 20-21 0-1.4-.1-2.7-.5-4z"/>
+                                <Path Fill="#34A853" Data="M6.3 14.7l7 5.1C15.2 16.4 19.2 14 24 14c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 16.3 3 9.7 7.9 6.3 14.7z"/>
+                                <Path Fill="#FBBC05" Data="M24 45c5.8 0 10.8-1.9 14.4-5.2l-6.7-5.5C29.6 35.8 27 37 24 37c-6 0-11.1-4-12.9-9.5L4.1 33c3.5 6.8 10.2 12 19.9 12z"/>
+                                <Path Fill="#EA4335" Data="M44.5 20H24v8.5h11.8c-1 3-3.3 5.5-6.3 7l6.7 5.5C40.2 37.3 44.5 31.1 44.5 20z"/>
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Sign in with Google"
+           FontSize="14" FontWeight="SemiBold"
+           Foreground="#3C4043" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+
                 <TextBlock Text="Default: juandc / donor123"
                            FontSize="11" Foreground="#9CA3AF"
                            HorizontalAlignment="Center" Margin="0,24,0,0"/>
