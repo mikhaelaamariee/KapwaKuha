@@ -380,30 +380,59 @@
                                 <ColumnDefinition Width="12"/>
                                 <ColumnDefinition Width="150"/>
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White" Padding="10,0">
-                                <TextBox Text="{Binding ItemSearchQuery, UpdateSourceTrigger=PropertyChanged}"
-             BorderThickness="0" FontSize="13" Foreground="#374151"
-             VerticalContentAlignment="Center" Height="36" Background="Transparent">
-                                    <TextBox.Style>
-                                        <Style TargetType="TextBox">
-                                            <Style.Resources>
-                                                <VisualBrush x:Key="Hint" TileMode="None" Opacity="0.5" Stretch="None" AlignmentX="Left">
-                                                    <VisualBrush.Visual>
-                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                            <TextBlock Text="🔍" FontSize="13" Foreground="#9CA3AF" Margin="0,0,6,0"/>
-                                                            <TextBlock Text="Search by item name or donor..." FontSize="13" Foreground="#9CA3AF"/>
-                                                        </StackPanel>
-                                                    </VisualBrush.Visual>
-                                                </VisualBrush>
-                                            </Style.Resources>
-                                            <Style.Triggers>
-                                                <Trigger Property="Text" Value="">
-                                                    <Setter Property="Background" Value="{StaticResource Hint}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBox.Style>
-                                </TextBox>
+                            <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White" Height="36">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                   Text="🔍" 
+                   FontSize="13" 
+                   Foreground="#9CA3AF" 
+                   Margin="10,0,4,0" 
+                   HorizontalAlignment="Left" 
+                   VerticalAlignment="Center"
+                   IsHitTestVisible="False"/>
+
+                                    <TextBox x:Name="ItemSearchTextBox"
+                 Grid.Column="1"
+                 Text="{Binding ItemSearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                 BorderThickness="0" 
+                 FontSize="13" 
+                 Foreground="#374151"
+                 VerticalContentAlignment="Center" 
+                 Background="Transparent"
+                 Padding="4,0,10,0">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Style.Resources>
+                                                    <VisualBrush x:Key="Hint" TileMode="None" Opacity="0.5" Stretch="None" AlignmentX="Left" AlignmentY="Center">
+                                                        <VisualBrush.Visual>
+                                                            <TextBlock Text="Search by item name or donor..." 
+                                           FontSize="13" 
+                                           Foreground="#9CA3AF"
+                                           Margin="4,0,0,0"/>
+                                                        </VisualBrush.Visual>
+                                                    </VisualBrush>
+                                                </Style.Resources>
+
+                                                <Setter Property="Background" Value="Transparent"/>
+
+                                                <Style.Triggers>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding Text, ElementName=ItemSearchTextBox}" Value=""/>
+                                                            <Condition Binding="{Binding IsFocused, ElementName=ItemSearchTextBox}" Value="False"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter Property="Background" Value="{StaticResource Hint}"/>
+                                                    </MultiDataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                </Grid>
                             </Border>
                             <Border Grid.Column="2" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White">
                                 <ComboBox SelectedValue="{Binding ItemCategoryFilter}" SelectedValuePath="Content"
@@ -556,30 +585,59 @@
                                 <ColumnDefinition Width="12"/>
                                 <ColumnDefinition Width="160"/>
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White" Padding="10,0">
-                                <TextBox Text="{Binding NeedsSearchQuery, UpdateSourceTrigger=PropertyChanged}"
-             BorderThickness="0" FontSize="13" Foreground="#374151"
-             VerticalContentAlignment="Center" Height="36" Background="Transparent">
-                                    <TextBox.Style>
-                                        <Style TargetType="TextBox">
-                                            <Style.Resources>
-                                                <VisualBrush x:Key="Hint" TileMode="None" Opacity="0.5" Stretch="None" AlignmentX="Left">
-                                                    <VisualBrush.Visual>
-                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                            <TextBlock Text="🔍" FontSize="13" Foreground="#9CA3AF" Margin="0,0,6,0"/>
-                                                            <TextBlock Text="Search by title or organization..." FontSize="13" Foreground="#9CA3AF"/>
-                                                        </StackPanel>
-                                                    </VisualBrush.Visual>
-                                                </VisualBrush>
-                                            </Style.Resources>
-                                            <Style.Triggers>
-                                                <Trigger Property="Text" Value="">
-                                                    <Setter Property="Background" Value="{StaticResource Hint}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBox.Style>
-                                </TextBox>
+                            <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White" Height="36">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                   Text="🔍" 
+                   FontSize="13" 
+                   Foreground="#9CA3AF" 
+                   Margin="10,0,4,0" 
+                   HorizontalAlignment="Left" 
+                   VerticalAlignment="Center"
+                   IsHitTestVisible="False"/>
+
+                                    <TextBox x:Name="NeedsSearchTextBox"
+                 Grid.Column="1"
+                 Text="{Binding NeedsSearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                 BorderThickness="0" 
+                 FontSize="13" 
+                 Foreground="#374151"
+                 VerticalContentAlignment="Center" 
+                 Background="Transparent"
+                 Padding="4,0,10,0">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Style.Resources>
+                                                    <VisualBrush x:Key="Hint" TileMode="None" Opacity="0.5" Stretch="None" AlignmentX="Left" AlignmentY="Center">
+                                                        <VisualBrush.Visual>
+                                                            <TextBlock Text="Search by title or organization..." 
+                                           FontSize="13" 
+                                           Foreground="#9CA3AF"
+                                           Margin="4,0,0,0"/>
+                                                        </VisualBrush.Visual>
+                                                    </VisualBrush>
+                                                </Style.Resources>
+
+                                                <Setter Property="Background" Value="Transparent"/>
+
+                                                <Style.Triggers>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding Text, ElementName=NeedsSearchTextBox}" Value=""/>
+                                                            <Condition Binding="{Binding IsFocused, ElementName=NeedsSearchTextBox}" Value="False"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter Property="Background" Value="{StaticResource Hint}"/>
+                                                    </MultiDataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                </Grid>
                             </Border>
                             <Border Grid.Column="2" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White">
                                 <ComboBox SelectedValue="{Binding NeedsUrgencyFilter}" SelectedValuePath="Content"
@@ -856,29 +914,58 @@
                                 <ColumnDefinition Width="180"/>
                             </Grid.ColumnDefinitions>
                             <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White" Padding="10,0">
-                                <TextBox Text="{Binding ReportSearchQuery, UpdateSourceTrigger=PropertyChanged}"
-             BorderThickness="0" FontSize="13" Foreground="#374151"
-             VerticalContentAlignment="Center" Height="36" Background="Transparent">
-                                    <TextBox.Style>
-                                        <Style TargetType="TextBox">
-                                            <Style.Resources>
-                                                <VisualBrush x:Key="Hint" TileMode="None" Opacity="0.5" Stretch="None" AlignmentX="Left">
-                                                    <VisualBrush.Visual>
-                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                            <TextBlock Text="🔍" FontSize="13" Foreground="#9CA3AF" Margin="0,0,6,0"/>
-                                                            <TextBlock Text="Search by user or description..." FontSize="13" Foreground="#9CA3AF"/>
-                                                        </StackPanel>
-                                                    </VisualBrush.Visual>
-                                                </VisualBrush>
-                                            </Style.Resources>
-                                            <Style.Triggers>
-                                                <Trigger Property="Text" Value="">
-                                                    <Setter Property="Background" Value="{StaticResource Hint}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBox.Style>
-                                </TextBox>
+                                <Grid Width="250" Height="36">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+               Text="🔍" 
+               FontSize="13" 
+               Foreground="#9CA3AF" 
+               Margin="-178,0,4,0" 
+               HorizontalAlignment="Left" 
+               VerticalAlignment="Center"
+               IsHitTestVisible="False"/>
+
+                                    <TextBox x:Name="SearchTextBox"
+             Grid.Column="1"
+             Text="{Binding ReportSearchQuery, UpdateSourceTrigger=PropertyChanged}" 
+             BorderThickness="0" 
+             FontSize="13" 
+             Foreground="#374151" 
+             VerticalContentAlignment="Center" 
+             Background="Transparent"
+             Padding="-155,0,10,0">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Style.Resources>
+                                                    <VisualBrush x:Key="HintBrush" TileMode="None" Opacity="1" Stretch="None" AlignmentX="Left" AlignmentY="Center">
+                                                        <VisualBrush.Visual>
+                                                            <TextBlock Text="Search by user or description..." 
+                                       FontSize="13" 
+                                       Foreground="#9CA3AF" 
+                                       Margin="4,0,0,0"/>
+                                                        </VisualBrush.Visual>
+                                                    </VisualBrush>
+                                                </Style.Resources>
+
+                                                <Setter Property="Background" Value="Transparent"/>
+
+                                                <Style.Triggers>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding Text, ElementName=SearchTextBox}" Value=""/>
+                                                            <Condition Binding="{Binding IsFocused, ElementName=SearchTextBox}" Value="False"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter Property="Background" Value="{StaticResource HintBrush}"/>
+                                                    </MultiDataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                </Grid>
                             </Border>
                             <Border Grid.Column="2" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White">
                                 <ComboBox SelectedValue="{Binding ReportTypeFilter}" SelectedValuePath="Content"
@@ -1071,30 +1158,59 @@
                                     <ColumnDefinition Width="12"/>
                                     <ColumnDefinition Width="180"/>
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White" Padding="10,0">
-                                    <TextBox Text="{Binding SupportSearchQuery, UpdateSourceTrigger=PropertyChanged}"
-             BorderThickness="0" FontSize="13" Foreground="#374151"
-             VerticalContentAlignment="Center" Height="36" Background="Transparent">
-                                        <TextBox.Style>
-                                            <Style TargetType="TextBox">
-                                                <Style.Resources>
-                                                    <VisualBrush x:Key="Hint" TileMode="None" Opacity="0.5" Stretch="None" AlignmentX="Left">
-                                                        <VisualBrush.Visual>
-                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                                <TextBlock Text="🔍" FontSize="13" Foreground="#9CA3AF" Margin="0,0,6,0"/>
-                                                                <TextBlock Text="Search by name or message..." FontSize="13" Foreground="#9CA3AF"/>
-                                                            </StackPanel>
-                                                        </VisualBrush.Visual>
-                                                    </VisualBrush>
-                                                </Style.Resources>
-                                                <Style.Triggers>
-                                                    <Trigger Property="Text" Value="">
-                                                        <Setter Property="Background" Value="{StaticResource Hint}"/>
-                                                    </Trigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBox.Style>
-                                    </TextBox>
+                                <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White" Height="36">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                   Text="🔍" 
+                   FontSize="13" 
+                   Foreground="#9CA3AF" 
+                   Margin="10,0,4,0" 
+                   HorizontalAlignment="Left" 
+                   VerticalAlignment="Center"
+                   IsHitTestVisible="False"/>
+
+                                        <TextBox x:Name="SupportSearchTextBox"
+                 Grid.Column="1"
+                 Text="{Binding SupportSearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                 BorderThickness="0" 
+                 FontSize="13" 
+                 Foreground="#374151"
+                 VerticalContentAlignment="Center" 
+                 Background="Transparent"
+                 Padding="4,0,10,0">
+                                            <TextBox.Style>
+                                                <Style TargetType="TextBox">
+                                                    <Style.Resources>
+                                                        <VisualBrush x:Key="Hint" TileMode="None" Opacity="0.5" Stretch="None" AlignmentX="Left" AlignmentY="Center">
+                                                            <VisualBrush.Visual>
+                                                                <TextBlock Text="Search by name or message..." 
+                                           FontSize="13" 
+                                           Foreground="#9CA3AF"
+                                           Margin="4,0,0,0"/>
+                                                            </VisualBrush.Visual>
+                                                        </VisualBrush>
+                                                    </Style.Resources>
+
+                                                    <Setter Property="Background" Value="Transparent"/>
+
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding Text, ElementName=SupportSearchTextBox}" Value=""/>
+                                                                <Condition Binding="{Binding IsFocused, ElementName=SupportSearchTextBox}" Value="False"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Background" Value="{StaticResource Hint}"/>
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBox.Style>
+                                        </TextBox>
+                                    </Grid>
                                 </Border>
                                 <Border Grid.Column="2" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White">
                                     <ComboBox SelectedValue="{Binding SupportStatusFilter}" SelectedValuePath="Content"
