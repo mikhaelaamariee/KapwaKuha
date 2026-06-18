@@ -1,16 +1,15 @@
-﻿using System;
-using System.Data;
-using System.Data.SqlClient;
+﻿// Services/NotificationManager.cs
+using System;
 using System.Threading.Tasks;
-using KapwaKuha.Services;
+using Microsoft.Data.SqlClient;
 
 namespace KapwaKuha.Services
 {
     /// <summary>
-    /// Central coordinator for all three notification channels:
-    /// 1. In-app (SQL insert)
-    /// 2. Windows Toast (OS-level popup)
-    /// 3. External: SMS via Semaphore OR Email via SMTP (based on user preference)
+    /// Central hub: saves to DB, sends email, shows toast — based on user preference.
+    /// Usage:
+    ///   await NotificationManager.TriggerNotificationAsync(userId, role, title, message,
+    ///       email, phone, preference, notifType, referenceId);
     /// </summary>
     public static class NotificationManager
     {
@@ -19,81 +18,100 @@ namespace KapwaKuha.Services
             string role,
             string title,
             string message,
-            string email = "",
-            string phone = "",
-            string preference = "Email",
+            string? email = null,
+            string? phone = null,
+            string preference = "Email",   // "Email" | "SMS" | "Both"
             string notifType = "AccountAlert",
             string referenceId = "")
         {
-            // ── Step 1: Write to DB (In-App bell log) ──────────────────────
+            // 1. Always save to DB
             await SaveToDbAsync(userId, role, title, message, notifType, referenceId);
 
-            // ── Step 2: OS Toast notification ──────────────────────────────
-            // Must run on UI thread; dispatcher-safe via try-catch
-            try
+            // 2. Show Windows toast (fire-and-forget on UI thread)
+            ShowToast(title, message);
+
+            // 3. Email / SMS based on preference
+            bool sendEmail = preference == "Email" || preference == "Both";
+            bool sendSms = preference == "SMS" || preference == "Both";
+
+            if (sendEmail && !string.IsNullOrWhiteSpace(email))
             {
-                ToastService.Show(title, message);
+                await EmailService.SendAsync(
+                    toEmail: email,
+                    subject: $"KapwaKuha — {title}",
+                    body: BuildEmailBody(title, message));
             }
-            catch (Exception ex)
+
+            if (sendSms && !string.IsNullOrWhiteSpace(phone))
             {
-                System.Diagnostics.Debug.WriteLine($"[NotificationManager] Toast error: {ex.Message}");
-            }
-
-            // ── Step 3: External channel based on preference ────────────────
-            preference = preference?.Trim().ToLower() ?? "email";
-
-            switch (preference)
-            {
-                case "sms":
-                    if (!string.IsNullOrWhiteSpace(phone))
-                        await SmsService.SendAsync(phone, $"{title}: {message}");
-                    break;
-
-                case "both":
-                    if (!string.IsNullOrWhiteSpace(email))
-                        await EmailService.SendAsync(email, $"KapwaKuha — {title}", message);
-                    if (!string.IsNullOrWhiteSpace(phone))
-                        await SmsService.SendAsync(phone, $"{title}: {message}");
-                    break;
-
-                case "email":
-                default:
-                    if (!string.IsNullOrWhiteSpace(email))
-                        await EmailService.SendAsync(email, $"KapwaKuha — {title}", message);
-                    break;
+                // Plug in your SMS provider here (e.g. Vonage / Semaphore PH)
+                // await SmsService.SendAsync(phone, message);
             }
         }
 
+        // ── DB ────────────────────────────────────────────────────────────────
         private static async Task SaveToDbAsync(
-            string userId,
-            string role,
-            string title,
-            string message,
-            string notifType,
-            string referenceId)
+            string userId, string role, string title,
+            string message, string notifType, string referenceId)
         {
             try
             {
-                using var conn = new SqlConnection(KapwaDataService.ConnectionString);
+                await using var conn = new SqlConnection(KapwaDataService.GetConnectionString());
                 await conn.OpenAsync();
-
-                using var cmd = new SqlCommand("sp_InsertNotification", conn)
+                await using var cmd = new SqlCommand("sp_InsertNotification", conn)
                 {
-                    CommandType = CommandType.StoredProcedure
+                    CommandType = System.Data.CommandType.StoredProcedure
                 };
                 cmd.Parameters.AddWithValue("@RecipientId", userId);
                 cmd.Parameters.AddWithValue("@TargetRole", role);
                 cmd.Parameters.AddWithValue("@Title", title);
                 cmd.Parameters.AddWithValue("@Message", message);
                 cmd.Parameters.AddWithValue("@NotifType", notifType);
-                cmd.Parameters.AddWithValue("@ReferenceId", referenceId ?? "");
-
+                cmd.Parameters.AddWithValue("@ReferenceId", referenceId);
                 await cmd.ExecuteNonQueryAsync();
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[NotificationManager] DB error: {ex.Message}");
             }
+        }
+
+        // ── TOAST ─────────────────────────────────────────────────────────────
+        private static void ShowToast(string title, string message)
+        {
+            try
+            {
+                // Run on UI thread — WPF toast via MessageQueue or custom toast window
+                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                {
+                    ToastPopupService.Show(title, message);
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[NotificationManager] Toast error: {ex.Message}");
+            }
+        }
+
+        // ── EMAIL BODY ────────────────────────────────────────────────────────
+        private static string BuildEmailBody(string title, string body)
+        {
+            return $"""
+                <!DOCTYPE html>
+                <html>
+                <body style="font-family:Segoe UI,Arial,sans-serif;background:#f0f4f8;padding:30px;">
+                  <div style="max-width:520px;margin:auto;background:white;border-radius:12px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,.1);">
+                    <h2 style="color:#0077B6;margin-top:0;">{title}</h2>
+                    <p style="color:#374151;font-size:15px;line-height:1.6;">{body}</p>
+                    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;"/>
+                    <p style="color:#9ca3af;font-size:12px;">
+                      This is an automated message from <strong>KapwaKuha</strong>.<br/>
+                      Do not reply to this email.
+                    </p>
+                  </div>
+                </body>
+                </html>
+                """;
         }
     }
 }

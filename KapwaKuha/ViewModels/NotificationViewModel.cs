@@ -1,148 +1,200 @@
-﻿using System;
+﻿// ViewModels/NotificationViewModel.cs
+using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using KapwaKuha.Commands;
 using KapwaKuha.Models;
 using KapwaKuha.Services;
+using Microsoft.Data.SqlClient;
 
 namespace KapwaKuha.ViewModels
 {
-    public class NotificationViewModel : ObservableObject
+    public class NotificationViewModel : INotifyPropertyChanged
     {
         private readonly string _userId;
 
-        // ── Properties ──────────────────────────────────────────────────────
+        // ── Collection ────────────────────────────────────────────────────────
+        public ObservableCollection<NotificationModel> Notifications { get; } = new();
 
+        // Alias used by dashboard XAML: NotifVM.NotificationsCollection
+        public ObservableCollection<NotificationModel> NotificationsCollection => Notifications;
+
+        // ── Unread count ──────────────────────────────────────────────────────
         private int _unreadCount;
         public int UnreadCount
         {
             get => _unreadCount;
-            set { _unreadCount = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasUnread)); }
+            private set
+            {
+                _unreadCount = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(HasUnread));
+            }
         }
 
-        public bool HasUnread => UnreadCount > 0;
+        public bool HasUnread => _unreadCount > 0;
 
+        // ── Popup open/close ──────────────────────────────────────────────────
         private bool _isPopupOpen;
         public bool IsPopupOpen
         {
             get => _isPopupOpen;
-            set { _isPopupOpen = value; OnPropertyChanged(); }
+            set
+            {
+                _isPopupOpen = value;
+                OnPropertyChanged();
+                if (value)
+                    _ = LoadAsync(); // load fresh notifications when popup opens
+            }
         }
 
-        public ObservableCollection<NotificationModel> NotificationsCollection { get; }
-            = new ObservableCollection<NotificationModel>();
-
-        // ── Commands ────────────────────────────────────────────────────────
-
-        public ICommand LoadNotificationsCommand { get; }
-        public ICommand MarkAllAsReadCommand { get; }
+        // ── Commands ──────────────────────────────────────────────────────────
         public ICommand TogglePopupCommand { get; }
+        public ICommand MarkReadCommand { get; }
+        public ICommand MarkAllReadCommand { get; }
+        public ICommand MarkAllAsReadCommand { get; } // alias used in XAML
+        public ICommand RefreshCommand { get; }
 
-        // ── Constructor ─────────────────────────────────────────────────────
 
+        // ── Constructor ───────────────────────────────────────────────────────
         public NotificationViewModel(string userId)
         {
             _userId = userId;
 
-            LoadNotificationsCommand = new AsyncRelayCommand(LoadNotificationsAsync);
-            MarkAllAsReadCommand = new AsyncRelayCommand(MarkAllAsReadAsync);
-            TogglePopupCommand = new RelayCommand(_ =>
+            TogglePopupCommand = new AsyncRelayCommand(async () =>
             {
                 IsPopupOpen = !IsPopupOpen;
                 if (IsPopupOpen)
-                    _ = LoadNotificationsAsync();
+                    await LoadAsync();
             });
+
+       
+
+            MarkReadCommand = new AsyncRelayCommand<string>(MarkReadAsync);
+            MarkAllReadCommand = new AsyncRelayCommand(MarkAllReadAsync);
+            MarkAllAsReadCommand = new AsyncRelayCommand(MarkAllReadAsync); // same handler
+            RefreshCommand = new AsyncRelayCommand(LoadAsync);
         }
 
-        // ── Data Methods ────────────────────────────────────────────────────
-
-        public async Task LoadNotificationsAsync()
+        // ── Load ──────────────────────────────────────────────────────────────
+        public async Task LoadAsync()
         {
             try
             {
-                NotificationsCollection.Clear();
+                var dt = await RunSpQueryAsync("sp_GetUserNotifications", cmd =>
+                    cmd.Parameters.AddWithValue("@UserId", _userId));
 
-                using var conn = new SqlConnection(KapwaDataService.ConnectionString);
-                await conn.OpenAsync();
-
-                using var cmd = new SqlCommand("sp_GetUserNotifications", conn)
+                Notifications.Clear();
+                foreach (DataRow row in dt.Rows)
                 {
-                    CommandType = CommandType.StoredProcedure
-                };
-                cmd.Parameters.AddWithValue("@UserId", _userId);
-
-                using var reader = await cmd.ExecuteReaderAsync();
-                while (await reader.ReadAsync())
-                {
-                    NotificationsCollection.Add(new NotificationModel
+                    Notifications.Add(new NotificationModel
                     {
-                        NotifId = reader["Notif_ID"].ToString(),
-                        Title = reader["Title"].ToString(),
-                        Message = reader["Message"].ToString(),
-                        IsRead = Convert.ToBoolean(reader["IsRead"]),
-                        SentAt = Convert.ToDateTime(reader["SentAt"]),
-                        NotifType = reader["Notif_Type"].ToString(),
-                        ReferenceId = reader["Reference_ID"].ToString()
+                        Notif_ID = row["Notif_ID"]?.ToString() ?? "",
+                        Recipient_ID = row["Recipient_ID"]?.ToString() ?? "",
+                        TargetRole = row["TargetRole"]?.ToString() ?? "",
+                        Title = row["Title"]?.ToString() ?? "",
+                        Notif_Type = row["Notif_Type"]?.ToString() ?? "",
+                        Message = row["Message"]?.ToString() ?? "",
+                        IsRead = Convert.ToBoolean(row["IsRead"]),
+                        SentAt = Convert.ToDateTime(row["SentAt"]),
+                        Reference_ID = row["Reference_ID"]?.ToString() ?? ""
                     });
                 }
 
-                await RefreshUnreadCountAsync();
+                await LoadUnreadCountAsync();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[NotificationViewModel] Load error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[NotifVM] Load error: {ex.Message}");
             }
         }
 
-        private async Task MarkAllAsReadAsync()
+        // Alias for dashboards that call LoadNotificationsAsync()
+        public Task LoadNotificationsAsync() => LoadAsync();
+
+        // ── Mark single read ──────────────────────────────────────────────────
+        private async Task MarkReadAsync(string? notifId)
+        {
+            if (string.IsNullOrWhiteSpace(notifId)) return;
+            try
+            {
+                await RunSpNonQueryAsync("sp_MarkNotificationRead", cmd =>
+                    cmd.Parameters.AddWithValue("@NotifId", notifId));
+
+                var item = Notifications.FirstOrDefault(n => n.Notif_ID == notifId);
+                if (item != null) item.IsRead = true;
+                await LoadUnreadCountAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[NotifVM] MarkRead error: {ex.Message}");
+            }
+        }
+
+        // ── Mark all read ─────────────────────────────────────────────────────
+        private async Task MarkAllReadAsync()
         {
             try
             {
-                using var conn = new SqlConnection(KapwaDataService.ConnectionString);
-                await conn.OpenAsync();
+                await RunSpNonQueryAsync("sp_MarkAllNotificationsRead", cmd =>
+                    cmd.Parameters.AddWithValue("@UserId", _userId));
 
-                using var cmd = new SqlCommand("sp_MarkAllNotificationsRead", conn)
-                {
-                    CommandType = CommandType.StoredProcedure
-                };
-                cmd.Parameters.AddWithValue("@UserId", _userId);
-                await cmd.ExecuteNonQueryAsync();
-
-                // Update local collection
-                foreach (var n in NotificationsCollection)
-                    n.IsRead = true;
-
+                foreach (var n in Notifications) n.IsRead = true;
                 UnreadCount = 0;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[NotificationViewModel] MarkRead error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[NotifVM] MarkAllRead error: {ex.Message}");
             }
         }
 
-        public async Task RefreshUnreadCountAsync()
+        // ── Unread count ──────────────────────────────────────────────────────
+        private async Task LoadUnreadCountAsync()
         {
             try
             {
-                using var conn = new SqlConnection(KapwaDataService.ConnectionString);
-                await conn.OpenAsync();
+                var dt = await RunSpQueryAsync("sp_GetUnreadNotificationCount", cmd =>
+                    cmd.Parameters.AddWithValue("@UserId", _userId));
 
-                using var cmd = new SqlCommand("sp_GetUnreadNotificationCount", conn)
-                {
-                    CommandType = CommandType.StoredProcedure
-                };
-                cmd.Parameters.AddWithValue("@UserId", _userId);
-
-                var result = await cmd.ExecuteScalarAsync();
-                UnreadCount = Convert.ToInt32(result);
+                if (dt.Rows.Count > 0)
+                    UnreadCount = Convert.ToInt32(dt.Rows[0]["UnreadCount"]);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[NotificationViewModel] Count error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[NotifVM] UnreadCount error: {ex.Message}");
             }
         }
+
+        // ── DB helpers ────────────────────────────────────────────────────────
+        private static async Task<DataTable> RunSpQueryAsync(string sp, Action<SqlCommand> paramBuilder)
+        {
+            var dt = new DataTable();
+            await using var conn = new SqlConnection(KapwaDataService.GetConnectionString());
+            await conn.OpenAsync();
+            await using var cmd = new SqlCommand(sp, conn) { CommandType = System.Data.CommandType.StoredProcedure };
+            paramBuilder(cmd);
+            using var reader = await cmd.ExecuteReaderAsync();
+            dt.Load(reader);
+            return dt;
+        }
+
+        private static async Task RunSpNonQueryAsync(string sp, Action<SqlCommand> paramBuilder)
+        {
+            await using var conn = new SqlConnection(KapwaDataService.GetConnectionString());
+            await conn.OpenAsync();
+            await using var cmd = new SqlCommand(sp, conn) { CommandType = System.Data.CommandType.StoredProcedure };
+            paramBuilder(cmd);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        // ── INotifyPropertyChanged ────────────────────────────────────────────
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

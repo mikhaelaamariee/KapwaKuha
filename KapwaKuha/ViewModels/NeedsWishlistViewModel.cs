@@ -171,8 +171,12 @@ namespace KapwaKuha.ViewModels
                     };
                     await KapwaDataService.PostNeedsRequest(post);
 
-                    await LoadMyPostsAsync();
+                    await KapwaDataService.CreateNotification(
+                        "A001", "Approval",
+                        $"📋 New needs post pending approval: \"{Title.Trim()}\" ({Urgency} urgency) by {_orgId}",
+                        postId);
 
+                    await LoadMyPostsAsync();
                     Title = Description = ImagePath = string.Empty;
                     Urgency = "Medium";
 

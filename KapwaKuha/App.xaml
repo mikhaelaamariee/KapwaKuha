@@ -1,12 +1,16 @@
 ﻿<Application x:Class="KapwaKuha.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="View/ChooseRoleWindow.xaml" ToastNotificationManagerCompat.OnActivated += _ =>{ };>
+             StartupUri="View/ChooseRoleWindow.xaml">
     
     <Application.Resources>
 
         <!-- ══ CONVERTERS ══ -->
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        <DropShadowEffect x:Key="DropShadow" x:Shared="False"
+                  Color="#0077B6" BlurRadius="20"
+                  ShadowDepth="0" Opacity="0.15"/>
 
         <!-- ══════════════════════════════════════════════════════
              ANIMATED SIDEBAR  (DataTrigger drives storyboard)

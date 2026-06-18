@@ -198,7 +198,14 @@ namespace KapwaKuha.ViewModels
 
                     await KapwaDataService.AddItem(item);
 
+                    await KapwaDataService.CreateNotification(
+                        "A001", "Approval",
+                        $"📦 New item pending approval: \"{ItemName.Trim()}\" ({SelectedCondition}) submitted by {_donorId}",
+                        itemId);
+
                     string postTypeLabel = IsDirectTarget ? "Direct donation" : "General post";
+
+
                     MessageBox.Show(
                         $"📋 Item submitted for admin review!\n\n" +
                         $"Item: {ItemName}\n" +

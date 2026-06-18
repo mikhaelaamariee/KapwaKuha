@@ -167,7 +167,6 @@
                           BorderThickness="0"
                           Cursor="Hand"
                           IsChecked="{Binding NotifVM.IsPopupOpen, Mode=TwoWay}"
-                          Command="{Binding NotifVM.TogglePopupCommand}"
                           Width="40" Height="40"
                           Margin="0,0,12,0">
                         <Grid>
@@ -178,8 +177,8 @@
                             MinWidth="16" Height="16"
                             HorizontalAlignment="Right" VerticalAlignment="Top"
                             Margin="0,2,2,0"
-                            Visibility="{Binding NotifVM.HasUnread, Converter={StaticResource BoolToVisConverter}}">
-                                <TextBlock Text="{Binding NotifVM.UnreadCount}"
+                            Visibility="{Binding HasAdminActions, Converter={StaticResource BoolToVisConverter}}">
+                                <TextBlock Text="{Binding AdminActionCount}"
                                    Foreground="White"
                                    FontSize="9"
                                    FontWeight="Bold"
@@ -193,7 +192,7 @@
                     <Popup IsOpen="{Binding NotifVM.IsPopupOpen, Mode=TwoWay}"
                    PlacementTarget="{Binding ElementName=BellToggle}"
                    Placement="Bottom"
-                   StaysOpen="False"
+                   StaysOpen="True"
                    AllowsTransparency="True"
                    PopupAnimation="Fade">
 
@@ -219,7 +218,7 @@
                                 </Border>
 
                                 <ListBox Grid.Row="1"
-                                 ItemsSource="{Binding NotifVM.NotificationsCollection}"
+                                 ItemsSource="{Binding AdminNotifItems}"
                                  BorderThickness="0"
                                  Background="Transparent"
                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -234,8 +233,8 @@
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Border Padding="14,10"
-                                            BorderBrush="#F0F0F0"
-                                            BorderThickness="0,0,0,1">
+            BorderBrush="#F0F0F0"
+            BorderThickness="0,0,0,1">
                                                 <Border.Style>
                                                     <Style TargetType="Border">
                                                         <Setter Property="Background" Value="White"/>
@@ -252,22 +251,20 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                                        <TextBlock Text="{Binding Title}"
-                                                           FontWeight="Bold"
-                                                           FontSize="12"
-                                                           Foreground="#212121"
-                                                           TextWrapping="Wrap"/>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Icon}" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding Title}"
+                               FontWeight="Bold" FontSize="12"
+                               Foreground="#212121" TextWrapping="Wrap"/>
+                                                        </StackPanel>
                                                         <TextBlock Text="{Binding Message}"
-                                                           FontSize="11"
-                                                           Foreground="#616161"
-                                                           TextWrapping="Wrap"
-                                                           Margin="0,2,0,0"/>
+                           FontSize="11" Foreground="#616161"
+                           TextWrapping="Wrap" Margin="0,2,0,0"/>
                                                     </StackPanel>
                                                     <TextBlock Grid.Column="1"
-                                                       Text="{Binding TimeAgo}"
-                                                       FontSize="10"
-                                                       Foreground="#9E9E9E"
-                                                       VerticalAlignment="Top"/>
+                       Text="{Binding TimeAgo}"
+                       FontSize="10" Foreground="#9E9E9E"
+                       VerticalAlignment="Top"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -277,7 +274,7 @@
                                 <Border Grid.Row="2" Padding="12,8" Background="#FAFAFA" CornerRadius="0,0,8,8"
                                 BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
                                     <Button Content="Mark all as read"
-                                    Command="{Binding NotifVM.MarkAllAsReadCommand}"
+                             Command="{Binding MarkAllAdminNotifsReadCommand}"
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Foreground="#1E88E5"
@@ -1040,9 +1037,9 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="160"/>
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White" Padding="10,0">
+                            <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Background="White">
                                 <Grid Width="250" Height="36">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -1050,32 +1047,33 @@
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Grid.Column="0"
-               Text="🔍" 
-               FontSize="13" 
-               Foreground="#9CA3AF" 
-               Margin="-178,0,4,0" 
-               HorizontalAlignment="Left" 
-               VerticalAlignment="Center"
-               IsHitTestVisible="False"/>
+                   Text="🔍" 
+                   FontSize="13" 
+                   Foreground="#9CA3AF" 
+                   Margin="-580,0,4,0" 
+                   HorizontalAlignment="Left" 
+                   VerticalAlignment="Center"
+                   IsHitTestVisible="False"/>
 
                                     <TextBox x:Name="SearchTextBox"
-             Grid.Column="1"
-             Text="{Binding ReportSearchQuery, UpdateSourceTrigger=PropertyChanged}" 
-             BorderThickness="0" 
-             FontSize="13" 
-             Foreground="#374151" 
-             VerticalContentAlignment="Center" 
-             Background="Transparent"
-             Padding="-155,0,10,0">
+                 Grid.Column="1"
+                 Text="{Binding ReportSearchQuery, UpdateSourceTrigger=PropertyChanged}" 
+                 BorderThickness="0" 
+                 FontSize="13" 
+                 Foreground="#374151" 
+                 VerticalContentAlignment="Center" 
+                 Background="Transparent"
+                 Padding="4,0,10,0"
+                                             Margin=" -560,0,0,0">
                                         <TextBox.Style>
                                             <Style TargetType="TextBox">
                                                 <Style.Resources>
-                                                    <VisualBrush x:Key="HintBrush" TileMode="None" Opacity="1" Stretch="None" AlignmentX="Left" AlignmentY="Center">
+                                                    <VisualBrush x:Key="Hint" TileMode="None" Opacity="0.5" Stretch="None" AlignmentX="Left" AlignmentY="Center">
                                                         <VisualBrush.Visual>
                                                             <TextBlock Text="Search by user or description..." 
-                                       FontSize="13" 
-                                       Foreground="#9CA3AF" 
-                                       Margin="4,0,0,0"/>
+                                           FontSize="13" 
+                                           Foreground="#9CA3AF" 
+                                           Margin="4,0,0,0"/>
                                                         </VisualBrush.Visual>
                                                     </VisualBrush>
                                                 </Style.Resources>
@@ -1088,7 +1086,7 @@
                                                             <Condition Binding="{Binding Text, ElementName=SearchTextBox}" Value=""/>
                                                             <Condition Binding="{Binding IsFocused, ElementName=SearchTextBox}" Value="False"/>
                                                         </MultiDataTrigger.Conditions>
-                                                        <Setter Property="Background" Value="{StaticResource HintBrush}"/>
+                                                        <Setter Property="Background" Value="{StaticResource Hint}"/>
                                                     </MultiDataTrigger>
                                                 </Style.Triggers>
                                             </Style>

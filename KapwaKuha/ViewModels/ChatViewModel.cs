@@ -73,6 +73,12 @@ namespace KapwaKuha.ViewModels
                 InputText = string.Empty;
                 await KapwaDataService.SaveChatMessage(_myId, _otherId, msg);
                 await LoadMessages();
+
+                // Notify the recipient of new chat message (admin support OR donor-bene chat)
+                await KapwaDataService.CreateNotification(
+                    _otherId, "Message",
+                    $"💬 New message from {UserSession.FullName ?? _myId}: \"{(msg.Length > 60 ? msg[..60] + "…" : msg)}\"",
+                    _myId);
             });
 
             SendImageCommand = new AsyncRelayCommand(async _ =>

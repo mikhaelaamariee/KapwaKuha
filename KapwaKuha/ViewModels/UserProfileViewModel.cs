@@ -169,17 +169,18 @@ namespace KapwaKuha.ViewModels
                 {
                     string reportId = await KapwaDataService.GetNextReportId();
                     await KapwaDataService.FileUserReport(
-    reportId, _viewerId, TargetId,
-    ReportType, ReportDescription, ProofImagePath);
+      reportId, _viewerId, TargetId,
+      ReportType, ReportDescription, ProofImagePath);
 
+                    await KapwaDataService.CreateNotification(
+                        "A001", "Approval",
+                        $"🚨 New user report filed: {ReportType} against {TargetId} by {_viewerId}",
+                        reportId);
 
                     MessageBox.Show("✅ Report submitted. Our team will review it shortly.",
-                        "Reported", MessageBoxButton.OK, MessageBoxImage.Information);
 
-
-
-                    // Reset and close the panel
-                    ReportDescription = string.Empty;
+                                        // Reset and close the panel
+                                        ReportDescription = string.Empty); 
                     ReportType = "FakeItem";
                     ReportPanelVisible = false;
                     ProofImagePath = string.Empty;

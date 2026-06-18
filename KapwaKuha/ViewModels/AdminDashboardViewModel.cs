@@ -71,16 +71,12 @@ namespace KapwaKuha.ViewModels
             set { _itemConditionFilter = value; OnPropertyChanged(); RefreshFilteredItems(); }
         }
 
-
-
-
         // ── Gatekeeper queues ────────────────────────────────────────────────
         public ObservableCollection<ItemModel> PendingItemsList { get; } = new();
         public ObservableCollection<BeneficiaryModel> PendingBenesList { get; } = new();
         public ObservableCollection<DonorModel> PendingDonorsList { get; } = new();
         public ObservableCollection<NeedsPostModel> PendingNeedsPostsList { get; } = new();
         public ObservableCollection<UserReportModel> OpenReportsList { get; } = new();
-
         public ObservableCollection<ItemModel> FilteredItemsList { get; } = new();
 
         private int _pendingDonors;
@@ -114,7 +110,7 @@ namespace KapwaKuha.ViewModels
         }
         public bool HasLoadError => !string.IsNullOrEmpty(LoadError);
 
-        // ── Support Inbox ─────────────────────────────────────────────────────────
+        // ── Support Inbox ─────────────────────────────────────────────────────
         public ObservableCollection<KapwaDataService.AdminSupportThread> SupportThreads { get; } = new();
         private int _supportThreadCount;
         public int SupportThreadCount
@@ -123,21 +119,64 @@ namespace KapwaKuha.ViewModels
             set { _supportThreadCount = value; OnPropertyChanged(); }
         }
 
-        // ── Support search ────────────────────────────────────────────────────────
+        // ── Support search ────────────────────────────────────────────────────
         private string _supportSearchQuery = string.Empty;
         public string SupportSearchQuery
         {
             get => _supportSearchQuery;
-            set
-            {
-                _supportSearchQuery = value;
-                OnPropertyChanged();
-                RefreshFilteredThreads();
-            }
+            set { _supportSearchQuery = value; OnPropertyChanged(); RefreshFilteredThreads(); }
         }
 
         public NotificationViewModel NotifVM { get; }
 
+        // ── Admin action badge ────────────────────────────────────────────────
+        private int _adminActionCount;
+        public int AdminActionCount
+        {
+            get => _adminActionCount;
+            set { _adminActionCount = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasAdminActions)); }
+        }
+        public bool HasAdminActions => AdminActionCount > 0;
+
+        public ObservableCollection<AdminActionNotif> AdminNotifItems { get; } = new();
+
+        // ── AdminActionNotif model ────────────────────────────────────────────
+        public class AdminActionNotif : ObservableObject
+        {
+            private bool _isRead;
+
+            public string Icon { get; set; } = "";
+            public string Title { get; set; } = "";
+            public string Message { get; set; } = "";
+            public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+            public bool IsRead
+            {
+                get => _isRead;
+                set
+                {
+                    _isRead = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsUnread));
+                }
+            }
+
+            public bool IsUnread => !_isRead;
+
+            public string TimeAgo
+            {
+                get
+                {
+                    var diff = DateTime.Now - CreatedAt;
+                    if (diff.TotalMinutes < 1) return "Just now";
+                    if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
+                    if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h ago";
+                    return $"{(int)diff.TotalDays}d ago";
+                }
+            }
+        }
+
+        // ── Filters ───────────────────────────────────────────────────────────
         private void RefreshFilteredItems()
         {
             FilteredItemsList.Clear();
@@ -147,17 +186,13 @@ namespace KapwaKuha.ViewModels
                 bool matchSearch = string.IsNullOrEmpty(q)
                     || item.Item_Name.ToLowerInvariant().Contains(q)
                     || item.Donor_ID.ToLowerInvariant().Contains(q);
-                bool matchCat = _itemCategoryFilter == "All Categories"
-                    || item.Category_Name == _itemCategoryFilter;
-                bool matchCond = _itemConditionFilter == "All Conditions"
-                    || item.Item_Condition == _itemConditionFilter;
+                bool matchCat = _itemCategoryFilter == "All Categories" || item.Category_Name == _itemCategoryFilter;
+                bool matchCond = _itemConditionFilter == "All Conditions" || item.Item_Condition == _itemConditionFilter;
                 if (matchSearch && matchCat && matchCond)
                     FilteredItemsList.Add(item);
             }
         }
 
-
-        // ── Needs Post filters ────────────────────────────────────────────────────
         private string _needsSearchQuery = string.Empty;
         public string NeedsSearchQuery
         {
@@ -171,6 +206,7 @@ namespace KapwaKuha.ViewModels
             get => _needsUrgencyFilter;
             set { _needsUrgencyFilter = value; OnPropertyChanged(); RefreshFilteredNeedsPosts(); }
         }
+
         private void RefreshFilteredNeedsPosts()
         {
             FilteredNeedsPostsList.Clear();
@@ -180,14 +216,12 @@ namespace KapwaKuha.ViewModels
                 bool matchSearch = string.IsNullOrEmpty(q)
                     || p.Title.ToLowerInvariant().Contains(q)
                     || p.Org_Name.ToLowerInvariant().Contains(q);
-                bool matchUrgency = _needsUrgencyFilter == "All Urgency"
-                    || p.Urgency == _needsUrgencyFilter;
+                bool matchUrgency = _needsUrgencyFilter == "All Urgency" || p.Urgency == _needsUrgencyFilter;
                 if (matchSearch && matchUrgency)
                     FilteredNeedsPostsList.Add(p);
             }
         }
 
-        // ── Report filters ────────────────────────────────────────────────────────
         private string _reportSearchQuery = string.Empty;
         public string ReportSearchQuery
         {
@@ -203,6 +237,7 @@ namespace KapwaKuha.ViewModels
         }
 
         public ObservableCollection<UserReportModel> FilteredReportsList { get; } = new();
+        public ObservableCollection<NeedsPostModel> FilteredNeedsPostsList { get; } = new();
 
         private void RefreshFilteredReports()
         {
@@ -214,23 +249,18 @@ namespace KapwaKuha.ViewModels
                     || r.Reported_Name.ToLowerInvariant().Contains(q)
                     || r.Reporter_Name.ToLowerInvariant().Contains(q)
                     || r.Description.ToLowerInvariant().Contains(q);
-                bool matchType = _reportTypeFilter == "All Types"
-                    || r.Report_Type == _reportTypeFilter;
+                bool matchType = _reportTypeFilter == "All Types" || r.Report_Type == _reportTypeFilter;
                 if (matchSearch && matchType)
                     FilteredReportsList.Add(r);
             }
         }
 
-        // ── Support Inbox status filter ───────────────────────────────────────────
         private string _supportStatusFilter = "All Users";
         public string SupportStatusFilter
         {
             get => _supportStatusFilter;
             set { _supportStatusFilter = value; OnPropertyChanged(); RefreshFilteredThreads(); }
         }
-
-        public ObservableCollection<NeedsPostModel> FilteredNeedsPostsList { get; } = new();
-
 
         public ObservableCollection<KapwaDataService.AdminSupportThread> DonorThreadsFiltered { get; } = new();
         public ObservableCollection<KapwaDataService.AdminSupportThread> InstBeneThreadsFiltered { get; } = new();
@@ -271,7 +301,6 @@ namespace KapwaKuha.ViewModels
             Filter(IndepBeneThreads, IndepBeneThreadsFiltered);
         }
 
-
         public ObservableCollection<KapwaDataService.AdminSupportThread> DonorThreads { get; } = new();
         public ObservableCollection<KapwaDataService.AdminSupportThread> InstBeneThreads { get; } = new();
         public ObservableCollection<KapwaDataService.AdminSupportThread> IndepBeneThreads { get; } = new();
@@ -280,10 +309,8 @@ namespace KapwaKuha.ViewModels
         public bool HasInstBeneThreads => InstBeneThreads.Count > 0;
         public bool HasIndepBeneThreads => IndepBeneThreads.Count > 0;
 
-
-        // ── Commands ─────────────────────────────────────────────────────────
+        // ── Commands ──────────────────────────────────────────────────────────
         public ICommand OpenSupportThreadCommand { get; }
-
         public ICommand ApproveItemCommand { get; }
         public ICommand RejectItemCommand { get; }
         public ICommand ApproveBeneficiaryCommand { get; }
@@ -296,13 +323,20 @@ namespace KapwaKuha.ViewModels
         public ICommand AdminBanUserCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand LogoutCommand { get; }
-
         public ICommand ZoomImageCommand { get; }
+        public ICommand MarkAllAdminNotifsReadCommand { get; }
 
         public AdminDashboardViewModel(string adminId)
         {
             _adminId = adminId;
             WelcomeText = $"Admin Panel — {UserSession.FullName}";
+
+            // ── Mark all admin notifs read ────────────────────────────────────
+            MarkAllAdminNotifsReadCommand = new RelayCommand(_ =>
+            {
+                foreach (var n in AdminNotifItems)
+                    n.IsRead = true;
+            });
 
             OpenSupportThreadCommand = new RelayCommand(param =>
             {
@@ -315,10 +349,12 @@ namespace KapwaKuha.ViewModels
                     profilePicPath: thread.ProfilePicturePath);
                 win.ShowDialog();
                 _ = LoadSupportInboxAsync();
+                _ = LoadAdminActionBadgeAsync();
             });
 
             NotifVM = new NotificationViewModel(UserSession.CurrentUserId);
             _ = NotifVM.LoadNotificationsAsync();
+            _ = LoadAdminActionBadgeAsync();
 
             // ── Items ─────────────────────────────────────────────────────────
             ApproveItemCommand = new AsyncRelayCommand(async param =>
@@ -348,17 +384,14 @@ namespace KapwaKuha.ViewModels
             RejectItemCommand = new AsyncRelayCommand(async param =>
             {
                 if (param is not ItemModel item) return;
-
                 var rejectDlg = new View.AdminRejectReasonDialog(
                     $"Reject \"{item.Item_Name}\"",
                     "The donor will see this reason and can edit & resubmit.");
                 rejectDlg.Owner = Application.Current.MainWindow;
                 if (rejectDlg.ShowDialog() != true) return;
-
                 string reason = rejectDlg.Reason;
                 if (string.IsNullOrWhiteSpace(reason))
                     reason = "Your item was rejected. Please edit and resubmit.";
-
                 try
                 {
                     await KapwaDataService.RejectItem(item.Item_ID, reason);
@@ -487,36 +520,28 @@ namespace KapwaKuha.ViewModels
                 };
                 zoomWin.ShowDialog();
             });
+
             // ── Needs Posts ───────────────────────────────────────────────────
             ApproveNeedsPostCommand = new AsyncRelayCommand(async param =>
             {
                 if (param is not NeedsPostModel post) return;
-
                 var dialog = new View.AdminApproveNeedsPostDialog(post);
-                // Set owner so CenterOwner works
                 dialog.Owner = Application.Current.MainWindow;
                 bool? result = dialog.ShowDialog();
                 if (result != true) return;
-
                 string chosenUrgency = dialog.ChosenUrgency;
-
                 try
                 {
                     await KapwaDataService.ApproveNeedsPost(post.NeedsPost_ID, chosenUrgency);
-                    // Get the actual beneficiary ID (Users.UserID), NOT the Org_ID
                     string beneId = await KapwaDataService.GetActiveBeneficiaryIdByOrg(post.Org_ID);
                     if (!string.IsNullOrEmpty(beneId))
                         await KapwaDataService.CreateNotification(
                             beneId, "Approval",
                             $"✅ Your needs post \"{post.Title}\" has been approved as {chosenUrgency} urgency and is now visible to donors.",
                             post.NeedsPost_ID);
-
                     MessageBox.Show(
                         $"✅ Needs post \"{post.Title}\" has been approved successfully!",
-                        "Approval Success",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-
+                        "Approval Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     await LoadGatekeeperQueuesAsync();
                     await LoadMetricsAsync();
                 }
@@ -530,35 +555,26 @@ namespace KapwaKuha.ViewModels
             RejectNeedsPostCommand = new AsyncRelayCommand(async param =>
             {
                 if (param is not NeedsPostModel post) return;
-
-                // Use a proper pop-out dialog instead of InputBox
                 var rejectDlg = new View.AdminRejectReasonDialog(
                     $"Reject \"{post.Title}\"",
                     "The beneficiary will see this reason and can edit & resubmit.");
                 rejectDlg.Owner = Application.Current.MainWindow;
                 if (rejectDlg.ShowDialog() != true) return;
-
                 string reason = rejectDlg.Reason;
                 if (string.IsNullOrWhiteSpace(reason))
                     reason = "Your post was rejected. Please edit and resubmit.";
-
                 try
                 {
                     await KapwaDataService.RejectNeedsPost(post.NeedsPost_ID, reason);
-                    // Get the actual beneficiary UserID, NOT the Org_ID
                     string beneId = await KapwaDataService.GetActiveBeneficiaryIdByOrg(post.Org_ID);
                     if (!string.IsNullOrEmpty(beneId))
                         await KapwaDataService.CreateNotification(
                             beneId, "Approval",
                             $"❌ Your needs post \"{post.Title}\" was not approved.\n\nReason: {reason}\n\nPlease edit your post and resubmit for re-review.",
                             post.NeedsPost_ID);
-
                     MessageBox.Show(
                         $"❌ Needs post \"{post.Title}\" has been rejected.",
-                        "Rejection Complete",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-
+                        "Rejection Complete", MessageBoxButton.OK, MessageBoxImage.Information);
                     await LoadGatekeeperQueuesAsync();
                 }
                 catch (Exception ex)
@@ -573,11 +589,9 @@ namespace KapwaKuha.ViewModels
             {
                 if (param is not UserReportModel report) return;
                 var result = MessageBox.Show(
-                    $"Apply a STRIKE to {report.Reported_Name} for report \"{report.Report_Type}\"?\n\n" +
-                    "3 strikes = automatic blacklist.",
+                    $"Apply a STRIKE to {report.Reported_Name} for report \"{report.Report_Type}\"?\n\n3 strikes = automatic blacklist.",
                     "Apply Strike", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
                 if (result == MessageBoxResult.Cancel) return;
-
                 string action = result == MessageBoxResult.Yes ? "Strike" : "None";
                 try
                 {
@@ -590,22 +604,14 @@ namespace KapwaKuha.ViewModels
                             report.Reported_ID, "AccountAlert",
                             "⚠️ A strike has been applied to your account for a policy violation.",
                             report.Report_ID);
-
-                        MessageBox.Show(
-                            $"✅ Strike has been applied to {report.Reported_Name}.",
-                            "Strike Applied",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+                        MessageBox.Show($"✅ Strike has been applied to {report.Reported_Name}.",
+                            "Strike Applied", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
-                        MessageBox.Show(
-                            $"✅ Report marked as reviewed. No action taken.",
-                            "Report Processed",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+                        MessageBox.Show("✅ Report marked as reviewed. No action taken.",
+                            "Report Processed", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
-
                     await LoadGatekeeperQueuesAsync();
                 }
                 catch (Exception ex)
@@ -618,13 +624,9 @@ namespace KapwaKuha.ViewModels
             AdminBanUserCommand = new AsyncRelayCommand(async param =>
             {
                 if (param is not UserReportModel report) return;
-
-                // Show ban reason dialog — returns null if admin cancelled
                 string? reason = View.AdminDashboardWindow.ShowBanReasonDialog(
-                    report.Reported_Name,
-                    Application.Current.MainWindow);
+                    report.Reported_Name, Application.Current.MainWindow);
                 if (reason == null) return;
-
                 try
                 {
                     await KapwaDataService.AdminBanUser(report.Reported_ID, reason);
@@ -632,13 +634,9 @@ namespace KapwaKuha.ViewModels
                         report.Reported_ID, "AccountAlert",
                         $"⚠️ Your account has been permanently banned.\n\nReason: {reason}",
                         report.Report_ID);
-
                     MessageBox.Show(
                         $"✅ User {report.Reported_Name} has been permanently banned.\n\nReason logged: {reason}",
-                        "Ban Applied",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-
+                        "Ban Applied", MessageBoxButton.OK, MessageBoxImage.Information);
                     await LoadGatekeeperQueuesAsync();
                     await LoadMetricsAsync();
                 }
@@ -689,7 +687,6 @@ namespace KapwaKuha.ViewModels
             {
                 var m = await KapwaDataService.GetAdminImpactMetrics();
                 if (Application.Current == null) return;
-
                 SafeDispatch(() =>
                 {
                     TotalDonated = m.TotalDonated;
@@ -753,7 +750,9 @@ namespace KapwaKuha.ViewModels
                 IsLoadingItems = IsLoadingBenes = IsLoadingReports = IsLoadingNeedsPosts = false;
 
                 _ = LoadSupportInboxAsync();
+                _ = LoadAdminActionBadgeAsync();
             });
+
             RefreshFilteredItems();
             RefreshFilteredNeedsPosts();
             RefreshFilteredReports();
@@ -799,6 +798,68 @@ namespace KapwaKuha.ViewModels
             });
         }
 
+        public async Task LoadAdminActionBadgeAsync()
+        {
+            try
+            {
+                var summary = await KapwaDataService.GetAdminNotificationSummary();
+                SafeDispatch(() =>
+                {
+                    AdminActionCount = summary.TotalPending;
 
+                    AdminNotifItems.Clear();
+
+                    if (summary.PendingItems > 0)
+                        AdminNotifItems.Add(new AdminActionNotif
+                        {
+                            Icon = "📦",
+                            Title = "Pending Items",
+                            Message = $"{summary.PendingItems} item{(summary.PendingItems > 1 ? "s" : "")} awaiting approval",
+                            CreatedAt = DateTime.Now
+                        });
+
+                    if (summary.PendingNeedsPosts > 0)
+                        AdminNotifItems.Add(new AdminActionNotif
+                        {
+                            Icon = "📋",
+                            Title = "Pending Needs Posts",
+                            Message = $"{summary.PendingNeedsPosts} needs post{(summary.PendingNeedsPosts > 1 ? "s" : "")} awaiting approval",
+                            CreatedAt = DateTime.Now
+                        });
+
+                    int totalBenes = summary.PendingInstBenes + summary.PendingIndepBenes;
+                    if (totalBenes > 0)
+                        AdminNotifItems.Add(new AdminActionNotif
+                        {
+                            Icon = "👤",
+                            Title = "Pending Beneficiaries",
+                            Message = $"{totalBenes} beneficiar{(totalBenes > 1 ? "ies" : "y")} awaiting approval",
+                            CreatedAt = DateTime.Now
+                        });
+
+                    if (summary.OpenReports > 0)
+                        AdminNotifItems.Add(new AdminActionNotif
+                        {
+                            Icon = "🚨",
+                            Title = "Open Reports",
+                            Message = $"{summary.OpenReports} report{(summary.OpenReports > 1 ? "s" : "")} need{(summary.OpenReports == 1 ? "s" : "")} review",
+                            CreatedAt = DateTime.Now
+                        });
+
+                    if (summary.UnreadSupportMessages > 0)
+                        AdminNotifItems.Add(new AdminActionNotif
+                        {
+                            Icon = "💬",
+                            Title = "Unread Support Messages",
+                            Message = $"{summary.UnreadSupportMessages} unread message{(summary.UnreadSupportMessages > 1 ? "s" : "")} in support inbox",
+                            CreatedAt = DateTime.Now
+                        });
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AdminBadge] {ex.Message}");
+            }
+        }
     }
 }

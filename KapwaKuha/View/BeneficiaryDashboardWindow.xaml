@@ -235,7 +235,6 @@
                           BorderThickness="0"
                           Cursor="Hand"
                           IsChecked="{Binding NotifVM.IsPopupOpen, Mode=TwoWay}"
-                          Command="{Binding NotifVM.TogglePopupCommand}"
                           Width="40" Height="40"
                           Margin="0,0,12,0"
                           VerticalAlignment="Center">
@@ -262,7 +261,7 @@
                             <Popup IsOpen="{Binding NotifVM.IsPopupOpen, Mode=TwoWay}"
                    PlacementTarget="{Binding ElementName=BellToggle}"
                    Placement="Bottom"
-                   StaysOpen="False"
+                   StaysOpen="True"
                    AllowsTransparency="True"
                    PopupAnimation="Fade">
 

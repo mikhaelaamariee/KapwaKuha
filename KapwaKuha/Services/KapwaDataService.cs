@@ -37,6 +37,9 @@ namespace KapwaKuha.Services
 
         private static string? _cachedConn;
 
+        // Add this public accessor so NotificationViewModel and NotificationManager can reach the conn string
+        public static string GetConnectionString() => _conn;
+
         private static string _conn
         {
             get
@@ -2513,25 +2516,44 @@ WHERE b.Beneficiary_ID = @id", conn);
         }
 
         public static async Task CreateNotification(
-            string recipientId, string notifType, string message, string referenceId = "")
+     string recipientId, string notifType, string message, string referenceId = "",
+     string title = "", string targetRole = "")
         {
             try
             {
-                string notifId = await GetNextNotifId();
-                using var conn = new SqlConnection(_conn);
+                // Derive a title from message if not provided
+                if (string.IsNullOrWhiteSpace(title))
+                    title = notifType switch
+                    {
+                        "Approval" => "New Item Pending Approval",
+                        "Message" => "New Support Message",
+                        "AccountAlert" => "Account Alert",
+                        "ClaimUpdate" => "Claim Update",
+                        _ => "Notification"
+                    };
+
+                if (string.IsNullOrWhiteSpace(targetRole))
+                    targetRole = "Admin";
+
+                await using var conn = new SqlConnection(_conn);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("sp_CreateNotification", conn);
-                cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@NotifId", notifId);
+                await using var cmd = new SqlCommand("sp_InsertNotification", conn)
+                {
+                    CommandType = System.Data.CommandType.StoredProcedure
+                };
                 cmd.Parameters.AddWithValue("@RecipientId", recipientId);
-                cmd.Parameters.AddWithValue("@NotifType", notifType);
+                cmd.Parameters.AddWithValue("@TargetRole", targetRole);
+                cmd.Parameters.AddWithValue("@Title", title);
                 cmd.Parameters.AddWithValue("@Message", message);
+                cmd.Parameters.AddWithValue("@NotifType", notifType);
                 cmd.Parameters.AddWithValue("@ReferenceId", referenceId);
                 await cmd.ExecuteNonQueryAsync();
             }
-            catch (Exception ex) { System.Windows.MessageBox.Show("CreateNotification failed: " + ex.Message); }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CreateNotification] {ex.Message}");
+            }
         }
-
         public static async Task<List<NotificationModel>> GetNotificationsForUser(string userId)
         {
             var list = new List<NotificationModel>();
@@ -2838,6 +2860,42 @@ WHERE Item_ID = @id", conn);
             return (0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 
+
+
+        }
+
+        public static async Task<AdminNotificationSummary> GetAdminNotificationSummary()
+        {
+            var result = new AdminNotificationSummary();
+            await using var conn = new SqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+            await using var cmd = new SqlCommand("sp_GetAdminNotificationSummary", conn)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                result.PendingItems = reader.GetInt32(reader.GetOrdinal("PendingItems"));
+                result.PendingNeedsPosts = reader.GetInt32(reader.GetOrdinal("PendingNeedsPosts"));
+                result.PendingInstBenes = reader.GetInt32(reader.GetOrdinal("PendingInstBenes"));
+                result.PendingIndepBenes = reader.GetInt32(reader.GetOrdinal("PendingIndepBenes"));
+                result.OpenReports = reader.GetInt32(reader.GetOrdinal("OpenReports"));
+                result.UnreadSupportMessages = reader.GetInt32(reader.GetOrdinal("UnreadSupportMessages"));
+            }
+            return result;
+        }
+
+        public class AdminNotificationSummary
+        {
+            public int PendingItems { get; set; }
+            public int PendingNeedsPosts { get; set; }
+            public int PendingInstBenes { get; set; }
+            public int PendingIndepBenes { get; set; }
+            public int OpenReports { get; set; }
+            public int UnreadSupportMessages { get; set; }
+            public int TotalPending =>
+                PendingItems + PendingNeedsPosts + PendingInstBenes + PendingIndepBenes + OpenReports + UnreadSupportMessages;
         }
         // ── UserProfileWindow helpers ─────────────────────────────────────────
 
